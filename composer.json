@@ -1,0 +1,19 @@
+{
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "name": "Provision scaffolding for deploying instance. Unrelated to Drupal site.",
+  "config": {
+    "preferred-install": {
+      "*": "dist"
+    }
+  },
+  "repositories": [
+    {
+        "type": "path",
+        "url": "./lib/systems-toolkit"
+    }
+  ],
+  "require-dev": {
+    "unb-libraries/systems-toolkit": "*"
+  }
+}

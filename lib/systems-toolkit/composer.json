@@ -1,0 +1,26 @@
+{
+  "name": "unb-libraries/systems-toolkit",
+  "description": "Services for developing drupal core and modules",
+  "type": "library",
+  "require": {
+    "consolidation/robo": "^1.0",
+    "czproject/git-php": "^3.13.0",
+    "knplabs/github-api": "^2.8.0",
+    "php-http/guzzle6-adapter": "^1.1.1"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jacob Sanford",
+      "email": "jsanford@unb.ca"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "UnbLibraries\\SystemsToolkit\\": "src"
+    }
+  },
+  "bin": [
+    "bin/syskit"
+  ]
+}
