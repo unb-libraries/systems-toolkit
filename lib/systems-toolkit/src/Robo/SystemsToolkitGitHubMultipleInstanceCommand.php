@@ -11,7 +11,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubCommand;
  */
 class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCommand {
 
-  const ERROR_NO_ORGS = 'No organizations specified!';
+  const ERROR_NO_ORGS = 'No organizations specified. Please provide them as a list!';
   const MESSAGE_CONFIRM_REPOSITORIES = 'The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?';
   const MESSAGE_GETTING_REPO_LIST = 'Getting repository list for %s...';
   const MESSAGE_NAME_FILTERING_COMPLETE = 'Name filtering complete!';
@@ -67,8 +67,6 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
   /**
    * Store the list of repositories to operate on and confirm list with user.
    *
-   * @param array $orgs
-   *   An array of organization names to retrieve repositories from. Optional.
    * @param array $name_filters
    *   Only repositories whose names contain one of $name_filters values will be
    *   returned. Optional.
@@ -85,8 +83,8 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
    * @return bool
    *   TRUE if user agreed, FALSE otherwise.
    */
-  protected function setConfirmRepositoryList(array $orgs = [], array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], $operation = 'operation') {
-    $this->setRepositoryList($orgs, $name_filters, $topic_filters, $filter_callbacks);
+  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], $omit = [], $operation = 'operation') {
+    $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
     $this->listRepositoryNames();
     return $this->confirm(sprintf(self::MESSAGE_CONFIRM_REPOSITORIES, $operation));
   }
@@ -94,8 +92,6 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
   /**
    * Get the list of repositories to operate on from GitHub and filter them.
    *
-   * @param array $orgs
-   *   An array of organization names to retrieve repositories from. Optional.
    * @param array $name_filters
    *   Only repositories whose names contain one of $name_filters values will be
    *   returned. Optional.
@@ -106,21 +102,28 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
    *   Only repositories whose filter callbacks functions provided here return
    *   TRUE will be stored. Optional.
    */
-  private function setRepositoryList(array $orgs = [], array $name_filters = [], array $topic_filters = [], array $filter_callbacks = []) {
+  private function setRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], $omit = []) {
     // Check for insanity.
-    if (empty($orgs)) {
+    if (empty($this->organizations)) {
       $this->say(self::ERROR_NO_ORGS);
       return;
     }
 
     // Get all repositories org has.
-    $org_list = implode(',', $orgs);
+    $org_list = implode(',', $this->organizations);
     $this->say(sprintf(self::MESSAGE_GETTING_REPO_LIST, $org_list));
     $paginator = new ResultPager($this->client);
     $organizationApi = $this->client->api('organization');
-    $parameters = $orgs;
+    $parameters = $this->organizations;
     $this->repositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
     $this->say(self::MESSAGE_REPO_LIST_RETRIEVED);
+
+    // Remove omissions.
+    foreach ($this->repositories as $repository_index => $repository) {
+      if (in_array($repository['name'], $omit)) {
+        unset($this->repositories[$repository_index]);
+      }
+    }
 
     // Case : no filtering.
     if (empty($name_filters[0]) && empty($topic_filters[0])) {

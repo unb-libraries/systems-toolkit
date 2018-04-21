@@ -10,7 +10,6 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubMultipleInstanceCommand
  */
 class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHubMultipleInstanceCommand {
 
-  const DEFAULT_ORGS = ['unb-libraries'];
   const MESSAGE_CHECKING_OUT_REPO = 'Cloning %s repository to temporary folder...';
   const MESSAGE_CONFIRM_PUSH = 'Was the rebase clean? Still want to push to GitHub?';
   const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
@@ -34,9 +33,9 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
   protected function rebaseDevToProd(array $match = [], array $topics = []) {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
-      self::DEFAULT_ORGS,
       $match,
       $topics,
+      [],
       [],
       sprintf(
         self::OPERATION_TYPE,
@@ -73,7 +72,6 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
         );
         $this->say(self::MESSAGE_REBASE_RESULTS_TITLE);
         $this->say(implode("\n", $rebase_output));
-        $this->say($repo->getTmpDir());
 
         // Push.
         $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);

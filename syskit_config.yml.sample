@@ -1,3 +1,5 @@
 syskit:
   github:
+    organizations:
+      - unb-libraries
     authKey: adfadfaddfdasfsafasfsdfsdfss
