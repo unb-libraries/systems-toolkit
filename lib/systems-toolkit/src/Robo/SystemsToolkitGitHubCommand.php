@@ -83,6 +83,18 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
     foreach ($this->organizations as $organization) {
       $repo_details = $this->client->api('repo')->show($organization, $name);
       if (!empty($repo_details['ssh_url'])) {
+        return $repo_details;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Check if the user has access to a specific repository branch in GitHub.
+   */
+  protected function getGitHubRepositoryHasBranch($owner, $name, $branch) {
+    foreach ($this->client->api('repo')->branches($owner, $name) as $cur_branch) {
+      if ($cur_branch['name'] == $branch) {
         return TRUE;
       }
     }

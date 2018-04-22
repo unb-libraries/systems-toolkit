@@ -28,6 +28,20 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
   protected $repositories;
 
   /**
+   * The repository commits.
+   *
+   * @var array
+   */
+  protected $successfulRepos = [];
+
+  /**
+   * The repository commits.
+   *
+   * @var array
+   */
+  protected $failedRepos = [];
+
+  /**
    * Determine if a repository name partially matches multiple terms.
    *
    * @param array $terms

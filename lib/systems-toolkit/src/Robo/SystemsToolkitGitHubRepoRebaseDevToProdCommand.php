@@ -54,7 +54,7 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
             $repository_data['name']
           )
         );
-        $repo = GitFactory::setCloneToTempDir($repository_data['ssh_url']);
+        $repo = GitFactory::setCreateFromClone($repository_data['ssh_url']);
 
         // Rebase.
         $repo->repo->checkout('prod');
