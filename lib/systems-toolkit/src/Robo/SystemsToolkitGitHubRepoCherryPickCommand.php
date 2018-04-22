@@ -139,6 +139,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";
           continue;
         }
+        $cherry_output = $cherry_output + $output;
 
         $cherry_output = $cherry_output + $target_repo->repo->execute(
             [
@@ -150,7 +151,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
           );
 
         $this->say(self::MESSAGE_CHERRY_RESULTS_TITLE);
-        $this->say(implode("\n", $cherry_output) . $output);
+        $this->say(implode("\n", $cherry_output));
 
         // Push.
         $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
