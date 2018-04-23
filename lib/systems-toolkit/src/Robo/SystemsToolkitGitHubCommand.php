@@ -51,7 +51,7 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   /**
    * Get the github organization list from config.
    *
-   * @hook pre-init
+   * @hook post-init
    */
   public function setGitHubOrgs() {
     $this->organizations = Robo::Config()->get('syskit.github.organizations');
