@@ -29,6 +29,8 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
    * @param array $topics
    *   Only repositories whose topics contain one of $topics values will be
    *   processed. Optional.
+   *
+   * @throws \Exception
    */
   protected function rebaseDevToProd(array $match = [], array $topics = []) {
     // Get repositories.
@@ -91,7 +93,7 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
   }
 
   /**
-   * Rebase dev onto prod for one or multiple GitHub Repositories.
+   * Rebase dev onto prod for multiple GitHub Repositories. Robo Commmand.
    *
    * This command will rebase all commits that exist in the dev branch of a
    * GitHub repository onto the prod branch.
@@ -104,6 +106,8 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
    *   A comma separated list of topics to match. Only repositories whose
    *   topics contain at least one of the comma separated values exactly will be
    *   processed. Optional.
+   *
+   * @throws \Exception
    *
    * @usage unbherbarium,pmportal drupal8
    *

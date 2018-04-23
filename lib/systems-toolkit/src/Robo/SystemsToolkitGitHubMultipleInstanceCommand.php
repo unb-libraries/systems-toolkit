@@ -90,6 +90,8 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
    * @param array $filter_callbacks
    *   Only repositories whose filter callbacks functions provided here return
    *   TRUE will be stored. Optional.
+   * @param array $omit
+   *   An array of repository names to omit from the list.
    * @param string $operation
    *   The operation string to display in the confirm message. Defaults to
    *   'operation'.
@@ -97,7 +99,7 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
    * @return bool
    *   TRUE if user agreed, FALSE otherwise.
    */
-  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], $omit = [], $operation = 'operation') {
+  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation') {
     $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
     $this->listRepositoryNames();
     return $this->confirm(sprintf(self::MESSAGE_CONFIRM_REPOSITORIES, $operation));
@@ -115,15 +117,19 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
    * @param array $filter_callbacks
    *   Only repositories whose filter callbacks functions provided here return
    *   TRUE will be stored. Optional.
+   * @param array $omit
+   *   An array of repository names to omit from the list.
+   *
+   * @TODO : Add Callback filtering from $filter_callbacks.
    */
-  private function setRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], $omit = []) {
+  private function setRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = []) {
     // Check for insanity.
     if (empty($this->organizations)) {
       $this->say(self::ERROR_NO_ORGS);
       return;
     }
 
-    // Get all repositories org has.
+    // Get all organization(s) repositories.
     $org_list = implode(',', $this->organizations);
     $this->say(sprintf(self::MESSAGE_GETTING_REPO_LIST, $org_list));
     $paginator = new ResultPager($this->client);

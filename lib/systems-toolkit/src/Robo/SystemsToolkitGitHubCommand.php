@@ -2,9 +2,9 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Github\Client;
 use Robo\Robo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitCommand;
-use Github\Client;
 
 /**
  * Base class for SystemsToolkitGitHubCommand Robo commands.
@@ -39,6 +39,8 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   /**
    * Get the github authKey from config.
    *
+   * @throws \Exception
+   *
    * @hook init
    */
   public function setGitHubAuthKey() {
@@ -51,6 +53,8 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   /**
    * Get the github organization list from config.
    *
+   * @throws \Exception
+   *
    * @hook post-init
    */
   public function setGitHubOrgs() {
@@ -62,6 +66,8 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
 
   /**
    * Get the github authKey from config.
+   *
+   * @throws \Exception
    *
    * @hook post-init
    */
@@ -78,6 +84,12 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
 
   /**
    * Check if the user has access to a specific repository in GitHub.
+   *
+   * @param string $name
+   *   The name of the repository to check.
+   *
+   * @return bool
+   *   TRUE if the repository exists and the user has access. FALSE otherwise.
    */
   protected function getRepositoryExists($name) {
     foreach ($this->organizations as $organization) {
@@ -90,7 +102,17 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   }
 
   /**
-   * Check if the user has access to a specific repository branch in GitHub.
+   * Check if a GitHub repository has a specific branch.
+   *
+   * @param string $owner
+   *   The owner of the repository.
+   * @param string $name
+   *   The name of the repository to check.
+   * @param string $branch
+   *   The branch name to check for.
+   *
+   * @return bool
+   *   TRUE if the repository has the branch. FALSE otherwise.
    */
   protected function getGitHubRepositoryHasBranch($owner, $name, $branch) {
     foreach ($this->client->api('repo')->branches($owner, $name) as $cur_branch) {

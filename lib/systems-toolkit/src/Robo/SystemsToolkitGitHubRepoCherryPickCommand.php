@@ -25,7 +25,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
   const OPERATION_TYPE = 'cherry pick a commit from %s until other repositories';
 
   /**
-   * The repository commits.
+   * The source repository array.
    *
    * @var array
    */
@@ -36,17 +36,17 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
    *
    * @param string $source_repository
    *   The name of the repository to source the commit from.
-   * @param string $target_topics
-   *   A comma separated list of topics to match. Only repositories whose
-   *   topics contain at least one of the comma separated values exactly will
-   *   have the commit picked onto. Optional.
-   * @param string $target_name_match
-   *   A comma separated list of names to match. Only repositories whose names
-   *   partially match at least one of the comma separated values will have the
-   *   commit picked onto. Optional.
+   * @param array $target_topics
+   *   An array of topics to match. Only repositories whose topics contain at
+   *   least one of the values exactly will have the commit picked onto.
+   *   Optional.
+   * @param array $target_name_match
+   *   An array of names to match. Only repositories whose names partially match
+   *   at least one of the values will have the commit picked onto. Optional.
+   *
+   * @throws \Exception
    */
   protected function cherryPickOneToMultiple($source_repository, array $target_topics = [], array $target_name_match = []) {
-
     $this->say(
       sprintf(
         self::MESSAGE_BEGINNING_CHERRY_PICK,
@@ -171,7 +171,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
   }
 
   /**
-   * Cherry pick a commit from a repo onto multiple others.
+   * Cherry pick a commit from a repo onto multiple others. Robo Command.
    *
    * @param string $source_repository
    *   The name of the repository to source the commit from.
@@ -183,6 +183,8 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
    *   A comma separated list of names to match. Only repositories whose names
    *   partially match at least one of the comma separated values will have the
    *   commit picked onto. Optional.
+   *
+   * @throws \Exception
    *
    * @usage pmportal.org drupal8 unbherb
    *

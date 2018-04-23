@@ -48,6 +48,8 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   /**
    * Check if the configuration file exists.
    *
+   * @throws \Exception
+   *
    * @hook pre-init
    */
   public function checkConfigExists() {

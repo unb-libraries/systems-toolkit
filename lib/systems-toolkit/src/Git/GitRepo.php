@@ -37,6 +37,9 @@ class GitRepo {
    */
   public $branches = [];
 
+  /**
+   * Create and set the temporary directory location.
+   */
   protected function setTempDir() {
     $tempfile = tempnam(sys_get_temp_dir(), 'syskit_');
     if (file_exists($tempfile)) {
@@ -46,14 +49,34 @@ class GitRepo {
     $this->tmpDir = $tempfile;
   }
 
+  /**
+   * Get the temporary directory location for the repository.
+   */
   public function getTmpDir() {
     return $this->tmpDir;
   }
 
+  /**
+   * Get a specific commit from the repository.
+   *
+   * @param string $num
+   *   The index of the commit, typically a number.
+   *
+   * @return array
+   *   The commit information array.
+   */
   public function getCommit($num) {
     return $this->commits[$num];
   }
 
+  /**
+   * Set up the object from a clone to a local, temporary directory.
+   *
+   * @param string $repo_url
+   *   The github clone URL of the repository.
+   *
+   * @throws \Exception
+   */
   private function setCloneToTempDir($repo_url) {
     $this->setTempDir();
     $this->repo = GitRepository::cloneRepository(
@@ -64,12 +87,26 @@ class GitRepo {
     $this->setCommits();
   }
 
+  /**
+   * Factory to create this object from a github clone URL.
+   *
+   * @param string $repo_url
+   *   The github clone URL of the repository.
+   *
+   * @throws \Exception
+   *
+   * @return \UnbLibraries\SystemsToolkit\Git\GitRepo
+   *   The GitRepo object.
+   */
   public static function setCreateFromClone($repo_url) {
     $repo = new static();
     $repo->setCloneToTempDir($repo_url);
     return $repo;
   }
 
+  /**
+   * Set the list of branches in the object property.
+   */
   private function setBranches() {
     foreach ($this->repo->getBranches() as $repo_branch) {
       if (strstr($repo_branch, 'HEAD')) {
@@ -87,6 +124,15 @@ class GitRepo {
     }
   }
 
+  /**
+   * Get the commit message for a specific commit.
+   *
+   * @param string $hash
+   *   The hash of the commit to check for.
+   *
+   * @return mixed
+   *   The commit message, false if the commit does not exist in the repository.
+   */
   public function getCommitMessage($hash) {
     foreach ($this->commits as $commit) {
       if ($commit['hash'] == $hash) {
@@ -96,6 +142,9 @@ class GitRepo {
     return FALSE;
   }
 
+  /**
+   * Set the list of commits in the object property.
+   */
   private function setCommits() {
     $commits = $this->repo->execute(
       [
