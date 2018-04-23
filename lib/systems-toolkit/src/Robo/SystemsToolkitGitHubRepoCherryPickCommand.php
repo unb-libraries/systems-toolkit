@@ -2,9 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Git\GitFactory;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubMultipleInstanceCommand;
-use Robo\Robo;
 
 /**
  * Base class for SystemsToolkitGitHubRepoCherryPickCommand.
@@ -61,7 +60,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
     $this->sourceRepo = $this->getRepositoryExists($source_repository);
 
     // Instantiate local source repo.
-    $source_repo = GitFactory::setCreateFromClone($this->sourceRepo['ssh_url']);
+    $source_repo = GitRepo::setCreateFromClone($this->sourceRepo['ssh_url']);
 
     // Ask which Commit to Rebase.
     $this->say(sprintf(self::MESSAGE_TITLE_REPO_COMMIT_LIST, $source_repository));
@@ -107,7 +106,7 @@ class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMult
             $target_branch
           )
         );
-        $target_repo = GitFactory::setCreateFromClone($repository_data['ssh_url']);
+        $target_repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
         $target_repo->repo->checkout($target_branch);
         $cherry_output = [];
         $cherry_output = $cherry_output + $target_repo->repo->execute(

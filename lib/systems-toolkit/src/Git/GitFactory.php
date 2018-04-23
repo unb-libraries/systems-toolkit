@@ -5,9 +5,9 @@ namespace UnbLibraries\SystemsToolkit\Git;
 use Cz\Git\GitRepository;
 
 /**
- * Base class for GitFactory object. Helper for git repo interaction.
+ * Base class for GitRepo object. Wrapper for Cz\Git\GitRepository.
  */
-class GitFactory {
+class GitRepo {
 
   /**
    * The temporary path used to operate on this repo.

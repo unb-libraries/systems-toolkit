@@ -2,7 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Git\GitFactory;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubMultipleInstanceCommand;
 
 /**
@@ -54,7 +54,7 @@ class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHu
             $repository_data['name']
           )
         );
-        $repo = GitFactory::setCreateFromClone($repository_data['ssh_url']);
+        $repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
 
         // Rebase.
         $repo->repo->checkout('prod');
