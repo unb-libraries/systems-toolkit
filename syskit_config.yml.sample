@@ -3,3 +3,4 @@ syskit:
     organizations:
       - unb-libraries
     authKey: adfadfaddfdasfsafasfsdfsdfss
+  kubernetes:
