@@ -3,6 +3,7 @@
   "description": "Services for developing drupal core and modules",
   "type": "library",
   "require": {
+    "aws/aws-sdk-php": "^3.62.9",
     "consolidation/robo": "^1.0",
     "czproject/git-php": "^3.13.0",
     "knplabs/github-api": "^2.8.0",
