@@ -3,3 +3,9 @@ syskit:
     organizations:
       - unb-libraries
     authKey: adfadfaddfdasfsafasfsdfsdfss
+  aws:
+    defaultRegion: us-east-1
+    keyId:
+    secretKey:
+  cyberman:
+    awsSnsTopicId:

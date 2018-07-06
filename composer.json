@@ -14,6 +14,7 @@
     }
   ],
   "require-dev": {
+    "aws/aws-sdk-php": "^3.62.9",
     "unb-libraries/systems-toolkit": "*"
   }
 }
