@@ -8,4 +8,4 @@ syskit:
     keyId:
     secretKey:
   cyberman:
-    awsSnsTopicId:
+    awsSnsTopicId: "arn:aws:sns:us-east-1:344420214229:CyberMan"
