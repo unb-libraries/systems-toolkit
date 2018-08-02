@@ -15,5 +15,10 @@
   ],
   "require-dev": {
     "unb-libraries/systems-toolkit": "*"
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "ln -s vendor/bin/syskit ./syskit | true"
+    ]
   }
 }
