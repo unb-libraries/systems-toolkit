@@ -83,7 +83,7 @@ trait QueuedParallelExecTrait
    * Based on CPU, Guess at the number of threads to use to run these commands.
    */
   private function setThreadsDefault() {
-    $command = "grep '^cpu\\scores' /proc/cpuinfo | uniq";
+    $command = 'grep "^cpu\scores" /proc/cpuinfo | uniq | awk \'{print $4}\'';
     $cores_to_use = floatval(shell_exec($command)) * 0.8;
     $this->threads = (int) floor($cores_to_use);
   }
