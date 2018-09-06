@@ -49,7 +49,7 @@ class SystemsToolkitOcrCommand extends SystemsToolkitCommand {
     $this->getConfirmFiles('OCR');
 
     foreach ($this->files as $file_to_process) {
-      $this->addCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
+      $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
     }
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);

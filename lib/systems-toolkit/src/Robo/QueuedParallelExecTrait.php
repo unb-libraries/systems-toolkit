@@ -30,7 +30,7 @@ trait QueuedParallelExecTrait
    * @param \Robo\Contract\CommandInterface $command
    *   The command to add.
    */
-  public function addCommandToQueue(CommandInterface $command) {
+  public function setAddCommandToQueue(CommandInterface $command) {
     $this->queue[] = $command;
   }
 
