@@ -76,7 +76,7 @@ class SystemsToolkitOcrCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @command ocr:tesseract:metrics
+   * @command ocr:tesseract:tree:metrics
    */
   public function ocrTesseractMetrics($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL]) {
     $options['args'] = 'tsv';
