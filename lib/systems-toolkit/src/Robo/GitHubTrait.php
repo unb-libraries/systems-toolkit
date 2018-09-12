@@ -4,16 +4,11 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Github\Client;
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitCommand;
 
 /**
- * Base class for SystemsToolkitGitHubCommand Robo commands.
+ * Trait for interacting with GitHub.
  */
-class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
-
-  const ERROR_AUTH_KEY_UNSET = 'The GitHub authentication key has not been set in %s. (authKey)';
-  const ERROR_CANNOT_AUTHENTICATE = 'Authentication to GitHub failed. Is the authKey value set in %s correct? This may also occur due to network outages.';
-  const ERROR_ORGS_UNSET = 'No target organizations have been specified in %s. (organizations)';
+trait GitHubTrait {
 
   /**
    * The auth key to access the GitHub API.
@@ -46,7 +41,7 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   public function setGitHubAuthKey() {
     $this->authKey = Robo::Config()->get('syskit.github.authKey');
     if (empty($this->authKey)) {
-      throw new \Exception(sprintf(self::ERROR_AUTH_KEY_UNSET, $this->configFile));
+      throw new \Exception(sprintf('The GitHub authentication key has not been set in the configuration file. (authKey)'));
     }
   }
 
@@ -60,7 +55,7 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
   public function setGitHubOrgs() {
     $this->organizations = Robo::Config()->get('syskit.github.organizations');
     if (empty($this->organizations)) {
-      throw new \Exception(sprintf(self::ERROR_ORGS_UNSET, $this->configFile));
+      throw new \Exception(sprintf('No target organizations have been specified in the configuration file. (organizations)'));
     }
   }
 
@@ -78,7 +73,7 @@ class SystemsToolkitGitHubCommand extends SystemsToolkitGitCommand {
       $this->client->currentUser()->show();
     }
     catch (Exception $e) {
-      throw new \Exception(sprintf(self::ERROR_CANNOT_AUTHENTICATE, $this->configFile));
+      throw new \Exception(sprintf('Authentication to GitHub failed. Is the authKey value set in the configuration file correct? This may also occur due to network outages.'));
     }
   }
 

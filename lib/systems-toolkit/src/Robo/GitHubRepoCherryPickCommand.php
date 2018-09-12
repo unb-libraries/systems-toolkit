@@ -3,12 +3,15 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubMultipleInstanceCommand;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 
 /**
- * Base class for SystemsToolkitGitHubRepoCherryPickCommand.
+ * Class for GitHubRepoCherryPickCommand Robo commands.
  */
-class SystemsToolkitGitHubRepoCherryPickCommand extends SystemsToolkitGitHubMultipleInstanceCommand {
+class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
+
+  use GitHubMultipleInstanceTrait;
 
   const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
   const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';

@@ -5,7 +5,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Robo\Robo;
 
 /**
- * Base class for SystemsToolkitKubeCommand Robo commands.
+ * Class for SystemsToolkitKubeCommand Robo commands.
  */
 trait KubeExecTrait {
 
@@ -38,21 +38,13 @@ trait KubeExecTrait {
   protected $kubeCurPodNames = [];
 
   /**
-   * This hook will fire for all commands in this command file.
-   *
-   * @hook init
-   */
-  public function initializeKubeConfig() {
-    $this->setKubeBin();
-    $this->setKubeConfig();
-  }
-
-  /**
    * Get kubectl binary path from config.
    *
    * @throws \Exception
+   *
+   * @hook init
    */
-  private function setKubeBin() {
+  public function setKubeBin() {
     $this->kubeBin = Robo::Config()->get('syskit.kubectl.bin');
     if (empty($this->kubeBin)) {
       throw new \Exception(sprintf('The kubectl binary path is unset in %s', $this->configFile));
@@ -88,8 +80,10 @@ trait KubeExecTrait {
    * Get kubectl binary path from config.
    *
    * @throws \Exception
+   *
+   * @hook init
    */
-  private function setKubeConfig() {
+  public function setKubeConfig() {
     $this->kubeConfig = Robo::Config()->get('syskit.kubectl.config');
     if (empty($this->kubeConfig)) {
       throw new \Exception(sprintf('The kubectl config location is unset in %s', $this->configFile));

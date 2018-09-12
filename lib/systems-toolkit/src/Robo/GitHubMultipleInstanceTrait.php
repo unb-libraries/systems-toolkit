@@ -5,20 +5,16 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Github\ResultPager;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubCommand;
+use UnbLibraries\SystemsToolkit\Robo\GitTrait;
+use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
 
 /**
- * Base class for SystemsToolkitGitHubMultipleInstanceCommand Robo commands.
+ * Trait for interacting with multiple instance repositories in GitHub.
  */
-class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCommand {
+trait GitHubMultipleInstanceTrait {
 
-  const ERROR_NO_ORGS = 'No organizations specified. Please provide them as a list!';
-  const MESSAGE_CONFIRM_REPOSITORIES = 'The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?';
-  const MESSAGE_GETTING_REPO_LIST = 'Getting repository list for %s...';
-  const MESSAGE_NAME_FILTERING_COMPLETE = 'Name filtering complete!';
-  const MESSAGE_NAME_FILTERING_LIST = 'Name filtering repositories...';
-  const MESSAGE_REPO_LIST_RETRIEVED = 'Repository List retrieved!';
-  const MESSAGE_TOPIC_FILTERING_COMPLETE = 'Topic filtering complete!';
-  const MESSAGE_TOPIC_FILTERING_LIST = 'Topic filtering repositories. This may take a while, particularly if you have not applied any name filters...';
+  use GitTrait;
+  use GitHubTrait;
 
   /**
    * The repositories to operate on.
@@ -102,7 +98,25 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
   protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation') {
     $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
     $this->listRepositoryNames();
-    return $this->confirm(sprintf(self::MESSAGE_CONFIRM_REPOSITORIES, $operation));
+
+    // Optionally filter them.
+    $need_remove = $this->confirm('Would you like to remove any instances?');
+    while ($need_remove == TRUE) {
+      $to_remove = $this->ask('Which ones? (Specify Name, Comma separated list)');
+      if (!empty($to_remove)) {
+        $removes = explode(',', $to_remove);
+        foreach ($this->repositories as $repo_index => $repository) {
+          if (in_array($repository['name'], $removes)) {
+            $this->say("Removing {$repository['name']} from list");
+            unset($this->repositories[$repo_index]);
+          }
+        }
+      }
+      $this->listRepositoryNames();
+      $need_remove = $this->confirm('Would you like to remove any more instances?');
+    }
+
+    return $this->confirm(sprintf('The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?', $operation));
   }
 
   /**
@@ -125,18 +139,18 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
   private function setRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = []) {
     // Check for insanity.
     if (empty($this->organizations)) {
-      $this->say(self::ERROR_NO_ORGS);
+      $this->say('No organizations specified. Please provide them as a list!');
       return;
     }
 
     // Get all organization(s) repositories.
     $org_list = implode(',', $this->organizations);
-    $this->say(sprintf(self::MESSAGE_GETTING_REPO_LIST, $org_list));
+    $this->say(sprintf('Getting repository list for %s...', $org_list));
     $paginator = new ResultPager($this->client);
     $organizationApi = $this->client->api('organization');
     $parameters = $this->organizations;
     $this->repositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
-    $this->say(self::MESSAGE_REPO_LIST_RETRIEVED);
+    $this->say('Repository List retrieved!');
 
     // Remove omissions.
     foreach ($this->repositories as $repository_index => $repository) {
@@ -152,25 +166,25 @@ class SystemsToolkitGitHubMultipleInstanceCommand extends SystemsToolkitGitHubCo
 
     // Perform name filtering first. This may reduce topic API calls later.
     if (!empty($name_filters[0])) {
-      $this->say(self::MESSAGE_NAME_FILTERING_LIST);
+      $this->say('Name filtering repositories...');
       foreach ($this->repositories as $repository_index => $repository) {
         if (!$this->instanceNameMatchesSearchTerms($name_filters, $repository['name'])) {
           unset($this->repositories[$repository_index]);
         }
       }
-      $this->say(self::MESSAGE_NAME_FILTERING_COMPLETE);
+      $this->say('Name filtering complete!');
     }
 
     // Perform topic filtering.
     if (!empty($topic_filters[0])) {
-      $this->say(self::MESSAGE_TOPIC_FILTERING_LIST);
+      $this->say('Topic filtering repositories. This may take a while, particularly if you have not applied any name filters...');
       foreach ($this->repositories as $repository_index => $repository) {
         $repo_topics = $this->client->api('repo')->topics($repository['owner']['login'], $repository['name'])['names'];
         if (empty(array_intersect($repo_topics, $topic_filters))) {
           unset($this->repositories[$repository_index]);;
         }
       }
-      $this->say(self::MESSAGE_TOPIC_FILTERING_COMPLETE);
+      $this->say('Topic filtering complete!');
     }
 
     // Pedantically rekey the repositories array.

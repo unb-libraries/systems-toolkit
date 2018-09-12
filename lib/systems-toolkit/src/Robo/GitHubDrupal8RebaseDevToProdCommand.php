@@ -2,12 +2,12 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubRepoRebaseDevToProdCommand;
+use UnbLibraries\SystemsToolkit\Robo\GitHubRepoRebaseDevToProdCommand;
 
 /**
- * Base class for SystemsToolkitGitHubDrupal8RebaseDevToProdCommand..
+ * Class for GitHubDrupal8RebaseDevToProdCommand Robo commands.
  */
-class SystemsToolkitGitHubDrupal8RebaseDevToProdCommand extends SystemsToolkitGitHubRepoRebaseDevToProdCommand {
+class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdCommand {
 
   /**
    * Rebase dev onto prod for multiple Drupal 8 Repositories. Robo Command.

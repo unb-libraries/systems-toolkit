@@ -4,16 +4,11 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
- * Base class for SystemsToolkitGitCommand Robo commands.
+ * Trait for interacting with git repos.
  */
-class SystemsToolkitGitCommand extends SystemsToolkitCommand {
-
-  const MESSAGE_EMPTY_HASH = 'An empty hash was specified!';
-  const MESSAGE_HASH_NOT_FOUND = 'The hash [%s] was not found in any branch of the repository.';
-  const MESSAGE_COMMITS_NOT_FOUND = 'The provided repository was either empty or had no commits.';
+trait GitTrait {
 
   /**
    * Render a list of commits from the repository in table format.
@@ -52,11 +47,11 @@ class SystemsToolkitGitCommand extends SystemsToolkitCommand {
    */
   private function getCommitInRepo(GitRepo $repo, $hash) {
     if (empty(trim($hash))) {
-      $this->say(self::MESSAGE_EMPTY_HASH);
+      $this->say('An empty hash was specified!');
       return FALSE;
     }
     if (empty($repo->commits)) {
-      $this->say(self::MESSAGE_COMMITS_NOT_FOUND);
+      $this->say('The provided repository was either empty or had no commits.');
       return FALSE;
     }
     foreach ($repo->commits as $commit) {
@@ -65,7 +60,7 @@ class SystemsToolkitGitCommand extends SystemsToolkitCommand {
       }
     }
     $this->say(
-      sprintf(self::MESSAGE_HASH_NOT_FOUND, $hash)
+      sprintf('The hash [%s] was not found in any branch of the repository.', $hash)
     );
     return FALSE;
   }
@@ -82,7 +77,7 @@ class SystemsToolkitGitCommand extends SystemsToolkitCommand {
    */
   protected function getRepoHasCommit(GitRepo $repo, $hash) {
     if (!$this->getCommitInRepo($repo, $hash)) {
-      throw new \Exception(sprintf(self::MESSAGE_HASH_NOT_FOUND, $hash));
+      throw new \Exception(sprintf('The hash [%s] was not found in any branch of the repository.', $hash));
     }
   }
 

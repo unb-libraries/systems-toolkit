@@ -11,9 +11,9 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use Symfony\Component\Console\Helper\Table;
 
 /**
- * Base class for SystemsToolkitOcrCommand Robo commands.
+ * Class for OcrCommand Robo commands.
  */
-class SystemsToolkitOcrCommand extends SystemsToolkitCommand {
+class OcrCommand extends SystemsToolkitCommand {
 
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;

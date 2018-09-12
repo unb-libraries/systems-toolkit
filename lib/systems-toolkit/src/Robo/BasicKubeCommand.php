@@ -6,9 +6,9 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
 
 /**
- * Base class for SystemsToolkitBasicKubeCommand.
+ * Class for BasicKubeCommand Robo commands.
  */
-class SystemsToolkitBasicKubeCommand extends SystemsToolkitCommand {
+class BasicKubeCommand extends SystemsToolkitCommand {
 
   use KubeExecTrait;
 

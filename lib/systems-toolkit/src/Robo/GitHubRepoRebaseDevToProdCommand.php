@@ -3,12 +3,15 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubMultipleInstanceCommand;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 
 /**
- * Base class for SystemsToolkitGitHubRepoRebaseDevToProdCommand.
+ * Class for GitHubRepoRebaseDevToProdCommand Robo commands.
  */
-class SystemsToolkitGitHubRepoRebaseDevToProdCommand extends SystemsToolkitGitHubMultipleInstanceCommand {
+class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
+
+  use GitHubMultipleInstanceTrait;
 
   const MESSAGE_CHECKING_OUT_REPO = 'Cloning %s repository to temporary folder...';
   const MESSAGE_CONFIRM_PUSH = 'Was the rebase clean? Still want to push to GitHub?';
