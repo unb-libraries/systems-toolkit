@@ -5,12 +5,15 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Aws\Credentials\Credentials;
 use Aws\Sns\SnsClient;
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitAwsCommand;
+use UnbLibraries\SystemsToolkit\Robo\AwsCommandTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
- * Base class for SystemsToolkitCyberManCommand Robo commands.
+ * Class for CyberMan Robo commands.
  */
-class SystemsToolkitCyberManCommand extends SystemsToolkitAwsCommand {
+class CyberManCommand extends SystemsToolkitCommand {
+
+  use AwsCommandTrait;
 
   const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
 
@@ -31,15 +34,9 @@ class SystemsToolkitCyberManCommand extends SystemsToolkitAwsCommand {
   /**
    * This hook will fire for all commands in this command file.
    *
-   * @hook init
+   * @hook post-init
    */
-  public function initialize() {
-    parent::initialize();
-    $this->setSnsTopicId();
-    $this->setSnsClient();
-  }
-
-  private function setSnsClient() {
+  public function setSnsClient() {
     $credentials = new Credentials($this->accessKeyId, $this->secretAccessKey);
     $this->client = new SnsClient([
         'version'     => 'latest',
@@ -53,7 +50,7 @@ class SystemsToolkitCyberManCommand extends SystemsToolkitAwsCommand {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook post-init
    */
   public function setSnsTopicId() {
     $this->snsTopicId = Robo::Config()->get('syskit.cyberman.awsSnsTopicId');

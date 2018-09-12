@@ -2,17 +2,12 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use Robo\Robo;
 
 /**
- * Base class for SystemsToolkitAwsCommand Robo commands.
+ * Trait for interacting with AWS services.
  */
-class SystemsToolkitAwsCommand extends SystemsToolkitCommand {
-
-  const ERROR_ACCESS_KEY_ID_UNSET = 'The AWS Access Key ID is unset in %s.';
-  const ERROR_DEFAULT_REGION_UNSET = 'The AWS Default Region is unset in %s.';
-  const ERROR_SECRET_ACCESS_KEY_UNSET = 'The AWS Secret Access Key is unset in %s.';
+trait AwsCommandTrait {
 
   /**
    * The AWS access key ID for the API.
@@ -40,8 +35,7 @@ class SystemsToolkitAwsCommand extends SystemsToolkitCommand {
    *
    * @hook init
    */
-  public function initialize() {
-
+  public function initializeAwsConfig() {
     $this->setAwsAccessKeyId();
     $this->setAwsSecretAccessKey();
     $this->setAwsDefaultRegion();
@@ -52,12 +46,12 @@ class SystemsToolkitAwsCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook post-init
    */
   public function setAwsAccessKeyId() {
     $this->accessKeyId = Robo::Config()->get('syskit.aws.keyId');
     if (empty($this->accessKeyId)) {
-      throw new \Exception(sprintf(self::ERROR_ACCESS_KEY_ID_UNSET, $this->configFile));
+      throw new \Exception(sprintf('The AWS Access Key ID is unset in %s.', $this->configFile));
     }
   }
 
@@ -66,12 +60,12 @@ class SystemsToolkitAwsCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook post-init
    */
   public function setAwsDefaultRegion() {
     $this->awsDefaultRegion = Robo::Config()->get('syskit.aws.defaultRegion');
     if (empty($this->awsDefaultRegion)) {
-      throw new \Exception(sprintf(self::ERROR_DEFAULT_REGION_UNSET, $this->configFile));
+      throw new \Exception(sprintf('The AWS Default Region is unset in %s.', $this->configFile));
     }
   }
 
@@ -85,7 +79,7 @@ class SystemsToolkitAwsCommand extends SystemsToolkitCommand {
   public function setAwsSecretAccessKey() {
     $this->secretAccessKey = Robo::Config()->get('syskit.aws.secretKey');
     if (empty($this->secretAccessKey)) {
-      throw new \Exception(sprintf(self::ERROR_SECRET_ACCESS_KEY_UNSET, $this->configFile));
+      throw new \Exception(sprintf('The AWS Secret Access Key is unset in %s.', $this->configFile));
     }
   }
 
