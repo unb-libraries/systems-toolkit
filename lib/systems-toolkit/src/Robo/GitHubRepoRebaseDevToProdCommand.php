@@ -51,7 +51,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
 
     // Rebase and push up to GitHub.
     if ($continue) {
-      foreach ($this->repositories as $repository_data) {
+      foreach ($this->githubRepositories as $repository_data) {
         // Pull down.
         $this->say(
           sprintf(

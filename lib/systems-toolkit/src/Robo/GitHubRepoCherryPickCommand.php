@@ -92,7 +92,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
       // Ask what branch commit should be cherry-picked to.
       $target_branch = $this->askDefault(self::MESSAGE_CHOOSE_TARGET_BRANCH, 'dev');
 
-      foreach ($this->repositories as $repository_data) {
+      foreach ($this->githubRepositories as $repository_data) {
         // Check to see if this repo has the target branch.
         if (!$this->getGitHubRepositoryHasBranch($repository_data['owner']['login'], $repository_data['name'], $target_branch)) {
           $this->say(

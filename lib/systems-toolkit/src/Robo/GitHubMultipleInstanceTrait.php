@@ -21,7 +21,7 @@ trait GitHubMultipleInstanceTrait {
    *
    * @var array
    */
-  protected $repositories;
+  protected $githubRepositories;
 
   /**
    * The repository commits.
@@ -65,7 +65,7 @@ trait GitHubMultipleInstanceTrait {
       function ($el) {
         return array($el['name']);
       },
-      $this->repositories
+      $this->githubRepositories
     );
     $table = new Table($this->output());
     $table->setHeaders(['Repository Name'])
@@ -105,10 +105,10 @@ trait GitHubMultipleInstanceTrait {
       $to_remove = $this->ask('Which ones? (Specify Name, Comma separated list)');
       if (!empty($to_remove)) {
         $removes = explode(',', $to_remove);
-        foreach ($this->repositories as $repo_index => $repository) {
+        foreach ($this->githubRepositories as $repo_index => $repository) {
           if (in_array($repository['name'], $removes)) {
             $this->say("Removing {$repository['name']} from list");
-            unset($this->repositories[$repo_index]);
+            unset($this->githubRepositories[$repo_index]);
           }
         }
       }
@@ -149,13 +149,13 @@ trait GitHubMultipleInstanceTrait {
     $paginator = new ResultPager($this->client);
     $organizationApi = $this->client->api('organization');
     $parameters = $this->organizations;
-    $this->repositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
+    $this->githubRepositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
     $this->say('Repository List retrieved!');
 
     // Remove omissions.
-    foreach ($this->repositories as $repository_index => $repository) {
+    foreach ($this->githubRepositories as $repository_index => $repository) {
       if (in_array($repository['name'], $omit)) {
-        unset($this->repositories[$repository_index]);
+        unset($this->githubRepositories[$repository_index]);
       }
     }
 
@@ -167,9 +167,9 @@ trait GitHubMultipleInstanceTrait {
     // Perform name filtering first. This may reduce topic API calls later.
     if (!empty($name_filters[0])) {
       $this->say('Name filtering repositories...');
-      foreach ($this->repositories as $repository_index => $repository) {
+      foreach ($this->githubRepositories as $repository_index => $repository) {
         if (!$this->instanceNameMatchesSearchTerms($name_filters, $repository['name'])) {
-          unset($this->repositories[$repository_index]);
+          unset($this->githubRepositories[$repository_index]);
         }
       }
       $this->say('Name filtering complete!');
@@ -178,17 +178,17 @@ trait GitHubMultipleInstanceTrait {
     // Perform topic filtering.
     if (!empty($topic_filters[0])) {
       $this->say('Topic filtering repositories. This may take a while, particularly if you have not applied any name filters...');
-      foreach ($this->repositories as $repository_index => $repository) {
+      foreach ($this->githubRepositories as $repository_index => $repository) {
         $repo_topics = $this->client->api('repo')->topics($repository['owner']['login'], $repository['name'])['names'];
         if (empty(array_intersect($repo_topics, $topic_filters))) {
-          unset($this->repositories[$repository_index]);;
+          unset($this->githubRepositories[$repository_index]);;
         }
       }
       $this->say('Topic filtering complete!');
     }
 
     // Pedantically rekey the repositories array.
-    $this->repositories = array_values($this->repositories);
+    $this->githubRepositories = array_values($this->githubRepositories);
   }
 
 }
