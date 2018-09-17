@@ -28,14 +28,14 @@ trait KubeExecTrait {
    *
    * @var string
    */
-  protected $kubeCurNameSpaces = NULL;
+  protected $kubeCurNameSpace = NULL;
 
   /**
    * The path to the kubeconfig to use.
    *
-   * @var string
+   * @var string[]
    */
-  protected $kubeCurPodNames = [];
+  protected $kubeCurPods = [];
 
   /**
    * Get kubectl binary path from config.
@@ -52,28 +52,63 @@ trait KubeExecTrait {
   }
 
   /**
-   * Execute a command in a kubernetes pod.
+   * Execute a command in all queued pods.
    *
-   * @param string $pod_name
-   *   The pod name.
    * @param string $exec
-   *   The command to execute (ls -al)
+   *   The command to execute (i.e. ls)
    * @param string $flags
    *   Flags to pass to kubectl exec.
+   * @param string[] $args
+   *   A list of arguments to pass to the in-container command (i.e. -al).
+   * @param bool $print_output
+   *   TRUE if the command should output results. False otherwise.
    *
    * @throws \Exception
+   *
+   * @return \Robo\Result
+   *   The result of the command.
    */
-  private function getKubeExec($pod_name, $exec, $flags = '-it') {
-    $pod_id = str_replace('pod/', '', $pod_name);
-    $this->taskExec($this->kubeBin)
-      ->interactive()
+  private function kubeExec($exec, $flags = '-it', $args = [], $print_output = TRUE) {
+    foreach ($this->kubeCurPods as $pod_name) {
+      $pod_id = str_replace('pod/', '', $pod_name);
+      $kube = $this->taskExec($this->kubeBin)
+        ->printOutput($print_output)
+        ->arg("--kubeconfig={$this->kubeConfig}")
+        ->arg("--namespace={$this->kubeCurNameSpace}")
+        ->arg('exec')
+        ->arg($flags)
+        ->arg($pod_id)
+        ->arg($exec);
+
+      if (!empty($args)) {
+        $kube->arg('--');
+        foreach ($args as $arg) {
+          $kube->arg($arg);
+        }
+      }
+
+      return $kube->run();
+    }
+  }
+
+  private function kubeExecPod($name, $namespace, $exec, $flags = '-it', $args = [], $print_output = TRUE) {
+    $kube = $this->taskExec($this->kubeBin)
+      ->printOutput($print_output)
       ->arg("--kubeconfig={$this->kubeConfig}")
-      ->arg("--namespace={$this->kubeCurNameSpace}")
+      ->arg("--namespace=$namespace")
       ->arg('exec')
       ->arg($flags)
-      ->arg($pod_id)
-      ->arg($exec)
-      ->run();
+      ->arg($name)
+      ->arg($exec);
+
+    if (!empty($args)) {
+      $kube->arg('--');
+      foreach ($args as $arg) {
+        $kube->arg($arg);
+      }
+    }
+
+    return $kube->run();
   }
 
   /**
@@ -91,21 +126,31 @@ trait KubeExecTrait {
   }
 
   /**
-   * Set the current pod names to target from a uri metadata label.
+   * Set the current pods from a selector.
    *
    * @throws \Exception
    */
-  private function setCurKubePodNamesFromUri($uri) {
-    $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace={$this->kubeCurNameSpace} --selector=uri=$uri -oname";
-    exec($command, $output, $return);
-    if ($return != 0) {
-      throw new \Exception(sprintf('The kubectl command [%s] returned an error [%s]', $command, implode("\n", $output)));
+  private function setCurKubePodsFromSelector(array $selector, array $namespaces = ['dev', 'prod']) {
+    $selector_string = implode(',', $selector);
+    foreach ($namespaces as $namespace) {
+      $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
+      $output = shell_exec($command);
+      if (empty($output)) {
+        $this->say(sprintf('Warning : Empty response from the cluster [%s=%s, %s]', $selector_string, $namespace));
+      }
+      else {
+        $this->setAddCurPodsFromJson($output);
+      }
     }
-    elseif (empty($output)) {
-      $this->say(sprintf('Warning : No pods were returned from the cluster [%s, %s]', $uri, $this->kubeCurNameSpace));
+  }
+
+  private function setAddCurPodsFromJson($output) {
+    $response = json_decode($output);
+    if (!empty($response->items)) {
+      $this->kubeCurPods = array_merge($this->kubeCurPods, $response->items);
     }
     else {
-      $this->kubeCurPodNames = $output;
+      $this->say('Warning : No pods were returned from the cluster');
     }
   }
 
