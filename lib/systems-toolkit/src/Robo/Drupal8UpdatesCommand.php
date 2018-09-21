@@ -81,6 +81,14 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
 
   private function printTabluatedUpdateTables() {
     if (!empty($this->tabulatedUpdates)) {
+      foreach($this->tabulatedUpdates as $instance => $updates) {
+        $this->printTabluatedInstanceUpdateTable($instance);
+      }
+    }
+  }
+
+  private function printTabluatedInstanceUpdateTable($instance_name) {
+    if (!empty($this->tabulatedUpdates[$instance_name])) {
       $this->say("Updates available:");
       foreach($this->tabulatedUpdates as $instance => $updates) {
         $table = new Table($this->output());
@@ -174,19 +182,54 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
 
     if (!empty($this->tabulatedUpdates[$repository['name']][$branch])) {
       $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
-      $old_file_hashes = $this->client->api('repo')->contents()->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
       $old_file_content = $this->client->api('repo')->contents()->download($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
 
-      $composer_file = json_decode ($old_file_content);
+      $composer_file = json_decode($old_file_content);
       if ($composer_file !== NULL) {
-        print_r($old_file_content);
+        $this->printTabluatedInstanceUpdateTable($repository['name']);
+        $do_all = $this->confirm('Perform all updates without interaction?');
+        foreach ($update_data['updates'] as $cur_update) {
+          $commit_message = $this->getFormattedUpdateMessage($cur_update);
+          if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {
+            $this->say('Getting old file hash...');
+            $old_file_hashes = $this->client->api('repo')->contents()->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
+            $this->say('Making changes...');
+            $this->updateComposerFile(
+              $composer_file,
+              $cur_update
+            );
+            $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+            $this->say($commit_message);
+            $this->client->api('repo')->contents()->update($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $new_content, $commit_message, $old_file_hashes['sha'], $branch, $committer);
+            if ($do_all) {
+              sleep(2);
+            }
+          }
+        }
       }
       else {
         $this->say('Failure to decode composer.json from GitHub!');
       }
     }
-
-    // $fileInfo = $client->api('repo')->contents()->update('KnpLabs', 'php-github-api', $path, $content, $commitMessage, $oldFile['sha'], $branch, $committer);
   }
 
+  private function updateComposerFile(&$composer_file, $update) {
+    $project_name = $this->getFormattedProjectName($update);
+    $old_version = $this->getFormattedProjectVersion($update->existing_version);
+    $new_version = $this->getFormattedProjectVersion($update->recommended);
+
+    if (!empty($composer_file->require->$project_name) && $composer_file->require->$project_name == $old_version) {
+      $composer_file->require->$project_name = $new_version;
+    }
+  }
+
+  private function getFormattedProjectName($update) {
+    $formatted_project = "drupal/{$update->name}";
+    return $formatted_project;
+  }
+
+  private function getFormattedProjectVersion($version_string) {
+    $formatted_version = str_replace('8.x-', NULL, $version_string);
+    return $formatted_version;
+  }
 }
