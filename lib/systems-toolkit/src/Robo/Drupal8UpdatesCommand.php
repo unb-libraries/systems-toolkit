@@ -61,6 +61,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     $this->getDrupal8Updates($options);
 
     if (!empty($this->updates)) {
+      $this->say('Updates needed, querying corresponding repositories in GitHub');
       $continue = $this->setConfirmRepositoryList(
         array_keys($this->tabulatedUpdates),
         ['drupal8'],
@@ -70,7 +71,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       );
 
       if ($continue) {
-
+        $this->updateAllRepositories();
       }
     }
     else {
@@ -85,9 +86,9 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         $table = new Table($this->output());
         $table->setHeaders([$instance]);
         $rows=[];
-        foreach ($updates as $environment => $module_updates) {
+        foreach ($updates as $environment => $data) {
           $row_contents = "$environment:\n";
-          foreach ($module_updates as $module_update) {
+          foreach ($data['updates'] as $module_update) {
             $row_contents .= $this->getFormattedUpdateMessage($module_update);
           }
           $rows[] = [$row_contents];
@@ -156,17 +157,35 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     foreach ($this->updates as $update) {
       if (in_array($update['pod']->metadata->namespace, $branches)) {
         if (!empty($update['updates'])) {
-          $this->tabulatedUpdates[$update['pod']->metadata->labels->instance][$update['pod']->metadata->namespace] = $update['updates'];
+          $this->tabulatedUpdates[$update['pod']->metadata->labels->instance][$update['pod']->metadata->namespace] = [
+            'updates' => $update['updates'],
+            'vcsOwner' => $update['pod']->metadata->labels->vcsOwner,
+            'vcsRepository' => $update['pod']->metadata->labels->vcsRepository,
+            'vcsRef' => $update['pod']->metadata->labels->vcsRef,
+          ];
         }
       }
     }
   }
 
-  private function updateComposerJson($repository) {
+  private function updateComposerJson($repository, $branch = 'dev') {
     $path = 'build/composer.json';
     $committer = array('name' => 'Jacob Sanford', 'email' => 'jsanford@unb.ca');
 
-    // $oldFile = $this->gitHubClient->api('repo')->contents()->show('KnpLabs', 'php-github-api', $path, $branch);
+    if (!empty($this->tabulatedUpdates[$repository['name']][$branch])) {
+      $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
+      $old_file_hashes = $this->client->api('repo')->contents()->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
+      $old_file_content = $this->client->api('repo')->contents()->download($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
+
+      $composer_file = json_decode ($old_file_content);
+      if ($composer_file !== NULL) {
+        print_r($old_file_content);
+      }
+      else {
+        $this->say('Failure to decode composer.json from GitHub!');
+      }
+    }
+
     // $fileInfo = $client->api('repo')->contents()->update('KnpLabs', 'php-github-api', $path, $content, $commitMessage, $oldFile['sha'], $branch, $committer);
   }
 
