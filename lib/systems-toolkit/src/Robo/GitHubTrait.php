@@ -25,6 +25,20 @@ trait GitHubTrait {
   protected $client;
 
   /**
+   * The commit username.
+   *
+   * @var string
+   */
+  protected $userName;
+
+  /**
+   * The commit user email.
+   *
+   * @var string
+   */
+  protected $userEmail;
+
+  /**
    * The organizations to interact with.
    *
    * @var array
@@ -42,6 +56,20 @@ trait GitHubTrait {
     $this->authKey = Robo::Config()->get('syskit.github.authKey');
     if (empty($this->authKey)) {
       throw new \Exception(sprintf('The GitHub authentication key has not been set in the configuration file. (authKey)'));
+    }
+  }
+
+  /**
+   * Get the github user email from config.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setGitHubEmail() {
+    $this->userEmail = Robo::Config()->get('syskit.github.userEmail');
+    if (empty($this->userEmail)) {
+      throw new \Exception(sprintf('The GitHub user name has not been set in the configuration file. (userEmail)'));
     }
   }
 
@@ -74,6 +102,20 @@ trait GitHubTrait {
     }
     catch (Exception $e) {
       throw new \Exception(sprintf('Authentication to GitHub failed. Is the authKey value set in the configuration file correct? This may also occur due to network outages.'));
+    }
+  }
+
+  /**
+   * Get the github user name from config.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setGitHubUserName() {
+    $this->userName = Robo::Config()->get('syskit.github.userName');
+    if (empty($this->userName)) {
+      throw new \Exception(sprintf('The GitHub user name has not been set in the configuration file. (userName)'));
     }
   }
 
