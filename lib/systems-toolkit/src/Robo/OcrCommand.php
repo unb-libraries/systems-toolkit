@@ -18,7 +18,33 @@ class OcrCommand extends SystemsToolkitCommand {
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
+  /**
+   * Tesseract metrics stored for current eval.
+   *
+   * @var array
+   */
   private $metrics = [];
+
+  /**
+   * The docker image to use for Tesseract commands.
+   *
+   * @var string
+   */
+  private $tesseractImage = NULL;
+
+  /**
+   * Get the tesseract docker image from config.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setTesseractImage() {
+    $this->tesseractImage = Robo::Config()->get('syskit.imaging.tesseractImage');
+    if (empty($this->tesseractImage)) {
+      throw new \Exception(sprintf('The tesseract docker image has not been set in the configuration file. (tesseractImage)'));
+    }
+  }
 
   /**
    * Generate OCR for an entire tree.
@@ -152,7 +178,7 @@ class OcrCommand extends SystemsToolkitCommand {
    */
   private function getOcrFileCommand($file, $options = ['oem' => 1, 'lang' => 'eng', 'args' => NULL]) {
     $ocr_file_path_info = pathinfo($file);
-    return $this->taskDockerRun('unblibraries/tesseract')
+    return $this->taskDockerRun($this->tesseractImage)
       ->volume($ocr_file_path_info['dirname'], '/data')
       ->containerWorkdir('/data')
       ->arg('--rm')
