@@ -60,22 +60,27 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'security-only' => FALSE]) {
     $this->getDrupal8Updates($options);
 
-    $continue = $this->setConfirmRepositoryList(
-      array_keys($this->tabulatedUpdates),
-      ['drupal8'],
-      [],
-      [],
-      'Upgrade Drupal Modules'
-    );
+    if (!empty($this->updates)) {
+      $continue = $this->setConfirmRepositoryList(
+        array_keys($this->tabulatedUpdates),
+        ['drupal8'],
+        [],
+        [],
+        'Upgrade Drupal Modules'
+      );
 
-    if ($continue) {
+      if ($continue) {
 
+      }
+    }
+    else {
+      $this->say('No updates needed to dev branches!');
     }
   }
 
   private function printTabluatedUpdateTables() {
-    $this->say("Updates available:");
     if (!empty($this->tabulatedUpdates)) {
+      $this->say("Updates available:");
       foreach($this->tabulatedUpdates as $instance => $updates) {
         $table = new Table($this->output());
         $table->setHeaders([$instance]);
