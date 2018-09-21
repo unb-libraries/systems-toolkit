@@ -89,25 +89,23 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   private function printTabluatedInstanceUpdateTable($instance_name) {
     if (!empty($this->tabulatedUpdates[$instance_name])) {
       $this->say("Updates available:");
-      foreach($this->tabulatedUpdates as $instance => $updates) {
-        $table = new Table($this->output());
-        $table->setHeaders([$instance]);
-        $rows=[];
-        foreach ($updates as $environment => $data) {
-          $row_contents = "$environment:\n";
-          foreach ($data['updates'] as $module_update) {
-            $row_contents .= $this->getFormattedUpdateMessage($module_update);
-          }
-          $rows[] = [$row_contents];
+      $table = new Table($this->output());
+      $table->setHeaders([$instance_name]);
+      $rows=[];
+      foreach ($this->tabulatedUpdates[$instance_name] as $environment => $data) {
+        $rows[] = ["$environment:"];
+        foreach ($data['updates'] as $module_update) {
+          $rows[] = [$this->getFormattedUpdateMessage($module_update)];
         }
-        if (!empty($rows)) {
-          $table->setRows($rows);
-          $table->setStyle('borderless');
-          $table->render();
-        }
+      }
+      if (!empty($rows)) {
+        $table->setRows($rows);
+        $table->setStyle('borderless');
+        $table->render();
       }
     }
   }
+
 
   private function getFormattedUpdateMessage($update) {
     return sprintf(
