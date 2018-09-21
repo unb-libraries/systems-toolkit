@@ -35,7 +35,6 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'security-only' => FALSE]) {
     $this->securityOnly = $options['security-only'];
     $pod_selector = [
-      'instance=cogswell.lib.unb.ca',
       'app=drupal',
       'appMajor=8',
     ];
