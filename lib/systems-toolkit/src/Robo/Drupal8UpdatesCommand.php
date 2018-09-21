@@ -15,22 +15,27 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
   use KubeExecTrait;
 
-  private $updates = [];
-  private $tabulatedUpdates = [];
   private $instances = [];
+  private $securityOnly = FALSE;
+  private $tabulatedUpdates = [];
+  private $updates = [];
 
   /**
    * Get the list of needed Drupal 8 updates .
    *
-   * @option namespaces
+   * @option array namespaces
    *   The extensions to match when finding files.
+   * @option bool security-only
+   *   Only retrieve security updates.
    *
    * @throws \Exception
    *
    * @command drupal:8:getupdates
    */
-  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod']]) {
+  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'security-only' => FALSE]) {
+    $this->securityOnly = $options['security-only'];
     $pod_selector = [
+      'instance=cogswell.lib.unb.ca',
       'app=drupal',
       'appMajor=8',
     ];
@@ -45,12 +50,14 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @option namespaces
    *   The extensions to match when finding files. Defaults to dev only.
+   * @option bool security-only
+   *   Only perform security updates.
    *
    * @throws \Exception
    *
    * @command drupal:8:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev']]) {
+  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'security-only' => FALSE]) {
     $this->getDrupal8Updates($options);
 
     $continue = $this->setConfirmRepositoryList(
@@ -116,13 +123,18 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   }
 
   private function setNeededUpdates($pod) {
+    $args = [];
     $command = '/scripts/listDrupalUpdates.sh';
+    if ($this->securityOnly) {
+      $args[] = '-s';
+    }
+
     $result = $this->kubeExecPod(
       $pod->metadata->name,
       $pod->metadata->namespace,
       $command,
       '-it',
-      [],
+      $args,
       FALSE
     );
 
