@@ -3,6 +3,8 @@ syskit:
     organizations:
       - unb-libraries
     authKey: adfadfaddfdasfsafasfsdfsdfss
+    userName: Jacob Sanford
+    userEmail: jsanford@unb.ca
   aws:
     defaultRegion: us-east-1
     keyId:
@@ -12,3 +14,6 @@ syskit:
   kubectl:
     bin: /snap/bin/kubectl
     config: /home/jsanford/.kube/config
+  imaging:
+    tesseractImage: unblibraries/tesseract:latest
+    imagemagickImage: unblibraries/imagemagick:latest
