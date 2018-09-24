@@ -221,8 +221,12 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   }
 
   private function getFormattedProjectName($update) {
-    $formatted_project = "drupal/{$update->name}";
-    return $formatted_project;
+    if($update->name == 'drupal') {
+      return "drupal/core";
+    }
+    else {
+      return "drupal/{$update->name}";
+    }
   }
 
   private function getFormattedProjectVersion($version_string) {
