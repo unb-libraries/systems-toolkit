@@ -11,6 +11,10 @@ syskit:
     secretKey:
   cyberman:
     awsSnsTopicId: "arn:aws:sns:us-east-1:344420214229:CyberMan"
+  drupal:
+    rest:
+      password: password
+      user: Jacob Sanford
   kubectl:
     bin: /snap/bin/kubectl
     config: /home/jsanford/.kube/config
