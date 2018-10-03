@@ -6,6 +6,7 @@
     "aws/aws-sdk-php": "^3.62.9",
     "consolidation/robo": "^1.0",
     "czproject/git-php": "^3.13.0",
+    "guzzlehttp/guzzle": "^6.3",
     "knplabs/github-api": "^2.8.0",
     "php-http/guzzle6-adapter": "^1.1.1"
   },

@@ -9,6 +9,7 @@ use UnbLibraries\SystemsToolkit\Robo\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use Symfony\Component\Console\Helper\Table;
+use Robo\Robo;
 
 /**
  * Class for OcrCommand Robo commands.

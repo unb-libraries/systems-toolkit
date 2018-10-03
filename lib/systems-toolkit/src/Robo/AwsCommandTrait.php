@@ -31,17 +31,6 @@ trait AwsCommandTrait {
   protected $awsDefaultRegion;
 
   /**
-   * This hook will fire for all commands in this command file.
-   *
-   * @hook init
-   */
-  public function initializeAwsConfig() {
-    $this->setAwsAccessKeyId();
-    $this->setAwsSecretAccessKey();
-    $this->setAwsDefaultRegion();
-  }
-
-  /**
    * Get the AWS key ID from config.
    *
    * @throws \Exception
