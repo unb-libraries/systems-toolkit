@@ -284,8 +284,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->setDirsToIterate();
     $this->getConfirmDirs('Create Issues');
 
-    foreach ($this->recursiveDirectories as $file_to_process) {
-
+    foreach ($this->recursiveDirectories as $directory_to_process) {
+      createIssueFromDir($title_id, $directory_to_process, $options);
     }
   }
 
