@@ -68,14 +68,14 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @command ocr:tesseract:tree
    */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL]) {
+  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
-    $this->treeRoot = $root;
-    $this->fileRegex = $regex;
+    $this->recursiveFileTreeRoot = $root;
+    $this->recursiveFileRegex = $regex;
     $this->setFilesToIterate();
-    $this->getConfirmFiles('OCR');
+    $this->getConfirmFiles('OCR', $options['skip-confirm']);
 
-    foreach ($this->files as $file_to_process) {
+    foreach ($this->recursiveFiles as $file_to_process) {
       $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
     }
     if (!empty($options['threads'])) {
@@ -109,7 +109,7 @@ class OcrCommand extends SystemsToolkitCommand {
     $options['args'] = 'tsv';
     $this->ocrTesseractTree($root, $options);
 
-    foreach ($this->files as $file) {
+    foreach ($this->recursiveFiles as $file) {
       $num_words = 0;
       $total_confidence=0;
       $reader = Reader::createFromPath("$file.tsv", 'r');

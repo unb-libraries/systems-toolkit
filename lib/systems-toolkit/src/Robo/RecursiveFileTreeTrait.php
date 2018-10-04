@@ -17,21 +17,21 @@ trait RecursiveFileTreeTrait {
    *
    * @var string
    */
-  protected $fileRegex = NULL;
+  protected $recursiveFileRegex = NULL;
 
   /**
    * The files to operate on.
    *
    * @var array
    */
-  protected $files = [];
+  protected $recursiveFiles = [];
 
   /**
    * The tree root to parse recursively.
    *
    * @var string
    */
-  protected $treeRoot = NULL;
+  protected $recursiveFileTreeRoot = NULL;
 
   /**
    * Set up the files to iterate over.
@@ -39,23 +39,23 @@ trait RecursiveFileTreeTrait {
    * @throws \Exception
    */
   public function setFilesToIterate() {
-    if (!file_exists($this->treeRoot)) {
-      throw new \Exception(sprintf('The directory [%s] does not exist.', $this->treeRoot));
+    if (!file_exists($this->recursiveFileTreeRoot)) {
+      throw new \Exception(sprintf('The directory [%s] does not exist.', $this->recursiveFileTreeRoot));
     }
 
     $iterator = new RecursiveIteratorIterator(
-      new RecursiveDirectoryIterator($this->treeRoot, RecursiveDirectoryIterator::SKIP_DOTS),
+      new RecursiveDirectoryIterator($this->recursiveFileTreeRoot, RecursiveDirectoryIterator::SKIP_DOTS),
       RecursiveIteratorIterator::SELF_FIRST,
       // Ignore "Permission denied".
       RecursiveIteratorIterator::CATCH_GET_CHILD
     );
-    $regex = new RegexIterator($iterator, $this->fileRegex, \RecursiveRegexIterator::GET_MATCH);
+    $regex = new RegexIterator($iterator, $this->recursiveFileRegex, \RecursiveRegexIterator::GET_MATCH);
     foreach ($regex as $path => $dir) {
-      $this->files[] = $path;
+      $this->recursiveFiles[] = $path;
     }
 
-    if (empty($this->files)) {
-      throw new \Exception(sprintf('There are no files matching the regex [%s] in [%s].', $this->fileRegex, $this->treeRoot));
+    if (empty($this->recursiveFiles)) {
+      throw new \Exception(sprintf('There are no files matching the regex [%s] in [%s].', $this->recursiveFileRegex, $this->recursiveFileTreeRoot));
     }
   }
 
@@ -67,17 +67,18 @@ trait RecursiveFileTreeTrait {
    *
    * @throws \Exception
    */
-  public function getConfirmFiles($operation_name = 'Operation') {
-    $table = new Table($this->output());
-    $table_rows = array_map([$this, 'arrayWrap'], $this->files);
-    $table->setHeaders(array('Filename'))
-      ->setRows($table_rows);
-    $table->setStyle('borderless');
-    $table->render();
+  public function getConfirmFiles($operation_name = 'Operation', $skip_confirm = FALSE) {
+    if (!$skip_confirm) {
+      $table = new Table($this->output());
+      $table_rows = array_map([$this, 'arrayWrap'], $this->recursiveFiles);
+      $table->setHeaders(array('Filename'))->setRows($table_rows);
+      $table->setStyle('borderless');
+      $table->render();
 
-    $continue = $this->confirm(sprintf('The %s will be applied to ALL of the above files. Are you sure you want to continue?', $operation_name));
-    if (!$continue) {
-      throw new \Exception(sprintf('Operation cancelled.'));
+      $continue = $this->confirm(sprintf('The %s will be applied to ALL of the above files. Are you sure you want to continue?', $operation_name));
+      if (!$continue) {
+        throw new \Exception(sprintf('Operation cancelled.'));
+      }
     }
   }
 

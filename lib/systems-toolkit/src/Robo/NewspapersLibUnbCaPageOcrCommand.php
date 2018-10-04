@@ -11,9 +11,11 @@ use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
   use DrupalInstanceRestTrait;
+  use RecursiveDirectoryTreeTrait;
 
   const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
   const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
+  const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
 
   /**
    * Download the page image file attached to an digital page entity.
@@ -160,14 +162,16 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.
-    $this->ocrTesseractFile(
-      $file_path,
-      $options = [
-        'oem' => 1,
-        'lang' => 'eng',
-        'args' => 'hocr',
-      ]
-    );
+    if (!file_exists($file_path . ".hocr")) {
+      $this->ocrTesseractFile(
+        $file_path,
+        $options = [
+          'oem' => 1,
+          'lang' => 'eng',
+          'args' => 'hocr',
+        ]
+      );
+    }
 
     // Distill down HOCR.
     $hocr_content = file_get_contents($file_path . ".hocr");
@@ -254,6 +258,147 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       ]
     );
     return json_decode((string) $this->drupalRestResponse->getBody());
+  }
+
+  /**
+   * Create digital serial issues from a tree containing files.
+   *
+   * @param string $title_id
+   *   The parent issue ID.
+   * @param string $file_path
+   *   The tree file path.
+   *
+   * @option string $instance-uri
+   *   The URI of the target instance.
+   *
+   * @throws \Exception
+   *
+   * @usage "1 /mnt/issues/archive"
+   *
+   * @command newspapers.lib.unb.ca:create-issues-tree
+   */
+  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg']) {
+    $regex = "/.*\/metadata.php$/i";
+    $this->recursiveDirectoryTreeRoot = $file_path;
+    $this->recursiveDirectoryFileRegex = $regex;
+    $this->setDirsToIterate();
+    $this->getConfirmDirs('Create Issues');
+
+    foreach ($this->recursiveDirectories as $file_to_process) {
+
+    }
+  }
+
+  /**
+   * Import a single digital serial issue from a file path.
+   *
+   * @param string $title_id
+   *   The parent issue ID.
+   * @param string $path
+   *   The tree file path.
+   *
+   * @option string $instance-uri
+   *   The URI of the target instance.
+   *
+   * @throws \Exception
+   *
+   * @usage "1 /mnt/issues/archive"
+   *
+   * @command newspapers.lib.unb.ca:create-issue
+   */
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg']) {
+    $this->drupalRestUri = $options['instance-uri'];
+
+    // Create issue
+    $metadata_filepath = "$path/metadata.php";
+    if (file_exists($metadata_filepath)) {
+      require $metadata_filepath;
+
+      // Create digital page
+      $create_content = json_encode(
+        [
+          'parent_title' => [
+            [
+              'target_id' => $title_id,
+            ]
+          ],
+          'issue_title' => [
+            [
+              'value' => ISSUE_TITLE
+            ]
+          ],
+          'issue_vol' => [
+            [
+              'value' => ISSUE_VOLUME,
+            ]
+          ],
+          'issue_issue' => [
+            [
+              'value' => ISSUE_ISSUE,
+            ]
+          ],
+          'issue_edition' => [
+            [
+              'value' => ISSUE_EDITION,
+            ]
+          ],
+          'issue_date' => [
+            [
+              'value' => date( "Y-m-d", ISSUE_DATE),
+            ]
+          ],
+          'issue_missingp' => [
+            [
+              'value' => MISSING_PAGES,
+            ]
+          ],
+          'issue_errata' => [
+            [
+              'value' => ISSUE_ERRATA,
+            ]
+          ],
+          'issue_language' => [
+            [
+              'value' => ISSUE_LANGUAGE,
+            ]
+          ],
+          'issue_media' => [
+            [
+              'value' => SOURCE_MEDIA,
+            ]
+          ],
+        ]
+      );
+
+      $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
+      $issue_id = $issue_object->id[0]->value;
+      $this->say("Importing pages to Issue #$issue_id");
+
+      // Then, run tesseract.
+      $this->ocrTesseractTree(
+        $path,
+        [
+          'extension' => $options['issue-page-extension'],
+          'oem' => 1,
+          'lang' => 'eng',
+          'threads' => NULL,
+          'args' => 'hocr',
+          'skip-confirm' => TRUE,
+        ]
+      );
+
+      // Then, create pages for the issue
+      foreach ($this->recursiveFiles as $page_image) {
+        $path_info = pathinfo($page_image);
+        $filename_components = explode('_', $path_info['filename']);
+        $this->createSerialPageFromFile($issue_id, (int) $filename_components[0], $filename_components[0], $page_image);
+      }
+
+    }
+    else {
+      $this->say("The path $path does not contain a metadata.php file.");
+    }
+
   }
 
 }

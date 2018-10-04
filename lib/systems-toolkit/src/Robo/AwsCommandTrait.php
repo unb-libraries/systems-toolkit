@@ -35,7 +35,7 @@ trait AwsCommandTrait {
    *
    * @throws \Exception
    *
-   * @hook post-init
+   * @hook init
    */
   public function setAwsAccessKeyId() {
     $this->accessKeyId = Robo::Config()->get('syskit.aws.keyId');
@@ -49,7 +49,7 @@ trait AwsCommandTrait {
    *
    * @throws \Exception
    *
-   * @hook post-init
+   * @hook init
    */
   public function setAwsDefaultRegion() {
     $this->awsDefaultRegion = Robo::Config()->get('syskit.aws.defaultRegion');
