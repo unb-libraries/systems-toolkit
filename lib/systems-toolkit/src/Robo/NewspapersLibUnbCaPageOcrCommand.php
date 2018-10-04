@@ -285,7 +285,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->getConfirmDirs('Create Issues');
 
     foreach ($this->recursiveDirectories as $directory_to_process) {
-      createIssueFromDir($title_id, $directory_to_process, $options);
+      $this->createIssueFromDir($title_id, $directory_to_process, $options);
+      $this->recursiveFiles = [];
     }
   }
 
@@ -312,8 +313,12 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     // Create issue
     $metadata_filepath = "$path/metadata.php";
     if (file_exists($metadata_filepath)) {
-      require $metadata_filepath;
+      $rewrite_command = 'php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php $path/metadata.php";
+      exec($rewrite_command);
 
+      $issue_config = json_decode(
+        file_get_contents("$metadata_filepath.json")
+      );
       // Create digital page
       $create_content = json_encode(
         [
@@ -324,51 +329,52 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
           ],
           'issue_title' => [
             [
-              'value' => ISSUE_TITLE
+              'value' => $issue_config->title
             ]
           ],
           'issue_vol' => [
             [
-              'value' => ISSUE_VOLUME,
+              'value' => $issue_config->volume,
             ]
           ],
           'issue_issue' => [
             [
-              'value' => ISSUE_ISSUE,
+              'value' => $issue_config->issue,
             ]
           ],
           'issue_edition' => [
             [
-              'value' => ISSUE_EDITION,
+              'value' => $issue_config->edition,
             ]
           ],
           'issue_date' => [
             [
-              'value' => date( "Y-m-d", ISSUE_DATE),
+              'value' => $issue_config->date,
             ]
           ],
           'issue_missingp' => [
             [
-              'value' => MISSING_PAGES,
+              'value' => $issue_config->missing,
             ]
           ],
           'issue_errata' => [
             [
-              'value' => ISSUE_ERRATA,
+              'value' => $issue_config->errata,
             ]
           ],
           'issue_language' => [
             [
-              'value' => ISSUE_LANGUAGE,
+              'value' => $issue_config->language,
             ]
           ],
           'issue_media' => [
             [
-              'value' => SOURCE_MEDIA,
+              'value' => $issue_config->media,
             ]
           ],
         ]
       );
+      unset($issue_config);
 
       $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
       $issue_id = $issue_object->id[0]->value;
@@ -391,7 +397,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       foreach ($this->recursiveFiles as $page_image) {
         $path_info = pathinfo($page_image);
         $filename_components = explode('_', $path_info['filename']);
-        $this->createSerialPageFromFile($issue_id, (int) $filename_components[0], $filename_components[0], $page_image);
+        $this->createSerialPageFromFile($issue_id, (int) $filename_components[5], str_pad($filename_components[5],4, '0', STR_PAD_LEFT), $page_image);
       }
 
     }

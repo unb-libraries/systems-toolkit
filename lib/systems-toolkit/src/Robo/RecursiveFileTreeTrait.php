@@ -51,7 +51,11 @@ trait RecursiveFileTreeTrait {
     );
     $regex = new RegexIterator($iterator, $this->recursiveFileRegex, \RecursiveRegexIterator::GET_MATCH);
     foreach ($regex as $path => $dir) {
-      $this->recursiveFiles[] = $path;
+      $file_info = pathinfo($path);
+      $filename = $file_info['filename'];
+      if (!$filename[0] == '.') {
+        $this->recursiveFiles[] = $path;
+      }
     }
 
     if (empty($this->recursiveFiles)) {
