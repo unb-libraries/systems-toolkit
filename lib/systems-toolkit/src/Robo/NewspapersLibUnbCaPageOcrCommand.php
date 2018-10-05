@@ -179,8 +179,10 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
     // Upload file to field.
     $file_contents = file_get_contents($file_path);
+    $file_extension = pathinfo($file_contents, PATHINFO_EXTENSION);
+    $page_no_padded = str_pad($page_no,4, '0', STR_PAD_LEFT);
     $file_entity = $this->uploadDrupalRestFileToEntityField(
-      'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, 'test.jpg'
+      'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, "{$issue_id}-{$page_no_padded}.{$file_extension}"
     );
 
     // Create digital page
