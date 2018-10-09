@@ -179,10 +179,11 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
     // Upload file to field.
     $file_contents = file_get_contents($file_path);
-    $file_extension = pathinfo($file_contents, PATHINFO_EXTENSION);
+    $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
     $page_no_padded = str_pad($page_no,4, '0', STR_PAD_LEFT);
+    $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
     $file_entity = $this->uploadDrupalRestFileToEntityField(
-      'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, "{$issue_id}-{$page_no_padded}.{$file_extension}"
+      'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     );
 
     // Create digital page
@@ -315,7 +316,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     // Create issue
     $metadata_filepath = "$path/metadata.php";
     if (file_exists($metadata_filepath)) {
-      $rewrite_command = 'php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php $path/metadata.php";
+      $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php $path/metadata.php";
       exec($rewrite_command);
 
       $issue_config = json_decode(
@@ -399,7 +400,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       foreach ($this->recursiveFiles as $page_image) {
         $path_info = pathinfo($page_image);
         $filename_components = explode('_', $path_info['filename']);
-        $this->createSerialPageFromFile($issue_id, (int) $filename_components[5], str_pad($filename_components[5],4, '0', STR_PAD_LEFT), $page_image);
+        $this->createSerialPageFromFile($issue_id, (int) $filename_components[5], str_pad($filename_components[5],4, '0', STR_PAD_LEFT), $page_image, $options);
       }
 
     }
