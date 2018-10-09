@@ -62,7 +62,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command dzi:generate-tiles:tree
    */
-  public function dziFilesTree($root, $options = ['extension' => '.tif', 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-confirm' => FALSE]) {
+  public function dziFilesTree($root, $options = ['extension' => '.tif', 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -94,12 +94,18 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command dzi:generate-tiles
    */
-  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102']) {
+  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
+    $dzi_file_path_info = pathinfo($file);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
     }
-    $command = $this->getDziTileCommand($file, $options);
-    $command->run();
+    if (!$options['skip-existing'] ||
+      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") ||
+      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+    ) {
+      $command = $this->getDziTileCommand($file, $options);
+      $command->run();
+    }
   }
 
   /**
