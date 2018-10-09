@@ -53,7 +53,7 @@ trait RecursiveFileTreeTrait {
     foreach ($regex as $path => $dir) {
       $file_info = pathinfo($path);
       $filename = $file_info['filename'];
-      if (!$filename[0] == '.') {
+      if ($filename[0] != '.') {
         $this->recursiveFiles[] = $path;
       }
     }
