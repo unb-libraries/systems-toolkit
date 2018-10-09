@@ -53,12 +53,16 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The number of threads the process should use.
    * @option args
    *   Any other arguments to pass.
+   * @option target-uid
+   *   The uid to assign the target files.
+   * @option target-gid
+   *   The gid to assign the target files.
    *
    * @throws \Exception
    *
    * @command dzi:generate-tiles:tree
    */
-  public function dziFilesTree($root, $options = ['extension' => '.tif', 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL]) {
+  public function dziFilesTree($root, $options = ['extension' => '.tif', 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-confirm' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -81,12 +85,16 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The tile size to use.
    * @option step
    *   The zoom step to use.
+   * @option target-uid
+   *   The uid to assign the target files.
+   * @option target-gid
+   *   The gid to assign the target files.
    *
    * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
    *
    * @command dzi:generate-tiles
    */
-  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200']) {
+  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102']) {
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
     }
@@ -104,10 +112,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The tile size to use.
    * @option step
    *   The zoom step to use.
+   * @option target-uid
+   *   The uid to assign the target files.
+   * @option target-gid
+   *   The gid to assign the target files.
    *
    * @return \Robo\Contract\CommandInterface
    */
-  private function getDziTileCommand($file, $options = ['tile-size' => '256', 'step' => '200']) {
+  private function getDziTileCommand($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102']) {
     $dzi_file_path_info = pathinfo($file);
     $tmp_dir = "/tmp/dzi/{$dzi_file_path_info['filename']}";
 
@@ -117,8 +129,10 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("mkdir -p $tmp_dir")
       ->exec("cp $file $tmp_dir")
       ->exec("docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} /app/magick-slicer.sh -- -e jpg -i /data/{$dzi_file_path_info['basename']} -o /data/{$dzi_file_path_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}")
-      ->exec("cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files {$dzi_file_path_info['dirname']}/")
-      ->exec("cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi {$dzi_file_path_info['dirname']}/")
+      ->exec("sudo cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files {$dzi_file_path_info['dirname']}/")
+      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R {$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+      ->exec("sudo cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi {$dzi_file_path_info['dirname']}/")
+      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi")
       ->exec("sudo rm -rf $tmp_dir");
   }
 
