@@ -72,7 +72,16 @@ class DziTilerCommand extends SystemsToolkitCommand {
     $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
 
     foreach ($this->recursiveFiles as $file_to_process) {
-      $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+      $dzi_file_path_info = pathinfo($file_to_process);
+      if ($options['skip-existing'] &&
+        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
+        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+      ) {
+        $this->say("Skipping file with existing tiles [$file_to_process]");
+      }
+      else {
+        $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+      }
     }
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
