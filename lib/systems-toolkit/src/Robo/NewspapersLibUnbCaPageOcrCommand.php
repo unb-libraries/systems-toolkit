@@ -273,6 +273,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @option string $instance-uri
    *   The URI of the target instance.
+   * @option threads
+   *   The number of threads the OCR process should use.
    *
    * @throws \Exception
    *
@@ -280,7 +282,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issues-tree
    */
-  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg']) {
+  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL]) {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -303,6 +305,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @option string $instance-uri
    *   The URI of the target instance.
+   * @option threads
+   *   The number of threads the OCR process should use.
    *
    * @throws \Exception
    *
@@ -310,7 +314,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg']) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Create issue
@@ -390,7 +394,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
           'extension' => $options['issue-page-extension'],
           'oem' => 1,
           'lang' => 'eng',
-          'threads' => NULL,
+          'threads' => $options['threads'],
           'args' => 'hocr',
           'skip-confirm' => TRUE,
         ]
