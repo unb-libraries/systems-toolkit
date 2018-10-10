@@ -308,6 +308,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->createIssueFromDir($title_id, $directory_to_process, $options);
     }
+    $this->recursiveDirectories = [];
   }
 
   /**
@@ -444,6 +445,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
           $options
         );
       }
+      $this->recursiveFiles = [];
 
     }
     else {
