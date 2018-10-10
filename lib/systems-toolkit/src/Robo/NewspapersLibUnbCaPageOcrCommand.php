@@ -291,9 +291,22 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->setDirsToIterate();
     $this->getConfirmDirs('Create Issues');
 
+    // Then, run tesseract.
+    $this->ocrTesseractTree(
+      $file_path,
+      [
+        'extension' => $options['issue-page-extension'],
+        'oem' => 1,
+        'lang' => 'eng',
+        'threads' => $options['threads'],
+        'args' => 'hocr',
+        'skip-confirm' => TRUE,
+      ]
+    );
+    $options['generate-ocr'] = FALSE;
+
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->createIssueFromDir($title_id, $directory_to_process, $options);
-      $this->recursiveFiles = [];
     }
   }
 
@@ -311,6 +324,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   The efile extension to match for issue pages.
    * @option threads
    *   The number of threads the OCR process should use.
+   * @option generate-ocr
+   *   Generate OCR for files - disable if pre-generated.
    *
    * @throws \Exception
    *
@@ -318,7 +333,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL]) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Create issue
@@ -330,6 +345,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       $issue_config = json_decode(
         file_get_contents("$metadata_filepath.json")
       );
+
       // Create digital page
       $create_content = json_encode(
         [
@@ -391,20 +407,27 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       $issue_id = $issue_object->id[0]->value;
       $this->say("Importing pages to Issue #$issue_id");
 
-      // Then, run tesseract.
-      $this->ocrTesseractTree(
-        $path,
-        [
-          'extension' => $options['issue-page-extension'],
-          'oem' => 1,
-          'lang' => 'eng',
-          'threads' => $options['threads'],
-          'args' => 'hocr',
-          'skip-confirm' => TRUE,
-        ]
-      );
+      if ($options['generate-ocr']) {
+        $this->ocrTesseractTree(
+          $path,
+          [
+            'extension' => $options['issue-page-extension'],
+            'oem' => 1,
+            'lang' => 'eng',
+            'threads' => $options['threads'],
+            'args' => 'hocr',
+            'skip-confirm' => TRUE,
+          ]
+        );
+      }
 
       // Then, create pages for the issue
+      $regex = "/^.+\.{$options['extension']}$/i";
+      $this->recursiveFileTreeRoot = $path;
+      $this->recursiveFileRegex = $regex;
+      $this->setFilesToIterate();
+      $this->getConfirmFiles('OCR', TRUE);
+
       foreach ($this->recursiveFiles as $page_image) {
         $path_info = pathinfo($page_image);
         $filename_components = explode('_', $path_info['filename']);

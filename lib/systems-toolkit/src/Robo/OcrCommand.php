@@ -82,6 +82,7 @@ class OcrCommand extends SystemsToolkitCommand {
       $this->setThreads($options['threads']);
     }
     $this->setRunProcessQueue('OCR');
+    $this->recursiveFiles = [];
   }
 
   /**
