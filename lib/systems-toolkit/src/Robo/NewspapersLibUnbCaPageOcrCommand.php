@@ -423,7 +423,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       }
 
       // Then, create pages for the issue
-      $regex = "/^.+\.{$options['extension']}$/i";
+      $regex = "/^.+\.{$options['issue-page-extension']}$/i";
       $this->recursiveFileTreeRoot = $path;
       $this->recursiveFileRegex = $regex;
       $this->setFilesToIterate();
