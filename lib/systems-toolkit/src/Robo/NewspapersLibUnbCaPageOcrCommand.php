@@ -268,6 +268,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @param string $title_id
    *   The parent issue ID.
+   * @option issue-page-extension
+   *   The efile extension to match for issue pages.
    * @param string $file_path
    *   The tree file path.
    *
@@ -305,6 +307,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @option string $instance-uri
    *   The URI of the target instance.
+   * @option issue-page-extension
+   *   The efile extension to match for issue pages.
    * @option threads
    *   The number of threads the OCR process should use.
    *
