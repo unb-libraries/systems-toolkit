@@ -2,17 +2,19 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
+use UnbLibraries\SystemsToolkit\Robo\DockerCommandTrait;
 use UnbLibraries\SystemsToolkit\Robo\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use Robo\Robo;
 
 /**
  * Class for DziTilerCommand Robo commands.
  */
 class DziTilerCommand extends SystemsToolkitCommand {
 
+  use DockerCommandTrait;
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 

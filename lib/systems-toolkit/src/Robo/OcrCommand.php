@@ -4,18 +4,20 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use League\Csv\Reader;
 use League\Csv\Statement;
+use Robo\Robo;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
+use UnbLibraries\SystemsToolkit\Robo\DockerCommandTrait;
 use UnbLibraries\SystemsToolkit\Robo\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use Symfony\Component\Console\Helper\Table;
-use Robo\Robo;
 
 /**
  * Class for OcrCommand Robo commands.
  */
 class OcrCommand extends SystemsToolkitCommand {
 
+  use DockerCommandTrait;
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
