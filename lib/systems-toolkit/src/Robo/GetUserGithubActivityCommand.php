@@ -15,19 +15,41 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
   use GitHubTrait;
 
   /**
+   * The email address to query.
+   *
+   * @var string
+   */
+  private $email = NULL;
+
+  /**
+   * The user to query.
+   *
+   * @var array
+   */
+  private $user = [];
+
+  /**
    * Get a list of recent commits to GitHub by a user.
    *
-   * @param string $userName
-   *   The username to query.
+   * @param string $email
+   *   The email to query.
    *
-   * @usage JacobSanford
+   * @usage jsanford@unb.ca
    *
    * @command github:user:activity
    */
-  public function getActivity($userName) {
+  public function getActivity($email) {
     $commits = [];
+    $this->email = $email;
 
-    $response = $this->client->getHttpClient()->get("/users/$userName/events");
+    $users = $this->client->api('search')->users("$email in:email");
+
+    if (empty($users['items'][0])) {
+      throw new \Exception(sprintf('No user was found for the E-Mail address [%s].', $this->email));
+    }
+    $this->user = $users['items'][0];
+
+    $response = $this->client->getHttpClient()->get("/users/{$this->user['login']}/events");
     $activity = \Github\HttpClient\Message\ResponseMediator::getContent($response);
     foreach ($activity as $action) {
       if ($action['type'] = 'PushEvent') {
@@ -79,7 +101,10 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
         $commits[$push_day] = [];
       }
       foreach ($action['payload']['commits'] as $commit) {
-        if (!$this->getIsDuplicateCommit($commits[$push_day], $commit['sha'])) {
+        if (
+          !$this->getIsDuplicateCommit($commits[$push_day], $commit['sha'])
+          && $commit['author']['email'] == $this->email
+        ) {
           $commits[$push_day][] = [
             $repo_name,
             $commit['sha'],
