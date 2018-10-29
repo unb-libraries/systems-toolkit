@@ -102,7 +102,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
       $created_date = DateTime::createFromFormat("Y-m-d\TH:i:sP", $action['created_at']);
       $push_day = $created_date->format('Y-m-d');
 
-      foreach ($action['payload']['commits'] as $commit) {
+      foreach (array_reverse($action['payload']['commits']) as $commit) {
         if ($commit['author']['email'] == $this->email) {
           if (empty($commits[$push_day])) {
             $commits[$push_day] = [];
