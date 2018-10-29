@@ -57,6 +57,11 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
       }
     }
 
+    if (count($commits) < 1) {
+      $this->say("No commits found for user $email");
+      return;
+    }
+
     foreach ($commits as $push_date => $day_commits) {
       $this->say("Commits pushed on $push_date:");
       $this->setPrintDayCommits($day_commits);
@@ -97,19 +102,19 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
       $created_date = DateTime::createFromFormat("Y-m-d\TH:i:sP", $action['created_at']);
       $push_day = $created_date->format('Y-m-d');
 
-      if (empty($commits[$push_day])) {
-        $commits[$push_day] = [];
-      }
       foreach ($action['payload']['commits'] as $commit) {
-        if (
-          !$this->getIsDuplicateCommit($commits[$push_day], $commit['sha'])
-          && $commit['author']['email'] == $this->email
-        ) {
-          $commits[$push_day][] = [
-            $repo_name,
-            $commit['sha'],
-            $commit['message']
-          ];
+        if ($commit['author']['email'] == $this->email) {
+          if (empty($commits[$push_day])) {
+            $commits[$push_day] = [];
+          }
+
+          if (!$this->getIsDuplicateCommit($commits[$push_day], $commit['sha'])) {
+            $commits[$push_day][] = [
+              $repo_name,
+              $commit['sha'],
+              $commit['message']
+            ];
+          }
         }
       }
     }
