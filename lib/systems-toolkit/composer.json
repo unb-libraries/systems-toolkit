@@ -8,6 +8,7 @@
     "czproject/git-php": "^3.13.0",
     "guzzlehttp/guzzle": "^6.3",
     "knplabs/github-api": "^2.8.0",
+    "lesstif/php-jira-rest-client": "^1.19",
     "php-http/guzzle6-adapter": "^1.1.1"
   },
   "license": "MIT",
