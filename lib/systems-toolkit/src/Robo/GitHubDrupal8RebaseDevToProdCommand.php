@@ -20,13 +20,16 @@ class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComma
    *   partially match at least one of the comma separated values will be
    *   processed. Optional.
    *
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
+   *
    * @throws \Exception
    *
    * @usage unbherbarium,pmportal
    *
    * @command drupal:8:rebasedevprod
    */
-  public function upmergeDrupalDevToProd($match = '') {
+  public function upmergeDrupalDevToProd($match = '', $options = ['yes' => FALSE]) {
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,

@@ -33,9 +33,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   Only repositories whose topics contain one of $topics values will be
    *   processed. Optional.
    *
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
+   *
    * @throws \Exception
    */
-  protected function rebaseDevToProd(array $match = [], array $topics = []) {
+  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['yes' => FALSE]) {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $match,
@@ -46,7 +49,8 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
         self::OPERATION_TYPE,
         self::UPMERGE_SOURCE_BRANCH,
         self::UPMERGE_TARGET_BRANCH
-      )
+      ),
+      $options['yes']
     );
 
     // Rebase and push up to GitHub.
@@ -79,7 +83,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
         $this->say(implode("\n", $rebase_output));
 
         // Push.
-        $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
+        if (!$options['yes']) {
+          $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
+        }
+        else {
+          $continue = TRUE;
+        }
         if ($continue) {
           $push_output = $repo->repo->execute(
             [

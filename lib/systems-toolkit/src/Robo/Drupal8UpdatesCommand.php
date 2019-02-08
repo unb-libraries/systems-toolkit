@@ -53,6 +53,8 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *   The extensions to match when finding files. Defaults to dev only.
    * @option bool security-only
    *   Only perform security updates.
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
    *
