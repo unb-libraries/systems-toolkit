@@ -19,6 +19,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   private $securityOnly = FALSE;
   private $tabulatedUpdates = [];
   private $updates = [];
+  private $noConfirm = FALSE;
 
   /**
    * Get the list of needed Drupal 8 updates .
@@ -34,6 +35,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    */
   public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'security-only' => FALSE]) {
     $this->securityOnly = $options['security-only'];
+
     $pod_selector = [
       'app=drupal',
       'appMajor=8',
@@ -56,8 +58,9 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:8:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'security-only' => FALSE]) {
+  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'security-only' => FALSE, 'yes' => FALSE]) {
     $this->getDrupal8Updates($options);
+    $this->noConfirm = $options['yes'];
 
     if (!empty($this->updates)) {
       $this->say('Updates needed, querying corresponding repositories in GitHub');
@@ -66,7 +69,8 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         ['drupal8'],
         [],
         [],
-        'Upgrade Drupal Modules'
+        'Upgrade Drupal Modules',
+        $this->noConfirm
       );
 
       if ($continue) {
@@ -184,7 +188,12 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       $composer_file = json_decode($old_file_content);
       if ($composer_file !== NULL) {
         $this->printTabluatedInstanceUpdateTable($repository['name']);
-        $do_all = $this->confirm('Perform all updates without interaction?');
+        if (!$this->noConfirm) {
+          $do_all = $this->confirm('Perform all updates without interaction?');
+        }
+        else {
+          $do_all = TRUE;
+        }
         foreach ($update_data['updates'] as $cur_update) {
           $commit_message = $this->getFormattedUpdateMessage($cur_update);
           if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {

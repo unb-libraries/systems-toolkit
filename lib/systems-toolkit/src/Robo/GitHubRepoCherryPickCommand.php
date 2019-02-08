@@ -16,6 +16,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
   const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
   const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
   const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
+  const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
   const MESSAGE_CHERRY_PICKING = 'Cherry picking [%s] onto [%s/%s]...';
   const MESSAGE_CHERRY_RESULTS_TITLE = 'Output from cherry-pick operation:';
   const MESSAGE_CHOOSE_COMMIT_HASH = 'What commit hash should be cherry-picked onto other repositories';
@@ -116,7 +117,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
           [
             'remote',
             'add',
-            'cherry',
+            $source_repository,
             $this->sourceRepo['ssh_url'],
           ]
         );
@@ -141,8 +142,9 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";
           continue;
         }
-        $cherry_output = $cherry_output + $output;
+        $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
 
+        $cherry_output = $cherry_output + $output;
         $cherry_output = $cherry_output + $target_repo->repo->execute(
             [
               'commit',

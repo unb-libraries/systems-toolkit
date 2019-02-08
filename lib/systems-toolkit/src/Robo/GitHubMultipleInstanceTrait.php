@@ -91,16 +91,24 @@ trait GitHubMultipleInstanceTrait {
    * @param string $operation
    *   The operation string to display in the confirm message. Defaults to
    *   'operation'.
+   * @param bool $no_confirm
+   *   TRUE if all confirmations be assumed yes.
    *
    * @return bool
    *   TRUE if user agreed, FALSE otherwise.
    */
-  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation') {
+  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation', $no_confirm = FALSE) {
     $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
     $this->listRepositoryNames();
 
     // Optionally filter them.
-    $need_remove = $this->confirm('Would you like to remove any instances?');
+    if (!$no_confirm) {
+      $need_remove = $this->confirm('Would you like to remove any instances?');
+    }
+    else {
+      $need_remove = FALSE;
+    }
+
     while ($need_remove == TRUE) {
       $to_remove = $this->ask('Which ones? (Specify Name, Comma separated list)');
       if (!empty($to_remove)) {
@@ -116,7 +124,12 @@ trait GitHubMultipleInstanceTrait {
       $need_remove = $this->confirm('Would you like to remove any more instances?');
     }
 
-    return $this->confirm(sprintf('The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?', $operation));
+    if (!$no_confirm) {
+      return $this->confirm(sprintf('The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?', $operation));
+    }
+    else {
+      return TRUE;
+    }
   }
 
   /**
