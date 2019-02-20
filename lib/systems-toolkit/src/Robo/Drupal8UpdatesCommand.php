@@ -197,21 +197,30 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
           $do_all = TRUE;
         }
         foreach ($update_data['updates'] as $cur_update) {
-          $commit_message = $this->getFormattedUpdateMessage($cur_update);
-          if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {
-            $this->say('Getting old file hash...');
-            $old_file_hashes = $this->client->api('repo')->contents()->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
-            $this->say('Making changes...');
-            $this->updateComposerFile(
-              $composer_file,
-              $cur_update
-            );
-            $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
-            $this->say($commit_message);
-            $this->client->api('repo')->contents()->update($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $new_content, $commit_message, $old_file_hashes['sha'], $branch, $committer);
-            if ($do_all) {
-              sleep(2);
+          if ($this->composerFileNeedsUpdate($composer_file, $cur_update)) {
+            $commit_message = $this->getFormattedUpdateMessage($cur_update);
+            if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {
+              $this->say('Getting old file hash...');
+              $old_file_hashes = $this->client->api('repo')
+                ->contents()
+                ->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
+              $this->say('Making changes...');
+              $this->updateComposerFile(
+                $composer_file,
+                $cur_update
+              );
+              $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+              $this->say($commit_message);
+              $this->client->api('repo')
+                ->contents()
+                ->update($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $new_content, $commit_message, $old_file_hashes['sha'], $branch, $committer);
+              if ($do_all) {
+                sleep(2);
+              }
             }
+          }
+          else {
+            $this->say('Skipping already-applied update..');
           }
         }
       }
@@ -219,6 +228,15 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         $this->say('Failure to decode composer.json from GitHub!');
       }
     }
+  }
+
+  private function composerFileNeedsUpdate($composer_file, $update) {
+    $project_name = $this->getFormattedProjectName($update);
+    $old_version = $this->getFormattedProjectVersion($update->existing_version);
+    if (!empty($composer_file->require->$project_name) && $composer_file->require->$project_name == $old_version) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   private function updateComposerFile(&$composer_file, $update) {
