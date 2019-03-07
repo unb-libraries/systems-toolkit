@@ -69,7 +69,7 @@ trait TravisExecTrait {
   }
 
   /**
-   * Get if the repository namespace is valid.
+   * Get rudimentary validation on the repository.
    *
    * @param string $repository_name
    *   The repository namespace to test (i.e. unb-libraries/pmportal.org)
@@ -97,6 +97,7 @@ trait TravisExecTrait {
    *
    * @return \Robo\ResultData
    *   The result of the execution.
+   * @throws \Exception
    */
   private function travisExec($repository, $command, $args = [], $print_output = TRUE) {
     $this->getValidTravisRepository($repository);
@@ -115,7 +116,7 @@ trait TravisExecTrait {
   }
 
   /**
-   * Get the lastest travis build job details for a repository.
+   * Get the latest travis build job details for a repository.
    *
    * @param string $repository
    *   The fully namespaced Github repository (i.e. unb-libraries/pmportal.org)
@@ -134,7 +135,7 @@ trait TravisExecTrait {
   }
 
   /**
-   * Get the lastest travis build job ID for a repository.
+   * Get the latest travis build job ID for a repository.
    *
    * @param string $repository
    *   The fully namespaced Github repository (i.e. unb-libraries/pmportal.org)
