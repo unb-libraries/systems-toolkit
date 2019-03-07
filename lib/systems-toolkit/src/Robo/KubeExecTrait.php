@@ -35,12 +35,25 @@ trait KubeExecTrait {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook pre-init
    */
   public function setKubeBin() {
     $this->kubeBin = Robo::Config()->get('syskit.kubectl.bin');
     if (empty($this->kubeBin)) {
       throw new \Exception(sprintf('The kubectl binary path is unset in %s', $this->configFile));
+    }
+  }
+
+  /**
+   * Get if the kubectl binary defined in the config file can be executed.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setKubeBinExists() {
+    if (!is_executable($this->kubeBin)) {
+      throw new \Exception(sprintf('The kubectl binary, %s, cannot be executed.', $this->kubeBin));
     }
   }
 
