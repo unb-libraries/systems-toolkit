@@ -147,8 +147,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
 
     $result = $this->kubeExecPod(
-      $pod->metadata->name,
-      $pod->metadata->namespace,
+      $pod,
       $command,
       '-it',
       $args,

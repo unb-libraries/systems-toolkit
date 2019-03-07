@@ -15,7 +15,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
   use JiraTrait;
 
   /**
-   * Get a kubernetes service logs from the URI and namespace.
+   * Get project info from the JIRA ID.
    *
    * @param string $project_id
    *   The project ID string, i.e. NBNP

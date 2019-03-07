@@ -24,16 +24,9 @@ trait KubeExecTrait {
   protected $kubeConfig;
 
   /**
-   * The path to the kubeconfig to use.
+   * The pod objects to exec commands in.
    *
-   * @var string
-   */
-  protected $kubeCurNameSpace = NULL;
-
-  /**
-   * The path to the kubeconfig to use.
-   *
-   * @var string[]
+   * @var object[]
    */
   protected $kubeCurPods = [];
 
@@ -62,43 +55,38 @@ trait KubeExecTrait {
    *   A list of arguments to pass to the in-container command (i.e. -al).
    * @param bool $print_output
    *   TRUE if the command should output results. False otherwise.
-   *
-   * @throws \Exception
-   *
-   * @return \Robo\Result
-   *   The result of the command.
    */
-  private function kubeExec($exec, $flags = '-it', $args = [], $print_output = TRUE) {
-    foreach ($this->kubeCurPods as $pod_name) {
-      $pod_id = str_replace('pod/', '', $pod_name);
-      $kube = $this->taskExec($this->kubeBin)
-        ->printOutput($print_output)
-        ->arg("--kubeconfig={$this->kubeConfig}")
-        ->arg("--namespace={$this->kubeCurNameSpace}")
-        ->arg('exec')
-        ->arg($flags)
-        ->arg($pod_id)
-        ->arg($exec);
-
-      if (!empty($args)) {
-        $kube->arg('--');
-        foreach ($args as $arg) {
-          $kube->arg($arg);
-        }
-      }
-
-      return $kube->run();
+  private function kubeExecAll($exec, $flags = '-it', $args = [], $print_output = TRUE) {
+    foreach ($this->kubeCurPods as $pod) {
+      $this->kubeExecPod($pod, $exec, $flags, $args, $print_output);
     }
   }
 
-  private function kubeExecPod($name, $namespace, $exec, $flags = '-it', $args = [], $print_output = TRUE) {
+  /**
+   * Execute a command in a single pod.
+   *
+   * @param object $pod
+   *   The command to execute (i.e. ls)
+   * @param string $exec
+   *   The command to execute (i.e. ls)
+   * @param string $flags
+   *   Flags to pass to kubectl exec.
+   * @param string[] $args
+   *   A list of arguments to pass to the in-container command (i.e. -al).
+   * @param bool $print_output
+   *   TRUE if the command should output results. False otherwise.
+   *
+   * @return \Robo\ResultData
+   *   The result of the execution.
+   */
+  private function kubeExecPod($pod, $exec, $flags = '-it', $args = [], $print_output = TRUE) {
     $kube = $this->taskExec($this->kubeBin)
       ->printOutput($print_output)
       ->arg("--kubeconfig={$this->kubeConfig}")
-      ->arg("--namespace=$namespace")
+      ->arg("--namespace={$pod->metadata->namespace}")
       ->arg('exec')
       ->arg($flags)
-      ->arg($name)
+      ->arg($pod->metadata->name)
       ->arg($exec);
 
     if (!empty($args)) {
@@ -107,12 +95,12 @@ trait KubeExecTrait {
         $kube->arg($arg);
       }
     }
-
+    $this->say(sprintf('Executing %s in %s...', $exec, $pod->metadata->name));
     return $kube->run();
   }
 
   /**
-   * Get kubectl binary path from config.
+   * Get kubectl config path from config.
    *
    * @throws \Exception
    *
@@ -130,20 +118,21 @@ trait KubeExecTrait {
    *
    * @throws \Exception
    */
-  private function setCurKubePodsFromSelector(array $selector, array $namespaces = ['dev', 'prod']) {
-    $selector_string = implode(',', $selector);
+  private function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod']) {
+    $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
       $output = shell_exec($command);
-      if (empty($output)) {
-        $this->say(sprintf('Warning : Empty response from the cluster [%s=%s, %s]', $selector_string, $namespace));
-      }
-      else {
-        $this->setAddCurPodsFromJson($output);
-      }
+      $this->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
+      $this->setAddCurPodsFromJson($output);
     }
   }
 
+  /**
+   * Add pods to the current list from a JSON response string.
+   *
+   * @throws \Exception
+   */
   private function setAddCurPodsFromJson($output) {
     $response = json_decode($output);
     if (!empty($response->items)) {

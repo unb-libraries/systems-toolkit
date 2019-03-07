@@ -16,7 +16,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * Get a kubernetes service logs from the URI and namespace.
    *
    * @param string $uri
-   *   The URI to the desired service. (dev-pmportal.org)
+   *   The URI to the desired service. (pmportal.org)
    * @param string $namespace
    *   The namespace of the desired service. (dev)
    *
@@ -25,26 +25,24 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * @command k8s:logs
    */
   public function getKubeServiceLogsFromUri($uri, $namespace) {
-    $this->kubeCurNameSpace = $namespace;
-    $this->setCurKubePodNamesFromUri($uri);
+    $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
 
-    foreach ($this->kubeCurPodNames as $pod_name) {
-      $this->say(sprintf('Listing Logs from %s:', $pod_name));
-      $pod_id = str_replace('pod/', '', $pod_name);
+    foreach ($this->kubeCurPods as $pod) {
+      $this->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
       $this->taskExec($this->kubeBin)
         ->arg("--kubeconfig={$this->kubeConfig}")
-        ->arg("--namespace={$this->kubeCurNameSpace}")
+        ->arg("--namespace={$pod->metadata->namespace}")
         ->arg('logs')
-        ->arg($pod_id)
+        ->arg($pod->metadata->name)
         ->run();
     }
   }
 
   /**
-   * Get a kubernetes service shell from the URI and namespace.
+   * Get a kubernetes service shell from a URI and namespace.
    *
    * @param string $uri
-   *   The URI to the desired service. (dev-pmportal.org)
+   *   The URI to the desired service. (pmportal.org)
    * @param string $namespace
    *   The namespace of the desired service. (dev)
    * @param string $shell
@@ -55,14 +53,8 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * @command k8s:shell
    */
   public function getKubeShellFromUri($uri, $namespace, $shell = 'sh') {
-    $this->kubeCurNameSpace = $namespace;
-    $this->setCurKubePodNamesFromUri($uri);
-
-    foreach ($this->kubeCurPodNames as $pod_name) {
-      $this->say(sprintf('Opening Shell for %s:', $pod_name));
-      $pod_id = str_replace('pod/', '', $pod_name);
-      $this->getKubeExec($pod_id, $shell);
-    }
+    $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
+    $this->kubeExecAll($shell);
   }
 
 }

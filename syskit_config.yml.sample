@@ -1,23 +1,26 @@
 syskit:
-  github:
-    organizations:
-      - unb-libraries
-    authKey: adfadfaddfdasfsafasfsdfsdfss
-    userName: Jacob Sanford
-    userEmail: jsanford@unb.ca
   aws:
     defaultRegion: us-east-1
-    keyId:
-    secretKey:
+    keyId: XXXXXXXXXXXXX
+    secretKey: XXXXXXXXXXXXXXXXXXXXXXXXXX
   cyberman:
     awsSnsTopicId: "arn:aws:sns:us-east-1:344420214229:CyberMan"
   drupal:
     rest:
-      password: password
-      user: Jacob Sanford
-  kubectl:
-    bin: /snap/bin/kubectl
-    config: /home/jsanford/.kube/config
+      password: XXXXXXXXXXXXX
+      user: XXXXXXXXXXXXX
+  github:
+    organizations:
+      - unb-libraries
+    authKey: XXXXXXXXXXXXX
+    userName: XXXXXXXXXXXXX
+    userEmail: XXXXXXXXXXXXX
   imaging:
     tesseractImage: unblibraries/tesseract:latest
     imagemagickImage: unblibraries/imagemagick:latest
+  jira:
+    hostName: https://jira.lib.unb.ca
+    userName: XXXXXXXXXXXXX
+  kubectl:
+    bin: /snap/bin/kubectl
+    config: /home/jsanford/.kube/config
