@@ -24,3 +24,5 @@ syskit:
   kubectl:
     bin: /snap/bin/kubectl
     config: /home/jsanford/.kube/config
+  travis:
+    bin: /usr/local/bin/travis
