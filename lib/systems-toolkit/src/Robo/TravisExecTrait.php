@@ -28,7 +28,7 @@ trait TravisExecTrait {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook pre-init
    */
   public function setTravisBin() {
     $this->travisBin = Robo::Config()->get('syskit.travis.bin');
@@ -38,10 +38,56 @@ trait TravisExecTrait {
   }
 
   /**
+   * Get if the travis binary defined in the config file can be executed.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setTravisBinExists() {
+    if (!is_executable($this->travisBin)) {
+      throw new \Exception(sprintf('The travis binary, %s, cannot be executed.', $this->travisBin));
+    }
+  }
+
+  /**
+   * Get travis CLI binary path from config.
+   *
+   * @throws \Exception
+   *
+   * @hook post-init
+   */
+  public function setTravisLogin() {
+    $this->say(sprintf('Testing authentication to travis...'));
+    $travis = $this->taskExec($this->travisBin)
+      ->printOutput(FALSE)
+      ->arg('accounts')
+      ->run();
+    if ($travis->getExitCode() > 0) {
+      throw new \Exception(sprintf('The travis client is unauthorized. Run "travis login" AND "travis login --pro"'));
+    }
+  }
+
+  /**
+   * Get if the repository namespace is valid.
+   *
+   * @param string $repository_name
+   *   The repository namespace to test (i.e. unb-libraries/pmportal.org)
+   *
+   * @throws \Exception
+   */
+  public function getValidTravisRepository($repository_name) {
+    $repository_parts = explode('/', $repository_name);
+    if (count($repository_parts) != 2) {
+      throw new \Exception(sprintf('The repository name, %s, does not appear to include the namespace. Please enter the full repository namespace (i.e. unb-libraries/pmportal.org).', $repository_name));
+    }
+  }
+
+  /**
    * Execute a travis command via the CLI.
    *
    * @param string $repository
-   *   The fully namespaced Github repository (unb-libraries/pmportal.org)
+   *   The fully namespaced Github repository (i.e. unb-libraries/pmportal.org)
    * @param string $command
    *   The command to execute (i.e. ls)
    * @param string[] $args
@@ -53,6 +99,7 @@ trait TravisExecTrait {
    *   The result of the execution.
    */
   private function travisExec($repository, $command, $args = [], $print_output = TRUE) {
+    $this->getValidTravisRepository($repository);
     $travis = $this->taskExec($this->travisBin)
       ->printOutput($print_output)
       ->arg($command)
@@ -65,6 +112,49 @@ trait TravisExecTrait {
     }
     $this->say(sprintf('Executing travis %s in %s...', $command, $repository));
     return $travis->run();
+  }
+
+  /**
+   * Get the lastest travis build job details for a repository.
+   *
+   * @param string $repository
+   *   The fully namespaced Github repository (i.e. unb-libraries/pmportal.org)
+   * @param string $branch
+   *   The branch of the repository
+   *
+   * @throws \Exception
+   *
+   * @command travis:build:get-latest
+   *
+   * @return string
+   *   The build job details, if it exists.
+   */
+  public function getLatestTravisBuild($repository, $branch) {
+    return $this->travisExec($repository, 'show', [$branch], FALSE)->getMessage();
+  }
+
+  /**
+   * Get the lastest travis build job ID for a repository.
+   *
+   * @param string $repository
+   *   The fully namespaced Github repository (i.e. unb-libraries/pmportal.org)
+   * @param string $branch
+   *   The branch of the repository
+   *
+   * @throws \Exception
+   *
+   * @command travis:build:get-latest-id
+   *
+   * @return string
+   *   The job ID, if it exists.
+   */
+  public function getLatestTravisJobId($repository, $branch) {
+    $build_info = $this-> getLatestTravisBuild($repository, $branch);
+    preg_match('/Job #([0-9]+)\.[0-9]+\:/', $build_info, $matches);
+    if (!empty($matches[1])) {
+      return $matches[1];
+    }
+    return NULL;
   }
 
 }
