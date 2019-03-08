@@ -24,7 +24,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   private $noConfirm = FALSE;
 
   /**
-   * Rebuild and deploy the Drupal 8 containers in their current state.
+   * Rebuild all Drupal 8 docker images and redeploy in their current state.
    *
    * @option array namespaces
    *   The namespaces to rebuild and deploy.
@@ -40,7 +40,9 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     ];
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     foreach($this->kubeCurPods as $pod) {
-      $this->setNeededUpdates($pod);
+      foreach ($options['namespaces'] as $namespace) {
+        $this->restartLatestTravisBuild("unb-libraries/{$pod->metadata->labels->instance}", $namespace);
+      }
     }
   }
 
