@@ -50,44 +50,6 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate OCR for an entire tree.
-   *
-   * @param string $root
-   *   The tree root to parse.
-   *
-   * @option extension
-   *   The extensions to match when finding files.
-   * @option oem
-   *   The engine to use.
-   * @option lang
-   *   The language to use.
-   * @option threads
-   *   The number of threads the OCR should use.
-   * @option args
-   *   Any other arguments to pass.
-   *
-   * @throws \Exception
-   *
-   * @command ocr:tesseract:tree
-   */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE]) {
-    $regex = "/^.+\.{$options['extension']}$/i";
-    $this->recursiveFileTreeRoot = $root;
-    $this->recursiveFileRegex = $regex;
-    $this->setFilesToIterate();
-    $this->getConfirmFiles('OCR', $options['skip-confirm']);
-
-    foreach ($this->recursiveFiles as $file_to_process) {
-      $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
-    }
-    if (!empty($options['threads'])) {
-      $this->setThreads($options['threads']);
-    }
-    $this->setRunProcessQueue('OCR');
-    $this->recursiveFiles = [];
-  }
-
-  /**
    * Generate metrics for OCR confidence and word count for a tree.
    *
    * @param string $root
@@ -143,27 +105,41 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate OCR for a file.
+   * Generate OCR for an entire tree.
    *
-   * @param string $file
-   *   The file to parse.
+   * @param string $root
+   *   The tree root to parse.
+   *
+   * @option extension
+   *   The extensions to match when finding files.
    * @option oem
    *   The engine to use.
    * @option lang
    *   The language to use.
+   * @option threads
+   *   The number of threads the OCR should use.
    * @option args
    *   Any other arguments to pass.
    *
-   * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
+   * @throws \Exception
    *
-   * @command ocr:tesseract:file
+   * @command ocr:tesseract:tree
    */
-  public function ocrTesseractFile($file, $options = ['oem' => 1, 'lang' => 'eng', 'args' => NULL]) {
-    if (!file_exists($file)) {
-      throw new FileNotFoundException("File $file not Found!");
+  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE]) {
+    $regex = "/^.+\.{$options['extension']}$/i";
+    $this->recursiveFileTreeRoot = $root;
+    $this->recursiveFileRegex = $regex;
+    $this->setFilesToIterate();
+    $this->getConfirmFiles('OCR', $options['skip-confirm']);
+
+    foreach ($this->recursiveFiles as $file_to_process) {
+      $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
     }
-    $command = $this->getOcrFileCommand($file, $options);
-    $command->run();
+    if (!empty($options['threads'])) {
+      $this->setThreads($options['threads']);
+    }
+    $this->setRunProcessQueue('OCR');
+    $this->recursiveFiles = [];
   }
 
   /**
@@ -187,6 +163,30 @@ class OcrCommand extends SystemsToolkitCommand {
       ->containerWorkdir('/data')
       ->arg('--rm')
       ->exec("--oem {$options['oem']} -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['args']}");
+  }
+
+  /**
+   * Generate OCR for a file.
+   *
+   * @param string $file
+   *   The file to parse.
+   * @option oem
+   *   The engine to use.
+   * @option lang
+   *   The language to use.
+   * @option args
+   *   Any other arguments to pass.
+   *
+   * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
+   *
+   * @command ocr:tesseract:file
+   */
+  public function ocrTesseractFile($file, $options = ['oem' => 1, 'lang' => 'eng', 'args' => NULL]) {
+    if (!file_exists($file)) {
+      throw new FileNotFoundException("File $file not Found!");
+    }
+    $command = $this->getOcrFileCommand($file, $options);
+    $command->run();
   }
 
 }

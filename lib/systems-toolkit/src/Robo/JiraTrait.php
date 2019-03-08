@@ -17,8 +17,25 @@ trait JiraTrait {
    */
   protected $jiraConfig;
 
+  /**
+   * The jira server hostname.
+   *
+   * @var string
+   */
   protected $jiraHostName;
+
+  /**
+   * The jira server user name to authenticate with.
+   *
+   * @var string
+   */
   protected $jiraUserName;
+
+  /**
+   * The jira server user password to authenticate with.
+   *
+   * @var string
+   */
   protected $jiraUserPassword;
 
   /**

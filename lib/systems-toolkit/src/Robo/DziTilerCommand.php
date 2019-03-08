@@ -91,36 +91,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate DZI tiles for a file.
-   *
-   * @option tile-size
-   *   The tile size to use.
-   * @option step
-   *   The zoom step to use.
-   * @option target-uid
-   *   The uid to assign the target files.
-   * @option target-gid
-   *   The gid to assign the target files.
-   *
-   * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
-   *
-   * @command dzi:generate-tiles
-   */
-  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
-    $dzi_file_path_info = pathinfo($file);
-    if (!file_exists($file)) {
-      throw new FileNotFoundException("File $file not Found!");
-    }
-    if (!$options['skip-existing'] ||
-      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") ||
-      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
-    ) {
-      $command = $this->getDziTileCommand($file, $options);
-      $command->run();
-    }
-  }
-
-  /**
    * Generate the Robo command used to generate the DZI tiles.
    *
    * @param string $file
@@ -152,6 +122,36 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("sudo cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi {$dzi_file_path_info['dirname']}/")
       ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi")
       ->exec("sudo rm -rf $tmp_dir");
+  }
+
+  /**
+   * Generate DZI tiles for a file.
+   *
+   * @option tile-size
+   *   The tile size to use.
+   * @option step
+   *   The zoom step to use.
+   * @option target-uid
+   *   The uid to assign the target files.
+   * @option target-gid
+   *   The gid to assign the target files.
+   *
+   * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
+   *
+   * @command dzi:generate-tiles
+   */
+  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
+    $dzi_file_path_info = pathinfo($file);
+    if (!file_exists($file)) {
+      throw new FileNotFoundException("File $file not Found!");
+    }
+    if (!$options['skip-existing'] ||
+      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") ||
+      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+    ) {
+      $command = $this->getDziTileCommand($file, $options);
+      $command->run();
+    }
   }
 
 }

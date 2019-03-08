@@ -2,10 +2,10 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
-use Symfony\Component\Console\Helper\Table;
 use DateTime;
+use Symfony\Component\Console\Helper\Table;
+use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for GetUserGithubActivityCommand Robo commands.
@@ -37,6 +37,8 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    * @usage jsanford@unb.ca
    *
    * @command github:user:activity
+   *
+   * @throws \Http\Client\Exception
    */
   public function getActivity($email) {
     $commits = [];
@@ -69,26 +71,6 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Output the commits for a date.
-   *
-   * @param array $commits
-   *   A list of commits from the GitHub API.
-   * @param array $sha
-   *   The SHA to check for.
-   *
-   * @return bool
-   *   TRUE if the sha matches an existing commit. False otherwise.
-   */
-  private function getIsDuplicateCommit(array $commits, $sha) {
-    foreach ($commits as $commit) {
-      if ($commit[1] == $sha) {
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
-
-  /**
    * Set the commits from an action.
    *
    * @param array $action
@@ -118,6 +100,26 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
         }
       }
     }
+  }
+
+  /**
+   * Output the commits for a date.
+   *
+   * @param array $commits
+   *   A list of commits from the GitHub API.
+   * @param string $sha
+   *   The SHA to check for.
+   *
+   * @return bool
+   *   TRUE if the sha matches an existing commit. False otherwise.
+   */
+  private function getIsDuplicateCommit(array $commits, $sha) {
+    foreach ($commits as $commit) {
+      if ($commit[1] == $sha) {
+        return TRUE;
+      }
+    }
+    return FALSE;
   }
 
   /**

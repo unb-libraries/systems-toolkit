@@ -46,7 +46,6 @@ trait RecursiveDirectoryTreeTrait {
     $iterator = new RecursiveIteratorIterator(
       new RecursiveDirectoryIterator($this->recursiveDirectoryTreeRoot, RecursiveDirectoryIterator::SKIP_DOTS),
       RecursiveIteratorIterator::SELF_FIRST,
-      // Ignore "Permission denied".
       RecursiveIteratorIterator::CATCH_GET_CHILD
     );
     $regex = new RegexIterator($iterator, $this->recursiveDirectoryFileRegex, \RecursiveRegexIterator::GET_MATCH);

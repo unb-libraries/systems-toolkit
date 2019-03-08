@@ -18,18 +18,18 @@ class CyberManCommand extends SystemsToolkitCommand {
   const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
 
   /**
+   * The AWS SNS Client.
+   *
+   * @var \Aws\Sns\SnsClient
+   */
+  protected $snsClient;
+
+  /**
    * The SNS Topic ID for the Cyberman Queue.
    *
    * @var string
    */
   protected $snsTopicId;
-
-  /**
-   * The AWS SNS Client.
-   *
-   * @var \Aws\Sns\SnsClient
-   */
-  protected $client;
 
   /**
    * This hook will fire for all commands in this command file.
@@ -38,7 +38,7 @@ class CyberManCommand extends SystemsToolkitCommand {
    */
   public function setSnsClient() {
     $credentials = new Credentials($this->accessKeyId, $this->secretAccessKey);
-    $this->client = new SnsClient([
+    $this->snsClient = new SnsClient([
         'version'     => 'latest',
         'region'      => $this->awsDefaultRegion,
         'credentials' => $credentials
@@ -60,7 +60,7 @@ class CyberManCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Send a message via the CyberMan slack bot.
+   * Send a message via the CyberMan Slack bot.
    *
    * This command will send a message to the systems slack bot 'Cyberman'.
    *
@@ -75,7 +75,7 @@ class CyberManCommand extends SystemsToolkitCommand {
    */
   public function sendMessage($message) {
     $this->say(
-      $this->client->publish(
+      $this->snsClient->publish(
         [
           'Message' => $message,
           'TopicArn' => $this->snsTopicId,

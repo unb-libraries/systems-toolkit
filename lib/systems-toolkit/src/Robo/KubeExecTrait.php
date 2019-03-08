@@ -58,6 +58,20 @@ trait KubeExecTrait {
   }
 
   /**
+   * Get kubectl config path from config.
+   *
+   * @throws \Exception
+   *
+   * @hook init
+   */
+  public function setKubeConfig() {
+    $this->kubeConfig = Robo::Config()->get('syskit.kubectl.config');
+    if (empty($this->kubeConfig)) {
+      throw new \Exception(sprintf('The kubectl config location is unset in %s', $this->configFile));
+    }
+  }
+
+  /**
    * Execute a command in all queued pods.
    *
    * @param string $exec
@@ -113,21 +127,12 @@ trait KubeExecTrait {
   }
 
   /**
-   * Get kubectl config path from config.
-   *
-   * @throws \Exception
-   *
-   * @hook init
-   */
-  public function setKubeConfig() {
-    $this->kubeConfig = Robo::Config()->get('syskit.kubectl.config');
-    if (empty($this->kubeConfig)) {
-      throw new \Exception(sprintf('The kubectl config location is unset in %s', $this->configFile));
-    }
-  }
-
-  /**
    * Set the current pods from a selector.
+   *
+   * @param string[] $selectors
+   *   An array of selectors to filter pods against.
+   * @param string[] $namespaces
+   *   An array of namespaces to filter pods against.
    *
    * @throws \Exception
    */
@@ -144,10 +149,13 @@ trait KubeExecTrait {
   /**
    * Add pods to the current list from a JSON response string.
    *
+   * @param string $json
+   *   The JSON string to parse and add pods from.
+   *
    * @throws \Exception
    */
-  private function setAddCurPodsFromJson($output) {
-    $response = json_decode($output);
+  private function setAddCurPodsFromJson($json) {
+    $response = json_decode($json);
     if (!empty($response->items)) {
       $this->kubeCurPods = array_merge($this->kubeCurPods, $response->items);
     }

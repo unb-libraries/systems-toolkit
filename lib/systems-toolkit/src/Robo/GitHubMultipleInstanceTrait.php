@@ -4,9 +4,9 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Github\ResultPager;
 use Symfony\Component\Console\Helper\Table;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubCommand;
-use UnbLibraries\SystemsToolkit\Robo\GitTrait;
 use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
+use UnbLibraries\SystemsToolkit\Robo\GitTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubCommand;
 
 /**
  * Trait for interacting with multiple instance repositories in GitHub.
@@ -36,43 +36,6 @@ trait GitHubMultipleInstanceTrait {
    * @var array
    */
   protected $failedRepos = [];
-
-  /**
-   * Determine if a repository name partially matches multiple terms.
-   *
-   * @param array $terms
-   *   An array of terms to match in a case insensitive manner against the name.
-   * @param string $name
-   *   The name to match against.
-   *
-   * @return bool
-   *   TRUE if the name matches one of the terms. FALSE otherwise.
-   */
-  public static function instanceNameMatchesSearchTerms(array $terms, $name) {
-    foreach ($terms as $match) {
-      if (stristr($name, $match)) {
-        return TRUE;
-      }
-    }
-    return FALSE;
-  }
-
-  /**
-   * Output a formatted list of repositories set to operate on to the console.
-   */
-  protected function listRepositoryNames() {
-    $wrapped_rows = array_map(
-      function ($el) {
-        return array($el['name']);
-      },
-      $this->githubRepositories
-    );
-    $table = new Table($this->output());
-    $table->setHeaders(['Repository Name'])
-      ->setRows($wrapped_rows);
-    $table->setStyle('borderless');
-    $table->render();
-  }
 
   /**
    * Store the list of repositories to operate on and confirm list with user.
@@ -203,6 +166,43 @@ trait GitHubMultipleInstanceTrait {
 
     // Pedantically rekey the repositories array.
     $this->githubRepositories = array_values($this->githubRepositories);
+  }
+
+  /**
+   * Determine if a repository name partially matches multiple terms.
+   *
+   * @param array $terms
+   *   An array of terms to match in a case insensitive manner against the name.
+   * @param string $name
+   *   The name to match against.
+   *
+   * @return bool
+   *   TRUE if the name matches one of the terms. FALSE otherwise.
+   */
+  public static function instanceNameMatchesSearchTerms(array $terms, $name) {
+    foreach ($terms as $match) {
+      if (stristr($name, $match)) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * Output a formatted list of repositories set to operate on to the console.
+   */
+  protected function listRepositoryNames() {
+    $wrapped_rows = array_map(
+      function ($el) {
+        return array($el['name']);
+      },
+      $this->githubRepositories
+    );
+    $table = new Table($this->output());
+    $table->setHeaders(['Repository Name'])
+      ->setRows($wrapped_rows);
+    $table->setStyle('borderless');
+    $table->render();
   }
 
 }

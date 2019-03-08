@@ -76,16 +76,6 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Set the drupal rest client token for a URI.
-   *
-   * @throws \Exception
-   */
-  protected function setUpDrupalRestClientToken() {
-    $response = $this->guzzleClient->get($this->drupalRestUri . "/rest/session/token");
-    $this->drupalRestToken =  (string) ($response->getBody());
-  }
-
-  /**
    * Get a entity from the Drupal Rest client.
    *
    * @param string $entity_uri
@@ -107,6 +97,16 @@ trait DrupalInstanceRestTrait {
       ]
     );
     return json_decode((string) $this->drupalRestResponse->getBody());
+  }
+
+  /**
+   * Set the drupal rest client token for a URI.
+   *
+   * @throws \Exception
+   */
+  protected function setUpDrupalRestClientToken() {
+    $response = $this->guzzleClient->get($this->drupalRestUri . "/rest/session/token");
+    $this->drupalRestToken =  (string) ($response->getBody());
   }
 
   /**

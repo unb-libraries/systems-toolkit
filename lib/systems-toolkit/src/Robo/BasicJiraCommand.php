@@ -2,10 +2,10 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\Robo\JiraTrait;
-use JiraRestApi\Project\ProjectService;
 use JiraRestApi\JiraException;
+use JiraRestApi\Project\ProjectService;
+use UnbLibraries\SystemsToolkit\Robo\JiraTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for BasicJiraCommand Robo commands.

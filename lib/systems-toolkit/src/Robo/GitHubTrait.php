@@ -100,7 +100,7 @@ trait GitHubTrait {
       $this->client->authenticate($this->authKey, NULL, Client::AUTH_HTTP_TOKEN);
       $this->client->currentUser()->show();
     }
-    catch (Exception $e) {
+    catch (\Exception $e) {
       throw new \Exception(sprintf('Authentication to GitHub failed. Is the authKey value set in the configuration file correct? This may also occur due to network outages.'));
     }
   }

@@ -3,8 +3,8 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for GitHubRepoCherryPickCommand Robo commands.
@@ -34,6 +34,42 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    * @var array
    */
   protected $sourceRepo;
+
+  /**
+   * Cherry pick a commit from a repo onto multiple others. Robo Command.
+   *
+   * @param string $source_repository
+   *   The name of the repository to source the commit from.
+   * @param string $target_topics
+   *   A comma separated list of topics to match. Only repositories whose
+   *   topics contain at least one of the comma separated values exactly will
+   *   have the commit picked onto. Optional.
+   * @param string $target_name_match
+   *   A comma separated list of names to match. Only repositories whose names
+   *   partially match at least one of the comma separated values will have the
+   *   commit picked onto. Optional.
+   *
+   * @throws \Exception
+   *
+   * @usage pmportal.org drupal8 unbherb
+   *
+   * @command github:repo:cherry-pick-multiple
+   */
+  public function cherryPickMultiple($source_repository, $target_topics = '', $target_name_match = '') {
+    $match_array = explode(",", $target_name_match);
+    $topics_array = explode(",", $target_topics);
+
+    if (empty($match_array[0]) && empty($topics_array[0])) {
+      $this->say(self::MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES);
+      return;
+    }
+
+    $this->cherryPickOneToMultiple(
+      $source_repository,
+      $topics_array,
+      $match_array
+    );
+  }
 
   /**
    * Cherry pick a commit from a repo onto multiple others.
@@ -173,42 +209,6 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
         $this->successfulRepos[$repository_data['name']] = "Success.";
       }
     }
-  }
-
-  /**
-   * Cherry pick a commit from a repo onto multiple others. Robo Command.
-   *
-   * @param string $source_repository
-   *   The name of the repository to source the commit from.
-   * @param string $target_topics
-   *   A comma separated list of topics to match. Only repositories whose
-   *   topics contain at least one of the comma separated values exactly will
-   *   have the commit picked onto. Optional.
-   * @param string $target_name_match
-   *   A comma separated list of names to match. Only repositories whose names
-   *   partially match at least one of the comma separated values will have the
-   *   commit picked onto. Optional.
-   *
-   * @throws \Exception
-   *
-   * @usage pmportal.org drupal8 unbherb
-   *
-   * @command github:repo:cherry-pick-multiple
-   */
-  public function cherryPickMultiple($source_repository, $target_topics = '', $target_name_match = '') {
-    $match_array = explode(",", $target_name_match);
-    $topics_array = explode(",", $target_topics);
-
-    if (empty($match_array[0]) && empty($topics_array[0])) {
-      $this->say(self::MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES);
-      return;
-    }
-
-    $this->cherryPickOneToMultiple(
-      $source_repository,
-      $topics_array,
-      $match_array
-    );
   }
 
 }

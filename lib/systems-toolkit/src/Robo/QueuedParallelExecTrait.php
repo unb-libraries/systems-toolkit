@@ -7,8 +7,7 @@ use Robo\Contract\CommandInterface;
 /**
  * Trait for running a stack of Robo commands in parallel.
  */
-trait QueuedParallelExecTrait
-{
+trait QueuedParallelExecTrait {
 
   /**
    * The queue of operations.

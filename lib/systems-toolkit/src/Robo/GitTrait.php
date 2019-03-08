@@ -35,6 +35,22 @@ trait GitTrait {
   }
 
   /**
+   * Verify a commit exists in a repository, otherwise throw an exception.
+   *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
+   *   The repository to check for the commit.
+   * @param string $hash
+   *   The hash of the commit to check for.
+   *
+   * @throws \Exception
+   */
+  protected function getRepoHasCommit(GitRepo $repo, $hash) {
+    if (!$this->getCommitInRepo($repo, $hash)) {
+      throw new \Exception(sprintf('The hash [%s] was not found in any branch of the repository.', $hash));
+    }
+  }
+
+  /**
    * Check if a commit exists in a repository.
    *
    * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
@@ -63,22 +79,6 @@ trait GitTrait {
       sprintf('The hash [%s] was not found in any branch of the repository.', $hash)
     );
     return FALSE;
-  }
-
-  /**
-   * Verify a commit exists in a repository, otherwise throw an exception.
-   *
-   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
-   *   The repository to check for the commit.
-   * @param string $hash
-   *   The hash of the commit to check for.
-   *
-   * @throws \Exception
-   */
-  protected function getRepoHasCommit(GitRepo $repo, $hash) {
-    if (!$this->getCommitInRepo($repo, $hash)) {
-      throw new \Exception(sprintf('The hash [%s] was not found in any branch of the repository.', $hash));
-    }
   }
 
 }

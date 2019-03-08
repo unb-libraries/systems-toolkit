@@ -3,8 +3,8 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for GitHubRepoRebaseDevToProdCommand Robo commands.
@@ -22,6 +22,42 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
   const OPERATION_TYPE = 'REBASE %s ONTO %s';
   const UPMERGE_SOURCE_BRANCH = 'dev';
   const UPMERGE_TARGET_BRANCH = 'prod';
+
+  /**
+   * Rebase dev onto prod for multiple GitHub Repositories. Robo Commmand.
+   *
+   * This command will rebase all commits that exist in the dev branch of a
+   * GitHub repository onto the prod branch.
+   *
+   * @param string $match
+   *   A comma separated list of names to match. Only repositories whose names
+   *   partially match at least one of the comma separated values will be
+   *   processed. Optional.
+   * @param string $topics
+   *   A comma separated list of topics to match. Only repositories whose
+   *   topics contain at least one of the comma separated values exactly will be
+   *   processed. Optional.
+   *
+   * @throws \Exception
+   *
+   * @usage unbherbarium,pmportal drupal8
+   *
+   * @command github:repo:rebasedevprod
+   */
+  public function upmergeRepoDevToProd($match = '', $topics = '') {
+    $match_array = explode(",", $match);
+    $topics_array = explode(",", $topics);
+
+    if (empty($match_array[0]) && empty($topics_array[0])) {
+      $this->say(self::MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES);
+      return;
+    }
+
+    $this->rebaseDevToProd(
+      $match_array,
+      $topics_array
+    );
+  }
 
   /**
    * Rebase dev onto prod for one or multiple GitHub repositories.
@@ -102,42 +138,6 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
         }
       }
     }
-  }
-
-  /**
-   * Rebase dev onto prod for multiple GitHub Repositories. Robo Commmand.
-   *
-   * This command will rebase all commits that exist in the dev branch of a
-   * GitHub repository onto the prod branch.
-   *
-   * @param string $match
-   *   A comma separated list of names to match. Only repositories whose names
-   *   partially match at least one of the comma separated values will be
-   *   processed. Optional.
-   * @param string $topics
-   *   A comma separated list of topics to match. Only repositories whose
-   *   topics contain at least one of the comma separated values exactly will be
-   *   processed. Optional.
-   *
-   * @throws \Exception
-   *
-   * @usage unbherbarium,pmportal drupal8
-   *
-   * @command github:repo:rebasedevprod
-   */
-  public function upmergeRepoDevToProd($match = '', $topics = '') {
-    $match_array = explode(",", $match);
-    $topics_array = explode(",", $topics);
-
-    if (empty($match_array[0]) && empty($topics_array[0])) {
-      $this->say(self::MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES);
-      return;
-    }
-
-    $this->rebaseDevToProd(
-      $match_array,
-      $topics_array
-    );
   }
 
 }

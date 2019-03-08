@@ -17,11 +17,33 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   use KubeExecTrait;
   use TravisExecTrait;
 
-  private $instances = [];
-  private $securityOnly = FALSE;
-  private $tabulatedUpdates = [];
-  private $updates = [];
+  /**
+   * Should confirmations for this object be skipped?
+   *
+   * @var bool
+   */
   private $noConfirm = FALSE;
+
+  /**
+   * Should only security updates be listed/applied?
+   *
+   * @var bool
+   */
+  private $securityOnly = FALSE;
+
+  /**
+   * A list of required updates in a tabular format.
+   *
+   * @var string[]
+   */
+  private $tabulatedUpdates = [];
+
+  /**
+   * A list of required updates .
+   *
+   * @var string[]
+   */
+  private $updates = [];
 
   /**
    * Rebuild all Drupal 8 docker images and redeploy in their current state.
@@ -44,31 +66,6 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         $this->restartLatestTravisBuild("unb-libraries/{$pod->metadata->labels->instance}", $namespace);
       }
     }
-  }
-
-  /**
-   * Get the list of needed Drupal 8 updates .
-   *
-   * @option array namespaces
-   *   The extensions to match when finding files.
-   * @option bool security-only
-   *   Only retrieve security updates.
-   *
-   * @throws \Exception
-   *
-   * @command drupal:8:getupdates
-   */
-  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'security-only' => FALSE]) {
-    $this->securityOnly = $options['security-only'];
-
-    $pod_selector = [
-      'app=drupal',
-      'appMajor=8',
-    ];
-    $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
-    $this->setAllNeededUpdates();
-    $this->tabulateNeededUpdates($options['namespaces']);
-    $this->printTabluatedUpdateTables();
   }
 
   /**
@@ -109,61 +106,46 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
   }
 
-  private function printTabluatedUpdateTables() {
-    if (!empty($this->tabulatedUpdates)) {
-      foreach($this->tabulatedUpdates as $instance => $updates) {
-        $this->printTabluatedInstanceUpdateTable($instance);
-      }
-    }
+  /**
+   * Get the list of needed Drupal 8 updates .
+   *
+   * @option array namespaces
+   *   The extensions to match when finding files.
+   * @option bool security-only
+   *   Only retrieve security updates.
+   *
+   * @throws \Exception
+   *
+   * @command drupal:8:getupdates
+   */
+  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'security-only' => FALSE]) {
+    $this->securityOnly = $options['security-only'];
+
+    $pod_selector = [
+      'app=drupal',
+      'appMajor=8',
+    ];
+    $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
+    $this->setAllNeededUpdates();
+    $this->tabulateNeededUpdates($options['namespaces']);
+    $this->printTabluatedUpdateTables();
   }
 
-  private function printTabluatedInstanceUpdateTable($instance_name) {
-    if (!empty($this->tabulatedUpdates[$instance_name])) {
-      $this->say("Updates available:");
-      $table = new Table($this->output());
-      $table->setHeaders([$instance_name]);
-      $rows=[];
-      foreach ($this->tabulatedUpdates[$instance_name] as $environment => $data) {
-        $rows[] = ["$environment:"];
-        foreach ($data['updates'] as $module_update) {
-          $rows[] = [$this->getFormattedUpdateMessage($module_update)];
-        }
-      }
-      if (!empty($rows)) {
-        $table->setRows($rows);
-        $table->setStyle('borderless');
-        $table->render();
-      }
-    }
-  }
-
-
-  private function getFormattedUpdateMessage($update) {
-    return sprintf(
-      '%s %s->%s (%s)',
-      $update->name,
-      $update->existing_version,
-      $update->recommended,
-      $update->status
-    );
-  }
-
-  private function updateAllRepositories() {
-    foreach($this->githubRepositories as $repository) {
-      $this->updateRepository($repository);
-    }
-  }
-
-  private function updateRepository($repository) {
-    $this->updateComposerJson($repository);
-  }
-
+  /**
+   * Set all needed updates for queued pods.
+   */
   private function setAllNeededUpdates() {
     foreach($this->kubeCurPods as $pod) {
       $this->setNeededUpdates($pod);
     }
   }
 
+  /**
+   * Set needed updates for a specific pod.
+   *
+   * @param object $pod
+   *   The kubernetes pod object obtained from JSON.
+   */
   private function setNeededUpdates($pod) {
     $args = [];
     $command = '/scripts/listDrupalUpdates.sh';
@@ -188,6 +170,12 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
   }
 
+  /**
+   * Set needed updates for a specific pod.
+   *
+   * @param string[] $branches
+   *   The branches to set the updates for.
+   */
   private function tabulateNeededUpdates($branches = ['dev', 'prod']) {
     foreach ($this->updates as $update) {
       if (in_array($update['pod']->metadata->namespace, $branches)) {
@@ -203,6 +191,89 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
   }
 
+  /**
+   * Print tabulated updates to the console.
+   */
+  private function printTabluatedUpdateTables() {
+    if (!empty($this->tabulatedUpdates)) {
+      foreach($this->tabulatedUpdates as $instance => $updates) {
+        $this->printTabluatedInstanceUpdateTable($instance);
+      }
+    }
+  }
+
+  /**
+   * Print the list of tabulated instance updates as a table.
+   *
+   * @param string $instance_name
+   *   The name of the instance.
+   */
+  private function printTabluatedInstanceUpdateTable($instance_name) {
+    if (!empty($this->tabulatedUpdates[$instance_name])) {
+      $this->say("Updates available:");
+      $table = new Table($this->output());
+      $table->setHeaders([$instance_name]);
+      $rows=[];
+      foreach ($this->tabulatedUpdates[$instance_name] as $environment => $data) {
+        $rows[] = ["$environment:"];
+        foreach ($data['updates'] as $module_update) {
+          $rows[] = [$this->getFormattedUpdateMessage($module_update)];
+        }
+      }
+      if (!empty($rows)) {
+        $table->setRows($rows);
+        $table->setStyle('borderless');
+        $table->render();
+      }
+    }
+  }
+
+  /**
+   * Get the formatted message referencing a particular update.
+   *
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   *
+   * @return string
+   *   The formatted update message.
+   */
+  private function getFormattedUpdateMessage($update) {
+    return sprintf(
+      '%s %s->%s (%s)',
+      $update->name,
+      $update->existing_version,
+      $update->recommended,
+      $update->status
+    );
+  }
+
+  /**
+   * Update all queued GitHub repositories.
+   */
+  private function updateAllRepositories() {
+    foreach($this->githubRepositories as $repository) {
+      $this->updateRepository($repository);
+    }
+  }
+
+  /**
+   * Update a specific GitHub repository with required updates.
+   *
+   * @param array $repository
+   *   The associative array describing the repository.
+   */
+  private function updateRepository(array $repository) {
+    $this->updateComposerJson($repository);
+  }
+
+  /**
+   * Update and commit the build/composer.json file for a repository and branch.
+   *
+   * @param array $repository
+   *   The associative array describing the repository.
+   * @param string $branch
+   *   The repository branch to perform the updates in.
+   */
   private function updateComposerJson($repository, $branch = 'dev') {
     $path = 'build/composer.json';
     $committer = array('name' => 'Jacob Sanford', 'email' => 'jsanford@unb.ca');
@@ -254,6 +325,17 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
   }
 
+  /**
+   * Determine if a composer.json file needs updates.
+   *
+   * @param object $composer_file
+   *   The object obtained by parsing the composer file JSON.
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   *
+   * @return bool
+   *   TRUE if the composer file needs update, FALSE otherwise.
+   */
   private function composerFileNeedsUpdate($composer_file, $update) {
     $project_name = $this->getFormattedProjectName($update);
     $old_version = $this->getFormattedProjectVersion($update->existing_version);
@@ -263,6 +345,46 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     return FALSE;
   }
 
+  /**
+   * Get the formatted version of an update's project name.
+   *
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   *
+   * @return string
+   *   The formatted project name.
+   */
+  private function getFormattedProjectName($update) {
+    if($update->name == 'drupal') {
+      return "drupal/core";
+    }
+    else {
+      return "drupal/{$update->name}";
+    }
+  }
+
+  /**
+   * Get the formatted version of an update's project version.
+   *
+   * @param string $version_string
+   *   The version string to parse for formatting.
+   *
+   * @return string
+   *   The formatted project version.
+   */
+  private function getFormattedProjectVersion($version_string) {
+    $formatted_version = str_replace('8.x-', NULL, $version_string);
+    return $formatted_version;
+  }
+
+  /**
+   * Update a composer file contents with a specific update.
+   *
+   * @param object $composer_file
+   *   The object obtained by parsing the composer file JSON.
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   */
   private function updateComposerFile(&$composer_file, $update) {
     $project_name = $this->getFormattedProjectName($update);
     $old_version = $this->getFormattedProjectVersion($update->existing_version);
@@ -273,17 +395,4 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
   }
 
-  private function getFormattedProjectName($update) {
-    if($update->name == 'drupal') {
-      return "drupal/core";
-    }
-    else {
-      return "drupal/{$update->name}";
-    }
-  }
-
-  private function getFormattedProjectVersion($version_string) {
-    $formatted_version = str_replace('8.x-', NULL, $version_string);
-    return $formatted_version;
-  }
 }
