@@ -2,10 +2,11 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
-use Symfony\Component\Console\Helper\Table;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use UnbLibraries\SystemsToolkit\Robo\TravisExecTrait;
 
 /**
  * Class for Drupal8UpdatesCommand Robo commands.
@@ -14,12 +15,34 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
   use KubeExecTrait;
+  use TravisExecTrait;
 
   private $instances = [];
   private $securityOnly = FALSE;
   private $tabulatedUpdates = [];
   private $updates = [];
   private $noConfirm = FALSE;
+
+  /**
+   * Rebuild and deploy the Drupal 8 containers in their current state.
+   *
+   * @option array namespaces
+   *   The namespaces to rebuild and deploy.
+   *
+   * @throws \Exception
+   *
+   * @command drupal:8:rebuild-redeploy
+   */
+  public function getRebuildDeployDrupal8Containers($options = ['namespaces' => ['dev', 'prod']]) {
+    $pod_selector = [
+      'app=drupal',
+      'appMajor=8',
+    ];
+    $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
+    foreach($this->kubeCurPods as $pod) {
+      $this->setNeededUpdates($pod);
+    }
+  }
 
   /**
    * Get the list of needed Drupal 8 updates .
