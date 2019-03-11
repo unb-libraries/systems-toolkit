@@ -61,7 +61,6 @@ trait GitHubMultipleInstanceTrait {
    *   TRUE if user agreed, FALSE otherwise.
    */
   protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation', $no_confirm = FALSE) {
-    print_r($no_confirm);
     $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
     $this->listRepositoryNames();
 
