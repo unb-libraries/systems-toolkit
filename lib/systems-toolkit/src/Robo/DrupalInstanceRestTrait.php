@@ -86,10 +86,12 @@ trait DrupalInstanceRestTrait {
    * @return object
    *   The JSON object returned from the server.
    */
-  protected function getDrupalRestEntity($entity_uri) {
+  protected function getDrupalRestEntity($entity_uri, $silent = FALSE) {
     $this->setUpDrupalRestClientToken();
     $get_uri = $this->drupalRestUri . "$entity_uri?_format=json";
-    $this->say($get_uri);
+    if (!$silent) {
+      $this->say($get_uri);
+    }
     $this->drupalRestResponse = $this->guzzleClient->get(
       $get_uri,
       [
