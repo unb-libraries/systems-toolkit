@@ -77,7 +77,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Get a entity from the Drupal Rest client.
+   * Get a entity from the Drupal REST client.
    *
    * @param string $entity_uri
    *   The entity URI.
@@ -96,6 +96,8 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
+   * General Guzzle request initiator.
+   *
    * @param $uri
    * @param $method
    * @param array $args
@@ -132,7 +134,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Set the drupal rest client token for a URI.
+   * Set the Drupal REST client token for a URI.
    *
    * @throws \Exception
    */
