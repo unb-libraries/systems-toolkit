@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use GuzzleHttp\Exception\BadResponseException;
 use Robo\Robo;
 use UnbLibraries\SystemsToolkit\Robo\GuzzleClientTrait;
 
@@ -80,6 +81,7 @@ trait DrupalInstanceRestTrait {
    *
    * @param string $entity_uri
    *   The entity URI.
+   * @param bool $silent
    *
    * @throws \Exception
    *
@@ -87,18 +89,46 @@ trait DrupalInstanceRestTrait {
    *   The JSON object returned from the server.
    */
   protected function getDrupalRestEntity($entity_uri, $silent = FALSE) {
+    $uri = "$entity_uri?_format=json";
+    $args = [];
+    $method = 'get';
+    return $this->getGuzzleRequest($uri, $method, $args, $silent);
+  }
+
+  /**
+   * @param $uri
+   * @param $method
+   * @param array $args
+   * @param bool $silent
+   * @param bool $retry_on_error
+   * @param int $retry_counter
+   * @param int $max_retries
+   *
+   * @return mixed
+   * @throws \Exception
+   */
+  protected function getGuzzleRequest($uri, $method, $args = [], $silent = FALSE, $retry_on_error = TRUE, $retry_counter = 0, $max_retries = 5) {
     $this->setUpDrupalRestClientToken();
-    $get_uri = $this->drupalRestUri . "$entity_uri?_format=json";
-    if (!$silent) {
-      $this->say($get_uri);
-    }
-    $this->drupalRestResponse = $this->guzzleClient->get(
-      $get_uri,
-      [
+    $endpoint_uri = $this->drupalRestUri . $uri;
+    try {
+      if (!$silent) {
+        $this->say($endpoint_uri);
+      }
+      $auth_args = [
         'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
-      ]
-    );
-    return json_decode((string) $this->drupalRestResponse->getBody());
+      ];
+      $this->drupalRestResponse = $this->guzzleClient->$method(
+        $endpoint_uri,
+        array_merge($auth_args, $args)
+      );
+      return json_decode((string) $this->drupalRestResponse->getBody());
+    } catch (BadResponseException $e) {
+      $retry_counter++;
+      if ($retry_on_error && $retry_counter < $max_retries) {
+        return $this->getGuzzleRequest($uri, $method, $args, $silent, $retry_on_error, $retry_counter);
+      }
+    }
+    throw new \Exception(sprintf('The REST request to %s failed.', $endpoint_uri));
   }
 
   /**
@@ -125,19 +155,16 @@ trait DrupalInstanceRestTrait {
    *   The JSON object returned from the server.
    */
   protected function patchDrupalRestEntity($patch_uri, $patch_content) {
-    $this->setUpDrupalRestClientToken();
-    $patch_uri = $this->drupalRestUri . "$patch_uri?_format=json";
-    $this->say($patch_uri);
-    $this->drupalRestResponse = $this->guzzleClient
-      ->patch($patch_uri, [
-        'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
-        'body' => $patch_content,
-        'headers' => [
-          'Content-Type' => 'application/json',
-          'X-CSRF-Token' => $this->drupalRestToken
-        ],
-      ]);
-    return json_decode((string) $this->drupalRestResponse->getBody());
+    $uri = "$patch_uri?_format=json";
+    $args = [
+      'body' => $patch_content,
+      'headers' => [
+        'Content-Type' => 'application/json',
+        'X-CSRF-Token' => $this->drupalRestToken
+      ],
+    ];
+    $method = 'patch';
+    return $this->getGuzzleRequest($uri, $method, $args);
   }
 
   /**
@@ -154,19 +181,16 @@ trait DrupalInstanceRestTrait {
    *   The JSON object returned from the server.
    */
   protected function createDrupalRestEntity($create_uri, $create_content) {
-    $this->setUpDrupalRestClientToken();
-    $create_uri = $this->drupalRestUri . "$create_uri?_format=json";
-    $this->say($create_uri);
-    $this->drupalRestResponse = $this->guzzleClient
-      ->post($create_uri, [
-        'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
-        'body' => $create_content,
-        'headers' => [
-          'Content-Type' => 'application/json',
-          'X-CSRF-Token' => $this->drupalRestToken
-        ],
-      ]);
-    return json_decode((string) $this->drupalRestResponse->getBody());
+    $uri = "$create_uri?_format=json";
+    $args = [
+      'body' => $create_content,
+      'headers' => [
+        'Content-Type' => 'application/json',
+        'X-CSRF-Token' => $this->drupalRestToken
+      ],
+    ];
+    $method = 'post';
+    return $this->getGuzzleRequest($uri, $method, $args);
   }
 
   /**
@@ -189,22 +213,17 @@ trait DrupalInstanceRestTrait {
    *   The JSON object of the file returned from the server.
    */
   protected function uploadDrupalRestFileToEntityField($entity_type_id, $entity_bundle, $field_name, $file_contents, $file_name) {
-    $this->setUpDrupalRestClientToken();
-    $post_uri = $this->drupalRestUri . "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
-    $this->say($post_uri);
-    $this->drupalRestResponse = $this->guzzleClient->post(
-      $post_uri,
-      [
-        'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
-        'body' => $file_contents,
-        'headers' => [
-          'Content-Type' => 'application/octet-stream',
-          'Content-Disposition' => "file; filename=\"$file_name\"",
-          'X-CSRF-Token' => $this->drupalRestToken
-        ],
-      ]
-    );
-    return json_decode((string) $this->drupalRestResponse->getBody());
+    $uri = "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
+    $args = [
+      'body' => $file_contents,
+      'headers' => [
+        'Content-Type' => 'application/octet-stream',
+        'Content-Disposition' => "file; filename=\"$file_name\"",
+        'X-CSRF-Token' => $this->drupalRestToken
+      ],
+    ];
+    $method = 'post';
+    return $this->getGuzzleRequest($uri, $method, $args);
   }
 
 }
