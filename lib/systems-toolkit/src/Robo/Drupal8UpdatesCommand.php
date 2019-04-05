@@ -276,7 +276,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    */
   private function updateComposerJson($repository, $branch = 'dev') {
     $path = 'build/composer.json';
-    $committer = array('name' => 'Jacob Sanford', 'email' => 'jsanford@unb.ca');
+    $committer = ['name' => $this->userName, 'email' => $this->userEmail];
 
     if (!empty($this->tabulatedUpdates[$repository['name']][$branch])) {
       $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
