@@ -66,8 +66,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
             ->contents()
             ->update($owner, $repo, $file, $newContent, $info['commit'], $oldHashes['sha'], $branch, $committer);
 
-          # ensure content is fresh to not overwrite the previous change
-          $oldContent = $this->client->api('repo')->contents()->download($owner, $repo, $file, $branch);
+          $oldContent = $newContent;
         }
       }
     }
