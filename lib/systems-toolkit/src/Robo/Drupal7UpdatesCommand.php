@@ -67,6 +67,9 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
             ->update($owner, $repo, $file, $newContent, $info['commit'], $oldHashes['sha'], $branch, $committer);
 
           $oldContent = $newContent;
+          if(count($parsedUpdates) > 1) {
+            sleep(2);
+          }
         }
       }
     }
