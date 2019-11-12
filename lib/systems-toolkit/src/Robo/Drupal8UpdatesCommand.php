@@ -162,10 +162,13 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     );
 
     $updates_needed = $result->getMessage();
+    $updates = json_decode($updates_needed);
+    $this->filterIgnoredUpdates($updates);
+
     if (!empty($updates_needed)) {
       $this->updates[] = [
         'pod' => $pod,
-        'updates' => json_decode($updates_needed),
+        'updates' => $updates,
       ];
     }
   }
@@ -245,6 +248,40 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       $update->recommended,
       $update->status
     );
+  }
+
+  /**
+   * Determine if an update should be ignored.
+   *
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   *
+   * @return bool
+   *   TRUE if the update should be ignored. FALSE otherwise.
+   */
+  private function isIgnoredUpdate($update) {
+    $ignored_projects = [
+      'field_collection'
+    ];
+    if (in_array($update->name, $ignored_projects)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Filter any ignored updates.
+   *
+   * @param object[] $updates
+   *   An array of update objects.
+   */
+  private function filterIgnoredUpdates(&$updates) {
+    foreach($updates as $idx => $update) {
+      if ($this->isIgnoredUpdate($update)) {
+        $this->say("Ignoring update for {$update->name}...");
+        unset($updates[$idx]);
+      }
+    }
   }
 
   /**
