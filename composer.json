@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "minimum-stability": "dev",
-  "name": "Provision scaffolding for deploying instance. Unrelated to Drupal site.",
+  "name": "unb-libraries/systems-toolkit-app",
   "config": {
     "preferred-install": {
       "*": "dist"
