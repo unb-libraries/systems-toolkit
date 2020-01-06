@@ -173,7 +173,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       $this->filterWhitelistUpdates($updates, $module_whitelist);
     }
 
-    if (!empty($updates_needed)) {
+    if (!empty($updates)) {
       $this->updates[] = [
         'pod' => $pod,
         'updates' => $updates,
