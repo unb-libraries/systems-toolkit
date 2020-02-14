@@ -3,6 +3,8 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\DomCrawler\Crawler;
+use UnbLibraries\SystemsToolkit\Robo\Drupal8ModuleCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -168,7 +170,6 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     $updates_needed = $result->getMessage();
     $updates = json_decode($updates_needed);
     $this->filterIgnoredUpdates($updates);
-
     if (!empty($module_whitelist)) {
       $this->filterWhitelistUpdates($updates, $module_whitelist);
     }
@@ -244,18 +245,34 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @param object $update
    *   The update object that was generated from the JSON source.
+   * @param bool $add_changelog
+   *   Append the latest changelog in the form of a git extended commit message.
    *
    * @return string
    *   The formatted update message.
+   *
+   * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function getFormattedUpdateMessage($update) {
-    return sprintf(
+  private function getFormattedUpdateMessage($update, $add_changelog = FALSE) {
+    $message = sprintf(
       '%s %s->%s (%s)',
       $update->name,
       $update->existing_version,
       $update->recommended,
       $update->status
     );
+
+    if ($add_changelog) {
+      $changelog = Drupal8ModuleCommand::moduleChangeLog($update->name, $update->recommended);
+      if (!empty($changelog)) {
+        $message = sprintf(
+          "$message\n\n%s",
+          $changelog
+        );
+      }
+    }
+
+    return $message;
   }
 
   /**
@@ -353,7 +370,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         }
         foreach ($update_data['updates'] as $cur_update) {
           if ($this->composerFileNeedsUpdate($composer_file, $cur_update)) {
-            $commit_message = $this->getFormattedUpdateMessage($cur_update);
+            $commit_message = $this->getFormattedUpdateMessage($cur_update, TRUE);
             if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {
               $this->say('Getting old file hash...');
               $old_file_hashes = $this->client->api('repo')
