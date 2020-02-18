@@ -35,19 +35,21 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
    *   The changelog for the module.
    */
   public function getModuleChangelog($module, $version) {
+    $commit_text = NULL;
     $cache = new FilesystemAdapter();
     $cache_tag = "$module$version";
+
     // Ensure we use only pure version for URI.
     $version = str_replace('8.x-', '', $version);
+    $changelog_uri = sprintf(
+      self::CHANGELOG_URI,
+      $module,
+      $version
+    );
 
-    $raw_message = $cache->get($cache_tag, function (ItemInterface $item) use ($module, $version) {
+    $raw_message = $cache->get($cache_tag, function (ItemInterface $item) use ($changelog_uri) {
       $item->expiresAfter(self::CHANGELOG_CACHE_TIME);
       $client = new Client();
-      $changelog_uri = sprintf(
-        self::CHANGELOG_URI,
-        $module,
-        $version
-      );
       $response = $client->request('GET', $changelog_uri);
       $htmlResponse = $response->getBody()->__toString();
       $crawler = new Crawler($htmlResponse);
@@ -57,15 +59,26 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
     });
 
     // Tidy-up formatting.
-    $commit_text = preg_replace('/\[(.*?)\]\(.*?\)/', "[$1]", $raw_message);
-    $commit_text = preg_replace('/ +/', ' ', $commit_text);
-    $commit_text = str_replace('[\\#', '[#', $commit_text);
-    $commit_text = str_replace('\\\\\\\\', '\\', $commit_text);
-    $commit_text = htmlspecialchars_decode($commit_text);
+    if (!empty($raw_message)) {
+      $commit_text = preg_replace('/\[(.*?)\]\(.*?\)/', "[$1]", $raw_message);
+      $commit_text = preg_replace('/ +/', ' ', $commit_text);
+      $commit_text = str_replace('[\\#', '[#', $commit_text);
+      $commit_text = str_replace('\\\\\\\\', '\\', $commit_text);
+      $commit_text = str_replace('\_', '_', $commit_text);
+      $commit_text = trim(
+        strip_tags(
+          htmlspecialchars_decode($commit_text)
+        )
+      );
+      // Add a link to the release page.
+      $commit_text = sprintf(
+        "(Obtained from : %s) \n\n%s",
+        $changelog_uri,
+        $commit_text
+      );
+    }
 
-    return trim(
-      strip_tags($commit_text)
-    );
+    return $commit_text;
   }
 
   /**
