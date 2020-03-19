@@ -47,6 +47,10 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       $version
     );
 
+    if ($module == 'drupal') {
+      $changelog_uri = str_replace('8.x-', '', $changelog_uri);
+    }
+
     $raw_message = $cache->get($cache_tag, function (ItemInterface $item) use ($changelog_uri) {
       $item->expiresAfter(self::CHANGELOG_CACHE_TIME);
       $client = new Client();
