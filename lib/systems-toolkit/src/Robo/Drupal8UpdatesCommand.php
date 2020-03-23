@@ -301,10 +301,12 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *   An array of update objects.
    */
   private function filterIgnoredUpdates(&$updates) {
-    foreach($updates as $idx => $update) {
-      if ($this->isIgnoredUpdate($update)) {
-        $this->say("Ignoring update for {$update->name}...");
-        unset($updates[$idx]);
+    if (!empty($updates)) {
+      foreach($updates as $idx => $update) {
+        if ($this->isIgnoredUpdate($update)) {
+          $this->say("Ignoring update for {$update->name}...");
+          unset($updates[$idx]);
+        }
       }
     }
   }
