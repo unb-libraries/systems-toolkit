@@ -94,7 +94,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
             $commits[$push_day][] = [
               $repo_name,
               $commit['sha'],
-              $commit['message']
+              strtok($commit['message'], "\n")
             ];
           }
         }
