@@ -18,7 +18,7 @@
   },
   "scripts": {
     "post-update-cmd": [
-      "ln -s vendor/bin/syskit ./syskit | true"
+      "ln -sf vendor/bin/syskit ./syskit"
     ]
   }
 }
