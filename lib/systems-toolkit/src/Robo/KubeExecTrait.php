@@ -114,10 +114,10 @@ trait KubeExecTrait {
       ->arg('exec')
       ->arg($flags)
       ->arg($pod->metadata->name)
+      ->arg('--')
       ->arg($exec);
 
     if (!empty($args)) {
-      $kube->arg('--');
       foreach ($args as $arg) {
         $kube->arg($arg);
       }
