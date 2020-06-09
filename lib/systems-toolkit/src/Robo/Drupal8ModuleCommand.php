@@ -62,9 +62,18 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       $response = $client->request('GET', $changelog_uri);
       $htmlResponse = $response->getBody()->__toString();
       $crawler = new Crawler($htmlResponse);
-      $crawler = $crawler->filter(self::CHANGELOG_CSS_SELECTOR);
-      $converter = new HtmlConverter();
-      return $converter->convert($crawler->outerHtml());
+      $changelog_node = $crawler->filter(self::CHANGELOG_CSS_SELECTOR);
+      if ($changelog_node->count() > 0 ) {
+        $converter = new HtmlConverter();
+        try {
+          $message = $converter->convert($changelog_node->outerHtml());
+          return $message;
+        }
+        catch (Exception $e) {
+          return NULL;
+        }
+      }
+      return NULL;
     });
 
     // Tidy-up formatting.
