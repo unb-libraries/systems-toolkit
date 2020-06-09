@@ -47,7 +47,12 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       $version
     );
 
-    if ($module == 'drupal') {
+    // Exceptions where release URLs don't have 8.x- in URL.
+    $no_full_refspec_url = [
+      'drupal',
+      'bootstrap4',
+    ];
+    if (in_array($module, $no_full_refspec_url)) {
       $changelog_uri = str_replace('8.x-', '', $changelog_uri);
     }
 
