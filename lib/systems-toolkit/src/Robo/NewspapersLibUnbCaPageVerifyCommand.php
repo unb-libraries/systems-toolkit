@@ -28,6 +28,41 @@ class NewspapersLibUnbCaPageVerifyCommand extends OcrCommand {
   protected $results = [];
 
   /**
+   * Verify an issue page image file contains the same content as a local file.
+   *
+   * @param $issue_id
+   * @param $page_no
+   * @param $local_file_path
+   * @param string[] $options
+   *
+   * @return bool
+   * @throws \Exception
+   */
+  public static function verifyPageFromIds($issue_id, $page_no, $local_file_path, $options = ['instance-uri' => 'http://localhost:3095']) {
+    $remote_file_path = $options['instance-uri'] . "/serials_pages/download/$issue_id/$page_no/download";
+    if (!self::remoteHashIsSame($remote_file_path, $local_file_path)) {
+      throw new \Exception("File integrity mismatch with $local_file_path");
+    }
+    return TRUE;
+  }
+
+  /**
+   * @param $uri
+   * @param $file
+   *
+   * @return bool
+   */
+  public static function remoteHashIsSame($uri, $file) {
+    $contents = file_get_contents($uri);
+    $md5_remote = md5($contents);
+    $md5_local = self::md5Sum($file);
+    if ($md5_remote == $md5_local) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Verify one or a tree of directories for import against the newspaper site.
    *
    * @param string $title_id
@@ -239,8 +274,17 @@ class NewspapersLibUnbCaPageVerifyCommand extends OcrCommand {
    * @return string|null
    */
   private function getMd5Sum($path) {
+    $this->printMessage(LogLevel::INFO, "Running MD5 Sum on $path....");
+    return self::md5Sum($path);
+  }
+
+  /**
+   * @param $path
+   *
+   * @return string|null
+   */
+  public static function md5Sum($path) {
     if (file_exists($path)) {
-      $this->printMessage(LogLevel::INFO, "Running MD5 Sum on $path....");
       return trim(md5_file($path));
     }
     return NULL;

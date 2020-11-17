@@ -4,6 +4,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
+use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaPageVerifyCommand;
 
 /**
  * Class for Newspaper Page OCR commands.
@@ -157,6 +158,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   The URI of the target instance.
    * @option threads
    *   The number of threads the OCR process should use.
+   * @option bool $no-verify
+   *   Do not verify if the pages were successfully uploaded.
    *
    * @throws \Exception
    *
@@ -164,7 +167,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issues-tree
    */
-  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL]) {
+  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'no-verify' => FALSE]) {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -207,6 +210,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   The number of threads the OCR process should use.
    * @option generate-ocr
    *   Generate OCR for files - disable if pre-generated.
+   * @option bool $no-verify
+   *   Do not verify if the pages were successfully uploaded.
    *
    * @throws \Exception
    *
@@ -214,7 +219,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE]) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Create issue
@@ -347,6 +352,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @option string $instance-uri
    *   The URI of the target instance.
+   * @option bool $no-verify
+   *   Do not verify the page was successfully uploaded.
    *
    * @throws \Exception
    *
@@ -354,18 +361,20 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-page
    */
-  public function createSerialPageFromFile($issue_id, $page_no, $page_sort, $file_path, $options = ['instance-uri' => 'http://localhost:3095']) {
+  public function createSerialPageFromFile($issue_id, $page_no, $page_sort, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'no-verify' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.
     if (!file_exists($file_path . ".hocr")) {
+      $ocr_options = [
+        'oem' => 1,
+        'lang' => 'eng',
+        'args' => 'hocr',
+      ];
+
       $this->ocrTesseractFile(
         $file_path,
-        $options = [
-          'oem' => 1,
-          'lang' => 'eng',
-          'args' => 'hocr',
-        ]
+        $ocr_options
       );
     }
 
@@ -419,6 +428,9 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     );
 
     $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content);
+    if ($options['no-verify'] == FALSE) {
+      NewspapersLibUnbCaPageVerifyCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options);
+    }
   }
 
   /**
