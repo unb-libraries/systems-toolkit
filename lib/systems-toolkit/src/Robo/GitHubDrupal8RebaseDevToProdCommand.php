@@ -33,7 +33,7 @@ class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComma
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,
-      ['drupal8'],
+      ['dockworker', 'drupal8'],
       $options
     );
   }
