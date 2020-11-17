@@ -331,7 +331,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         );
       }
       $this->recursiveFiles = [];
-
+      $this->say("New issue created at:");
+      $this->say($options['instance-uri'] . "/serials/$title_id/issues/$issue_id/pages");
     }
     else {
       $this->say("The path $path does not contain a metadata.php file.");
