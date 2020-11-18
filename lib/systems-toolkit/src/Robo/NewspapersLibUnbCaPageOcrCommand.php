@@ -18,6 +18,11 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
   const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
   const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
 
+  protected $resultsFail = [];
+  protected $curTitleId = NULL;
+  protected $curIssueId = NULL;
+  protected $curIssuePath = NULL;
+
   /**
    * Generate and update the OCR content for a digital serial page.
    *
@@ -171,6 +176,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
+    $this->curTitleId = $title_id;
     $this->setDirsToIterate();
     $this->getConfirmDirs('Create Issues');
 
@@ -189,9 +195,24 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $options['generate-ocr'] = FALSE;
 
     foreach ($this->recursiveDirectories as $directory_to_process) {
-      $this->createIssueFromDir($title_id, $directory_to_process, $options);
+      $this->curIssuePath = $directory_to_process;
+      try {
+        $this->createIssueFromDir($title_id, $directory_to_process, $options);
+      }
+      catch (Exception $e) {
+        $this->resultsFail[] = [
+          'exception' => $e->getMessage(),
+          'title' => $this->curTitleId,
+          'issue' => $this->curIssueId,
+          'path' => $this->curIssuePath,
+        ];
+      }
     }
     $this->recursiveDirectories = [];
+    if (!empty($this->resultsFail)) {
+      $this->io()->title('Failures:');
+      print_r($this->resultsFail);
+    }
   }
 
   /**
@@ -291,6 +312,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
       $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
       $issue_id = $issue_object->id[0]->value;
+      $this->curIssueId = $issue_id;
       $this->say("Importing pages to Issue #$issue_id");
 
       if ($options['generate-ocr']) {
