@@ -138,6 +138,7 @@ class OcrCommand extends SystemsToolkitCommand {
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
+    $this->taskDockerPull($this->tesseractImage) ->run();
     $this->setRunProcessQueue('OCR');
     $this->recursiveFiles = [];
   }
