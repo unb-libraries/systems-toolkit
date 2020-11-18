@@ -192,6 +192,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         'skip-confirm' => TRUE,
       ]
     );
+
+    // We have run OCR on the tree in threads, do not generate it at issue time.
     $options['generate-ocr'] = FALSE;
 
     foreach ($this->recursiveDirectories as $directory_to_process) {
