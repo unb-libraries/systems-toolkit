@@ -163,7 +163,7 @@ class OcrCommand extends SystemsToolkitCommand {
       ->volume($ocr_file_path_info['dirname'], '/data')
       ->containerWorkdir('/data')
       ->arg('--rm')
-      ->exec("--oem {$options['oem']} -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['args']}");
+      ->exec("--oem {$options['oem']} --dpi 300 -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['args']}");
   }
 
   /**
