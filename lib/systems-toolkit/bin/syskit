@@ -18,7 +18,6 @@ require_once __DIR__ . '/syskit.php';
  */
 function find_repo_root() {
   $possible_repo_roots = [
-    $_SERVER['PWD'],
     getcwd(),
     realpath(__DIR__ . '/../'),
     realpath(__DIR__ . '/../../../'),
