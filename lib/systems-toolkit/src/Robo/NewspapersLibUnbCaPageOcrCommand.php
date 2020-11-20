@@ -18,7 +18,11 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
   const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
   const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
 
-  protected $resultsFail = [];
+  protected $resultsLedger = [
+    'success' => [],
+    'fail' => [],
+    'skipped' => [],
+  ];
   protected $curTitleId = NULL;
   protected $curIssueId = NULL;
   protected $curIssuePath = NULL;
@@ -198,11 +202,25 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->curIssuePath = $directory_to_process;
+      $processed_flag_file = "$directory_to_process/.nbnp_processed";
       try {
-        $this->createIssueFromDir($title_id, $directory_to_process, $options);
+        if (!file_exists($processed_flag_file)) {
+          $this->createIssueFromDir($title_id, $directory_to_process, $options);
+          $this->resultsLedger['success'][] = [
+            'title' => $this->curTitleId,
+            'issue' => $this->curIssueId,
+            'path' => $this->curIssuePath,
+          ];
+          touch($processed_flag_file);
+        } else {
+          $this->say("Skipping already-imported issue - {$this->curIssuePath}");
+          $this->resultsLedger['skipped'][] = [
+            'path' => $this->curIssuePath,
+          ];
+        }
       }
       catch (Exception $e) {
-        $this->resultsFail[] = [
+        $this->resultsLedger['fail'][] = [
           'exception' => $e->getMessage(),
           'title' => $this->curTitleId,
           'issue' => $this->curIssueId,
@@ -211,10 +229,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       }
     }
     $this->recursiveDirectories = [];
-    if (!empty($this->resultsFail)) {
-      $this->io()->title('Failures:');
-      print_r($this->resultsFail);
-    }
+    $this->io()->title('Operation Complete!');
+    print_r($this->resultsLedger);
   }
 
   /**
