@@ -230,7 +230,16 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     }
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
-    print_r($this->resultsLedger);
+    $this->writeImportLedger();
+  }
+
+  /**
+   * Write out a summary of the import in a ledger file.
+   */
+  private function writeImportLedger() {
+    $filename = 'nbnp_import_' . date('m-d-Y_hia').'.txt';
+    $filepath = getcwd() . "/$filename";
+    file_put_contents($filepath, print_r($this->resultsLedger, TRUE));
   }
 
   /**
