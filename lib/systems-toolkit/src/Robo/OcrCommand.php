@@ -120,12 +120,16 @@ class OcrCommand extends SystemsToolkitCommand {
    *   The number of threads the OCR should use.
    * @option args
    *   Any other arguments to pass.
+   * @option skip-confirm
+   *   Skip the confirmation process, assume 'yes'.
+   * @option skip-existing
+   *   If non-empty HOCR exists for the file, do not process again.
    *
    * @throws \Exception
    *
    * @command ocr:tesseract:tree
    */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE]) {
+  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -133,7 +137,9 @@ class OcrCommand extends SystemsToolkitCommand {
     $this->getConfirmFiles('OCR', $options['skip-confirm']);
 
     foreach ($this->recursiveFiles as $file_to_process) {
-      $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
+      if (!$options['skip-existing'] != TRUE && $this->fileHasOcrGenerated($file_to_process) != TRUE) {
+        $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
+      }
     }
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
@@ -141,6 +147,22 @@ class OcrCommand extends SystemsToolkitCommand {
     $this->taskDockerPull($this->tesseractImage)->run();
     $this->setRunProcessQueue('OCR');
     $this->recursiveFiles = [];
+  }
+
+  /**
+   * Determine if OCR has previously been generated for this file.
+   *
+   * @param $filepath
+   *   The file to parse.
+   *
+   * @return bool
+   */
+  private function fileHasOcrGenerated($filepath) {
+    $hocr_filename = "$filepath.hocr";
+    if (file_exists($hocr_filename) && filesize($hocr_filename)) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**

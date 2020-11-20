@@ -169,6 +169,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   The number of threads the OCR process should use.
    * @option bool $no-verify
    *   Do not verify if the pages were successfully uploaded.
+   * @option bool $force-ocr
+   *   Run OCR on files, even if already exists.
    *
    * @throws \Exception
    *
@@ -176,7 +178,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issues-tree
    */
-  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'no-verify' => FALSE]) {
+  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'no-verify' => FALSE, 'force-ocr' => FALSE]) {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -194,6 +196,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         'threads' => $options['threads'],
         'args' => 'hocr',
         'skip-confirm' => TRUE,
+        'skip-existing' => !$options['force-ocr'],
       ]
     );
 
@@ -260,6 +263,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   Generate OCR for files - disable if pre-generated.
    * @option bool $no-verify
    *   Do not verify if the pages were successfully uploaded.
+   * @option bool $force-ocr
+   *   Run OCR on files, even if already exists.
    *
    * @throws \Exception
    *
@@ -267,7 +272,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE]) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Create issue
@@ -352,6 +357,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'threads' => $options['threads'],
             'args' => 'hocr',
             'skip-confirm' => TRUE,
+            'skip-existing' => !$options['force-ocr'],
           ]
         );
       }
