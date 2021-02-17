@@ -175,6 +175,11 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     }
 
     if (!empty($updates)) {
+      foreach ($updates as $up_idx => $cur_update) {
+        if (empty($cur_update->recommended)) {
+          unset($updates[$up_idx]);
+        }
+      }
       $this->updates[] = [
         'pod' => $pod,
         'updates' => $updates,
