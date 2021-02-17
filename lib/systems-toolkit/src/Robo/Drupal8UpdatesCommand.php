@@ -260,11 +260,10 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    */
   private function getFormattedUpdateMessage($update, $add_changelog = FALSE) {
     $message = sprintf(
-      '%s %s->%s (%s)',
+      '%s %s -> %s',
       $update->name,
       $update->existing_version,
-      $update->recommended,
-      $update->status
+      $update->recommended
     );
 
     if ($add_changelog) {
