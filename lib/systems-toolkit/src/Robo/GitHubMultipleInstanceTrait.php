@@ -62,10 +62,10 @@ trait GitHubMultipleInstanceTrait {
    */
   protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $filter_callbacks = [], array $omit = [], $operation = 'operation', $no_confirm = FALSE) {
     $this->setRepositoryList($name_filters, $topic_filters, $filter_callbacks, $omit);
-    $this->listRepositoryNames();
 
     // Optionally filter them.
     if (!$no_confirm) {
+      $this->listRepositoryNames();
       $need_remove = $this->confirm('Would you like to remove any instances?');
     }
     else {
