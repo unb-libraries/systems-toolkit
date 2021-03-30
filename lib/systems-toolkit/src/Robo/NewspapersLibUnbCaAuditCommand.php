@@ -13,9 +13,10 @@ use UnbLibraries\SystemsToolkit\Robo\RecursiveDirectoryTreeTrait;
  * Class for Newspaper Page OCR commands.
  */
 class NewspapersLibUnbCaAuditCommand extends OcrCommand {
-
   use DrupalInstanceRestTrait;
   use RecursiveDirectoryTreeTrait;
+
+  const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
 
   protected $issueConfig = NULL;
   protected $issueLocalFiles = [];
@@ -27,6 +28,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected $options = [];
   protected $progressBar;
 
+  protected $zeroLengthFiles = [];
   protected $duplicateIssues = [];
   protected $imagesMissingOnRemote = [];
   protected $imagesDuplicateOnRemote = [];
@@ -109,11 +111,24 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->io()->newLine(2);
     $this->displayMissingRemoteIssues();
     $this->io()->newLine();
+    $this->displayZeroLengthFiles();
+    $this->io()->newLine();
     $this->displayDuplicateIssues();
     $this->io()->newLine();
     $this->displayMissingRemotePages();
     $this->io()->newLine();
     $this->displayDuplicateRemotePages();
+  }
+
+  protected function displayZeroLengthFiles() {
+    if (!empty($this->zeroLengthFiles)) {
+      $column_names = [
+        'Path'
+      ];
+      $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
+      $zero_length_count = count($this->zeroLengthFiles);
+      $this->say("$zero_length_count zero length files found.");
+    }
   }
 
   protected function displayMissingRemoteIssues() {
@@ -394,10 +409,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   private function setIssueLocalFiles() {
     $this->issueLocalFiles = [];
     foreach ($this->recursiveFiles as $local_file) {
+      $md5_sum = $this->getMd5Sum($local_file);
+      if ($md5_sum == self::ZERO_LENGTH_MD5) {
+        $this->zeroLengthFiles[] = [$local_file];
+      }
       $this->issueLocalFiles[] = [
         'file' => $local_file,
         'page_no' => self::getPageNumberFromMikeFileName($local_file),
-        'hash' => $this->getMd5Sum($local_file),
+        'hash' => $md5_sum,
       ];
     }
   }
@@ -451,10 +470,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->issueRemoteFiles = [];
     foreach ($response as $remote_file) {
       $remote_file_path = str_replace('/sites/default', $this->webStorageBasePath, $remote_file->page_image__target_id);
+      $md5_sum = $this->getMd5Sum($remote_file_path);
+      if ($md5_sum == self::ZERO_LENGTH_MD5) {
+        $this->zeroLengthFiles[] = [$remote_file_path];
+      }
       $this->issueRemoteFiles[] = [
         'file' => $remote_file->page_image__target_id,
         'page_no' => $remote_file->page_no,
-        'hash' => $this->getMd5Sum($remote_file_path)
+        'hash' => $md5_sum
       ];
     }
   }
