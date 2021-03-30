@@ -214,7 +214,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'issue' => $this->curIssueId,
             'path' => $this->curIssuePath,
           ];
-          touch($processed_flag_file);
+          shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         } else {
           $this->say("Skipping already-imported issue - {$this->curIssuePath}");
           $this->resultsLedger['skipped'][] = [
