@@ -99,7 +99,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->webStorageBasePath = $web_storage_path;
     $this->issueParentTitle = $title_id;
     $this->setIssuesQueue($file_path);
-    $this->setValidateIssues();
+    $this->setAuditIssues();
     $this->displayAuditFailures();
   }
 
@@ -227,7 +227,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'Local Path'
     ];
     if (!empty($this->imagesDuplicateOnRemote)) {
-      print_r($this->imagesDuplicateOnRemote);
       foreach ($this->imagesDuplicateOnRemote as $issue) {
         $first_row = TRUE;
         $page_no = array_column($issue['images'], 'page_no');
@@ -285,7 +284,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * @throws \Exception
    */
-  private function setValidateIssues() {
+  private function setAuditIssues() {
     $this->setUpProgressBar();
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->verifyIssueFromDir($directory_to_process);
@@ -319,7 +318,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
     if (file_exists($this->issueMetadataFile)) {
       $this->setIssueConfig();
-      $this->setPagesForImport();
+      $this->setPagesForAudit();
       $this->setPossibleEntityIds();
 
       // No possible entities: Issue was likely never created.
@@ -373,7 +372,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * @throws \Exception
    */
-  private function setPagesForImport() {
+  private function setPagesForAudit() {
     $regex = "/^.+\.{$this->options['issue-page-extension']}$/i";
     $this->recursiveFileTreeRoot = $this->issuePath;
     $this->recursiveFileRegex = $regex;
@@ -514,25 +513,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       ];
     }
 
-
-    // Check for Missing Issues Remotely
-
-    // Check for Zero length md5 hash is d41d8cd98f00b204e9800998ecf8427e
-
-    /*
-    $results = [
-      'extra_on_remote' => $this->arrayKeyDiff($this->issueRemoteFiles, $this->issueLocalFiles, 'hash'),
-      'extra_on_local' => $this->arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash'),
-      'dupe_on_remote' => $this->arrayKeyDupes($this->issueRemoteFiles, 'hash'),
-      'dupe_on_local' => $this->arrayKeyDupes($this->issueLocalFiles, 'hash'),
-      'remote_files' => $this->issueRemoteFiles,
-      'local_files' => $this->issueLocalFiles,
-    ];
-    $results['count'] = count($results['extra_on_remote']) +
-      count($results['extra_on_local']) +
-      count($results['dupe_on_remote']) +
-      count($results['dupe_on_local']);
-    */
     return;
   }
 
