@@ -36,7 +36,6 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
    * @command github:actions:status
    */
   public function getGitHubActionsBuildReports($match = '', $options = ['only-failure' => FALSE]) {
-    $fail_style = new OutputFormatterStyle('red', 'default', ['bold', 'blink']);
     $matches = explode(',', $match);
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
@@ -87,19 +86,12 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
                   }
                   else {
                     $format_wrapper = 'error';
-                    $jobs = $this->client->api('repo')->workflowJobs()->all($repo_owner, $repo_name, $run['id']);
-                    foreach ($jobs['jobs'] as $job) {
-                      if ($job['conclusion'] == 'failure') {
-                        $job_errors[] = $job['name'];
-                      }
-                    }
-                    sort($job_errors);
                   }
                   $table_rows[] = [
                     $first_row_of_repo ? $run['name'] : NULL,
                     "<$format_wrapper>" . $run['head_branch'] . "</$format_wrapper>",
                     "<$format_wrapper>" . $run['run_number'] . "</$format_wrapper>",
-                    "<$format_wrapper>" . $run['conclusion'] . ' [' . implode(',', $job_errors) . "]</$format_wrapper>",
+                    "<$format_wrapper>" . $run['conclusion'] . "</$format_wrapper>",
                     "<$format_wrapper>" . $run['html_url'] . "</$format_wrapper>",
                   ];
                   $branches_found[] = $run['head_branch'];
