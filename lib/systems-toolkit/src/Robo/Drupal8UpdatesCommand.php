@@ -377,7 +377,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         foreach ($update_data['updates'] as $cur_update) {
           if ($this->composerFileNeedsUpdate($composer_file, $cur_update)) {
             $commit_message = $this->getFormattedUpdateMessage($cur_update, TRUE);
-            if ($do_all || $this->confirm("Apply [$commit_message] to $branch?")) {
+            if ($do_all || $this->confirm("Apply [{$cur_update->name}] to $branch?")) {
               $this->say('Getting old file hash...');
               $old_file_hashes = $this->client->api('repo')
                 ->contents()
