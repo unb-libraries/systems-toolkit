@@ -398,17 +398,22 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $date = strtotime($this->issueConfig->date);
     $date_string = date('Y/m/d', $date);
     $rest_uri = "{$this->options['instance-uri']}/serials-issue-search/{$this->issueParentTitle}/$date_string/{$this->issueConfig->volume}/{$this->issueConfig->issue}";
-    $raw_response = json_decode(file_get_contents($rest_uri));
-    if (!empty($raw_response->data)) {
-      foreach ($raw_response->data as $entity_id) {
-        $this->issuePossibleEntityIds[] = $entity_id;
+    try {
+      $raw_response = json_decode(file_get_contents($rest_uri));
+      if (!empty($raw_response->data)) {
+        foreach ($raw_response->data as $entity_id) {
+          $this->issuePossibleEntityIds[] = $entity_id;
+        }
+      }
+      if (count($this->issuePossibleEntityIds) > 1) {
+        $this->duplicateIssues[] = [
+          'local_path' => $this->issuePath,
+          'remote_entities' => $this->issuePossibleEntityIds,
+        ];
       }
     }
-    if (count($this->issuePossibleEntityIds) > 1) {
-      $this->duplicateIssues[] = [
-        'local_path' => $this->issuePath,
-        'remote_entities' => $this->issuePossibleEntityIds,
-      ];
+    catch (Exception $e) {
+      // pass.
     }
   }
 
