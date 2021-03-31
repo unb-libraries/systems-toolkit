@@ -311,7 +311,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $issue_count = count($this->recursiveDirectories);
     $this->say("Verifying $issue_count issues...");
     $this->progressBar = new ProgressBar($this->output, $issue_count);
-    $this->progressBar->setFormat('debug');
+    $this->progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s% [%message%]');
+    $this->progressBar->setMessage('Starting...');
     $this->progressBar->start();
   }
 
@@ -414,6 +415,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
     try {
       $ch = curl_init();
+      $this->progressBar->setMessage("Querying $rest_uri ...");
       $timeout = 5;
       curl_setopt($ch,CURLOPT_URL, $rest_uri);
       curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
