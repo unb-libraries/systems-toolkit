@@ -17,6 +17,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   use RecursiveDirectoryTreeTrait;
 
   const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
+  const NULL_STRING_PLACEHOLDER = 'LULL';
 
   protected $issueConfig = NULL;
   protected $issueLocalFiles = [];
@@ -396,8 +397,21 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   private function setPossibleEntityIds() {
     $this->issuePossibleEntityIds = [];
     $date = strtotime($this->issueConfig->date);
-    $date_string = date('Y/m/d', $date);
-    $rest_uri = "{$this->options['instance-uri']}/serials-issue-search/{$this->issueParentTitle}/$date_string/{$this->issueConfig->volume}/{$this->issueConfig->issue}";
+    $day_string = date('d', $date);
+    $month_string = date('m', $date);
+    $year_string = date('Y', $date);
+
+    $rest_uri = sprintf(
+      "%s/serials-issue-search/%s/%s/%s/%s/%s/%s",
+      $this->drupalRestUri,
+      $this->issueParentTitle,
+      $this->getNullifiedString($year_string),
+      $this->getNullifiedString($month_string),
+      $this->getNullifiedString($day_string),
+      $this->getNullifiedString($this->issueConfig->volume),
+      $this->getNullifiedString($this->issueConfig->issue)
+    );
+
     try {
       $ch = curl_init();
       $timeout = 5;
@@ -422,6 +436,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     catch (Exception $e) {
       // pass.
     }
+  }
+
+  private function getNullifiedString($string) {
+    if (empty($string)) {
+      return self::NULL_STRING_PLACEHOLDER;
+    }
+    return $string;
   }
 
   /**
