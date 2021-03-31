@@ -146,6 +146,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $duplicate_issues=[];
     $column_names = [
       'Local Path',
+      'Title',
+      'Volume',
+      'Issue',
       'eid',
       'URI'
     ];
@@ -159,6 +162,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         if ($first_row) {
           $duplicate_issues[] = [
             $issues['local_path'],
+            $this->issueParentTitle,
+            $this->issueConfig->volume,
+            $this->issueConfig->issue,
             $entity,
             "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
           ];
@@ -167,6 +173,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         }
         else {
           $duplicate_issues[] = [
+            NULL,
+            NULL,
+            NULL,
             NULL,
             $entity,
             "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
