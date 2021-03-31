@@ -399,7 +399,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $date_string = date('Y/m/d', $date);
     $rest_uri = "{$this->options['instance-uri']}/serials-issue-search/{$this->issueParentTitle}/$date_string/{$this->issueConfig->volume}/{$this->issueConfig->issue}";
     try {
-      $raw_response = json_decode(file_get_contents($rest_uri));
+      $ch = curl_init();
+      $timeout = 5;
+      curl_setopt($ch,CURLOPT_URL, $rest_uri);
+      curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
+      $data = curl_exec($ch);
+      curl_close($ch);
+      $raw_response = json_decode($data);
       if (!empty($raw_response->data)) {
         foreach ($raw_response->data as $entity_id) {
           $this->issuePossibleEntityIds[] = $entity_id;
