@@ -64,9 +64,16 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command dzi:generate-tiles:tree
    */
-  public function dziFilesTree($root, $options = ['extension' => '.tif', 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
+  public function dziFilesTree($root, $options = ['extension' => '.tif', 'prefix' => NULL, 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
     $regex_root = preg_quote($root, '/');
-    $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}$/i";
+
+    if (!empty($options['prefix'])) {
+      $regex = "/^{$regex_root}\/[^\/]{$options['prefix']}+\.{$options['extension']}$/i";
+    }
+    else {
+      $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}$/i";
+    }
+
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
     $this->setFilesToIterate();
