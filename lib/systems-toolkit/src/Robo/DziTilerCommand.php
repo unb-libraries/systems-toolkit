@@ -68,16 +68,16 @@ class DziTilerCommand extends SystemsToolkitCommand {
     $regex_root = preg_quote($root, '/');
 
     if (!empty($options['prefix'])) {
-      $regex = "/^{$regex_root}\/[^\/]{$options['prefix']}+\.{$options['extension']}$/i";
+      $glob_path = "$root/{$options['prefix']}*.{$options['extension']}";
+      $this->recursiveFiles = glob($glob_path);
     }
     else {
       $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}$/i";
+      $this->recursiveFileTreeRoot = $root;
+      $this->recursiveFileRegex = $regex;
+      $this->setFilesToIterate();
+      $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
     }
-
-    $this->recursiveFileTreeRoot = $root;
-    $this->recursiveFileRegex = $regex;
-    $this->setFilesToIterate();
-    $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
 
     foreach ($this->recursiveFiles as $file_to_process) {
       $dzi_file_path_info = pathinfo($file_to_process);
