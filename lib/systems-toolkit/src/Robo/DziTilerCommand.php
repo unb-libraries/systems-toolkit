@@ -98,6 +98,38 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
+   * Generate DZI tiles for a specific NBNP issue.
+   *
+   * @param string $root
+   *   The NBNP webtree root file location.
+   * @param string $issue_id
+   *   The issue entity ID to process.
+   *
+   * @option threads
+   *   The number of threads the process should use.
+   * @option skip-existing
+   *   Skip any issues with tiles that have been previously generated.
+   *
+   * @throws \Exception
+   *
+   * @command newspapers.lib.unb.ca:issue:generate-dzi
+   */
+  public function nbnpDziIssue($root, $issue_id, $options = ['threads' => 1,  'skip-existing' => FALSE]) {
+    $cmd_options = [
+      'extension' => '.jpg',
+      'tile-size' => '256',
+      'prefix' => "{$issue_id}-",
+      'step' => '200',
+      'skip-confirm' => TRUE,
+      'threads' => $options['threads'],
+      'target-uid' => '100',
+      'target-gid' => '102',
+      'skip-existing' => $options['skip-existing']
+    ];
+    $this->dziFilesTree($root, $cmd_options);
+  }
+
+  /**
    * Generate the Robo command used to generate the DZI tiles.
    *
    * @param string $file
