@@ -217,10 +217,6 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'path' => $this->curIssuePath,
           ];
 
-          if (!empty($options['webtree-path'])) {
-            $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId}");
-          }
-
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         } else {
           $this->say("Skipping already-imported issue - {$this->curIssuePath}");
@@ -272,6 +268,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   Do not verify if the pages were successfully uploaded.
    * @option bool $force-ocr
    *   Run OCR on files, even if already exists.
+   * @option string $webtree-path
+   *   The webtree file path, used to generate DZI tiles.
    *
    * @throws \Exception
    *
@@ -279,7 +277,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE]) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL]) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Create issue
@@ -391,6 +389,10 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
           $page_image,
           $options
         );
+      }
+
+      if (!empty($options['webtree-path'])) {
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId}");
       }
 
       $this->recursiveFiles = [];
