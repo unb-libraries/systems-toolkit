@@ -341,6 +341,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
       $this->setIssueLocalFiles();
       foreach ($this->issuePossibleEntityIds as $possible_issue_entity_id) {
+        $this->progressBar->setMessage("Validating Issue ID $possible_issue_entity_id...");
         $rest_uri = "/rest/export/pages/$possible_issue_entity_id";
         $response = $this->getDrupalRestEntity($rest_uri, TRUE);
         if (empty($response)) {
@@ -416,7 +417,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
     try {
       $ch = curl_init();
-      $this->progressBar->setMessage("Querying $rest_uri ...");
       $timeout = 5;
       curl_setopt($ch,CURLOPT_URL, $rest_uri);
       curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
