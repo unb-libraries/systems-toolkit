@@ -301,6 +301,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       $this->auditIssueCount++;
       $this->progressBar->advance();
     }
+    $this->progressBar->setMessage("Done!");
     $this->progressBar->finish();
   }
 
