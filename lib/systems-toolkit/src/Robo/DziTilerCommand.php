@@ -126,7 +126,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'target-gid' => '102',
       'skip-existing' => $options['skip-existing']
     ];
-    $this->dziFilesTree($root .'files/serials/pages', $cmd_options);
+    $this->dziFilesTree($root .'/files/serials/pages', $cmd_options);
   }
 
   /**
