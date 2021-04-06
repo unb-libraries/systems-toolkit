@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Robo\Common\ConfigAwareTrait;
@@ -62,6 +63,35 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
         )
       );
     }
+  }
+
+  /**
+   * Runs another System Toolkit command.
+   *
+   * This is necessary until the annotated-command feature request:
+   * https://github.com/consolidation/annotated-command/issues/64 is merged
+   * or solved. Otherwise hooks do not fire as expected.
+   *
+   * @param string $command_string
+   *   The Dockworker command to run.
+   * @param string $exception_message
+   *   The message to display if a non-zero code is returned.
+   *
+   * @throws \Exception
+   *
+   * @return int
+   *   The return code of the command.
+   */
+  public function setRunOtherCommand($command_string, $exception_message = NULL) {
+    $this->io()->note("Spawning new command thread: $command_string");
+    $bin = $_SERVER['argv'][0];
+    $command = "$bin --ansi $command_string";
+    passthru($command, $return);
+
+    if ($return > 0) {
+      throw new Exception($exception_message);
+    }
+    return $return;
   }
 
 }
