@@ -392,7 +392,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       }
 
       if (!empty($options['webtree-path'])) {
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId}");
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']}");
       }
 
       $this->recursiveFiles = [];
