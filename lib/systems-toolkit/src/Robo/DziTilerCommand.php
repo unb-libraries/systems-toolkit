@@ -116,7 +116,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    */
   public function nbnpDziIssue($root, $issue_id, $options = ['threads' => 1,  'skip-existing' => FALSE]) {
     $cmd_options = [
-      'extension' => '.jpg',
+      'extension' => 'jpg',
       'tile-size' => '256',
       'prefix' => "{$issue_id}-",
       'step' => '200',
