@@ -342,7 +342,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
       $this->setIssueLocalFiles();
       foreach ($this->issuePossibleEntityIds as $possible_issue_entity_id) {
-        $this->progressBar->setMessage("Validating Issue ID $possible_issue_entity_id...");
+        $this->progressBar->setMessage("Processing $path [$possible_issue_entity_id]...");
         $rest_uri = "/rest/export/pages/$possible_issue_entity_id";
         $response = $this->getDrupalRestEntity($rest_uri, TRUE);
         if (empty($response)) {
