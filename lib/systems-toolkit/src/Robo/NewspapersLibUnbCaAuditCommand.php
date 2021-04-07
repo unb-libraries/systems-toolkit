@@ -104,12 +104,21 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->displayAuditFailures();
   }
 
+  protected function issueIsFullyValid() {
+    return empty($this->missingRemoteIssues) &&
+      empty($this->zeroLengthFiles) &&
+      empty($this->duplicateIssues) &&
+      empty($this->imagesMissingOnRemote) &&
+      empty($this->imagesDuplicateOnRemote);
+  }
+
   protected function displayAuditFailures() {
-    if (empty($this->imagesMissingOnRemote)) {
+    if ($this->issueIsFullyValid()) {
       $this->io()->newLine();
       $this->say("{$this->auditIssueCount} issues auditied and no discrepancies found!");
       return;
     }
+
     $this->io()->newLine(2);
     $this->displayMissingRemoteIssues();
     $this->io()->newLine();
