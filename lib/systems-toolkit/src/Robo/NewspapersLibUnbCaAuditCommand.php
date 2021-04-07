@@ -154,48 +154,50 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   protected function displayDuplicateIssues() {
-    $duplicate_issues=[];
-    $column_names = [
-      'Local Path',
-      'Title',
-      'Volume',
-      'Issue',
-      'eid',
-      'URI'
-    ];
-    $issue_counter = 0;
+    if (!empty($this->duplicateIssues)) {
+      $duplicate_issues = [];
+      $column_names = [
+        'Local Path',
+        'Title',
+        'Volume',
+        'Issue',
+        'eid',
+        'URI'
+      ];
+      $issue_counter = 0;
 
-    foreach ($this->duplicateIssues as $issues) {
-      $first_row = TRUE;
-      sort($issues['remote_entities']);
+      foreach ($this->duplicateIssues as $issues) {
+        $first_row = TRUE;
+        sort($issues['remote_entities']);
 
-      foreach($issues['remote_entities'] as $entity) {
-        if ($first_row) {
-          $duplicate_issues[] = [
-            $issues['local_path'],
-            $this->issueParentTitle,
-            $this->issueConfig->volume,
-            $this->issueConfig->issue,
-            $entity,
-            "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
-          ];
-          $issue_counter++;
-          $first_row = FALSE;
-        }
-        else {
-          $duplicate_issues[] = [
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            $entity,
-            "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
-          ];
+        foreach ($issues['remote_entities'] as $entity) {
+          if ($first_row) {
+            $duplicate_issues[] = [
+              $issues['local_path'],
+              $this->issueParentTitle,
+              $this->issueConfig->volume,
+              $this->issueConfig->issue,
+              $entity,
+              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
+            ];
+            $issue_counter++;
+            $first_row = FALSE;
+          }
+          else {
+            $duplicate_issues[] = [
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              $entity,
+              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
+            ];
+          }
         }
       }
+      $this->outputTable('Multiply Ingested Remote Issues Found!', $column_names, $duplicate_issues);
+      $this->say("$issue_counter multiply ingested issues found.");
     }
-    $this->outputTable('Multiply Ingested Remote Issues Found!', $column_names, $duplicate_issues);
-    $this->say("$issue_counter multiply ingested issues found.");
   }
 
   protected function displayMissingRemotePages() {
