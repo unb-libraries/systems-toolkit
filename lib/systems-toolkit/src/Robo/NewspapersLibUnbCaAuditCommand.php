@@ -36,6 +36,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected $emptyRemoteIssues = [];
   protected $missingRemoteIssues = [];
   protected $auditIssueCount = 0;
+  protected $goodIssueCount = 0;
   protected $webStorageBasePath = NULL;
 
   /**
@@ -125,6 +126,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->displayDuplicateIssues();
     $this->displayMissingRemotePages();
     $this->displayDuplicateRemotePages();
+    $this->reportIssueFailures();
+  }
+
+  protected function reportIssueFailures() {
+    $this->say(
+      sprintf(
+        "Total : %s issues validated, %s did not validate.",
+        $this->goodIssueCount,
+        $this->auditIssueCount - $this->goodIssueCount
+      )
+    );
   }
 
   protected function displayZeroLengthFiles() {
@@ -544,6 +556,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return array
    */
   private function getDiffRemoteLocal($issue_id, $path) {
+    $issue_fail = FALSE;
+
     $missing_remote_images = $this->arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash');
     if (!empty($missing_remote_images)) {
       $this->imagesMissingOnRemote[] = [
@@ -552,6 +566,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         'uri' => "{$this->options['instance-uri']}/serials/{$this->issueParentTitle}/issues/$issue_id/",
         'images' => $missing_remote_images
       ];
+      $issue_fail = TRUE;
     }
 
     $duplicate_remote_images = $this->arrayKeyDupes($this->issueRemoteFiles, 'hash');
@@ -570,6 +585,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         'uri' => "{$this->options['instance-uri']}/serials/{$this->issueParentTitle}/issues/$issue_id/",
         'images' => $duplicate_remote_images
       ];
+      $issue_fail = TRUE;
+    }
+
+    if (!$issue_fail) {
+      $this->goodIssueCount++;
     }
 
     return;
