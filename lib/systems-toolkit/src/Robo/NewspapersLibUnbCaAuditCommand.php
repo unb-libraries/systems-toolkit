@@ -119,20 +119,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       return;
     }
 
-    $this->io()->newLine(2);
+    $this->io()->newLine();
     $this->displayMissingRemoteIssues();
-    $this->io()->newLine();
     $this->displayZeroLengthFiles();
-    $this->io()->newLine();
     $this->displayDuplicateIssues();
-    $this->io()->newLine();
     $this->displayMissingRemotePages();
-    $this->io()->newLine();
     $this->displayDuplicateRemotePages();
   }
 
   protected function displayZeroLengthFiles() {
     if (!empty($this->zeroLengthFiles)) {
+      $this->io()->newLine();
       $column_names = [
         'Path'
       ];
@@ -144,6 +141,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
   protected function displayMissingRemoteIssues() {
     if (!empty($this->missingRemoteIssues)) {
+      $this->io()->newLine();
       $column_names = [
         'Local Path'
       ];
@@ -155,6 +153,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
   protected function displayDuplicateIssues() {
     if (!empty($this->duplicateIssues)) {
+      $this->io()->newLine();
       $duplicate_issues = [];
       $column_names = [
         'Local Path',
@@ -209,6 +208,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'Local Path'
     ];
     if (!empty($this->imagesMissingOnRemote)) {
+      $this->io()->newLine();
       foreach ($this->imagesMissingOnRemote as $issue) {
         $first_row = TRUE;
         $page_no = array_column($issue['images'], 'page_no');
@@ -249,6 +249,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'Local Path'
     ];
     if (!empty($this->imagesDuplicateOnRemote)) {
+      $this->io()->newLine();
       foreach ($this->imagesDuplicateOnRemote as $issue) {
         $first_row = TRUE;
         $page_no = array_column($issue['images'], 'page_no');
