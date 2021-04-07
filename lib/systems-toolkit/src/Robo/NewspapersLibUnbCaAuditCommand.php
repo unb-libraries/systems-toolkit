@@ -130,9 +130,16 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   protected function reportIssueFailures() {
+    $this->io()->newLine();
     $this->say(
       sprintf(
-        "Total : %s issues validated, %s did not validate.",
+        "%s total issues audited",
+        $this->auditIssueCount
+      )
+    );
+    $this->say(
+      sprintf(
+        "%s passed, %s failures",
         $this->goodIssueCount,
         $this->auditIssueCount - $this->goodIssueCount
       )
