@@ -382,7 +382,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         }
         else {
           $this->setIssueRemoteFiles($response);
-          $this->getDiffRemoteLocal($possible_issue_entity_id, $path);
+          $this->auditIssue($possible_issue_entity_id, $path);
         }
       }
       return;
@@ -562,7 +562,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * @return array
    */
-  private function getDiffRemoteLocal($issue_id, $path) {
+  private function auditIssue($issue_id, $path) {
     $issue_fail = FALSE;
 
     $missing_remote_images = $this->arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash');
