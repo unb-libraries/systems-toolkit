@@ -213,8 +213,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
           }
         }
       }
-      $this->outputTable('Multiply Ingested Remote Issues Found!', $column_names, $duplicate_issues);
-      $this->say("$issue_counter multiply ingested issues found.");
+      $this->outputTable('Ingested Issues with Duplicate Metadata Found!', $column_names, $duplicate_issues);
+      $this->say("$issue_counter (possible) multiply ingested issues found.");
     }
   }
 
