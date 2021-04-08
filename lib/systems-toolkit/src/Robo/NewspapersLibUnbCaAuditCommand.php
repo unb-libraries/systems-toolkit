@@ -597,9 +597,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
     if (!$issue_fail) {
       $this->goodIssueCount++;
+      $this->setIssueFlagFiles($path);
     }
+  }
 
-    return;
+  /**
+   * @param $path
+   */
+  protected function setIssueFlagFiles($path) {
+    // Also set the 'processed' flag as well. Old imports did not set this.
+    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_processed"));
+    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_verified"));
   }
 
   /**
