@@ -142,7 +142,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       $repo = GitRepo::setCreateFromClone($repository['ssh_url']);
       $repo->repo->checkout($namespace);
       $repo_path = $repo->repo->getRepositoryPath();
-      passthru("cd $repo_path; composer install; ./vendor/bin/dockworker {$this->commandString}; git add .github/workflows/test-suite.yaml; git commit --no-verify -m '{$this->commitMessage}'; git push origin $namespace");
+      passthru("cd $repo_path; composer install; ./vendor/bin/dockworker {$this->commandString}; git add .; git commit --no-verify -m '{$this->commitMessage}'; git push origin $namespace");
     }
   }
 
