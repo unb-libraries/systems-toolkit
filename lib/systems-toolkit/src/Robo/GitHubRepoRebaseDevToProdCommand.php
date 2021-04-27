@@ -71,10 +71,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
+   * @option int multi-repo-delay
+   *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
    */
-  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['yes' => FALSE]) {
+  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['yes' => FALSE, 'multi-repo-delay' => '120']) {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $match,
@@ -136,6 +138,8 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
           $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
           $this->say(implode("\n", $push_output));
         }
+        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+        sleep($options['multi-repo-delay']);
       }
     }
   }

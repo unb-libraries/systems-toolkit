@@ -22,6 +22,8 @@ class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComma
    *
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
+   * @option int multi-repo-delay
+   *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
    *
@@ -29,7 +31,7 @@ class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComma
    *
    * @command drupal:8:rebasedevprod
    */
-  public function upmergeDrupalDevToProd($match = '', $options = ['yes' => FALSE]) {
+  public function upmergeDrupalDevToProd($match = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '240']) {
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,

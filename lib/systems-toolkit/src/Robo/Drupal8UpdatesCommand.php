@@ -88,7 +88,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:8:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => 120]) {
+  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $this->getDrupal8Updates($options);
     $this->noConfirm = $options['yes'];
 
