@@ -101,20 +101,17 @@ class Drupal8UpdateGitHubActionsCommand extends SystemsToolkitCommand {
    * @param array $repository
    *   The associative array describing the repository.
    */
-  private function updateRepository(array $repository) {
-    foreach ($this->githubRepositories as $repository_data) {
-      // Pull down.
-      $this->say(
-        sprintf(
-          self::MESSAGE_CHECKING_OUT_REPO,
-          $repository_data['name']
-        )
-      );
-      $repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
-      $repo->repo->checkout('dev');
-      $repo_path = $repo->repo->getRepositoryPath();
-      passthru("cd $repo_path; composer install; ./vendor/bin/dockworker dockworker:gh-actions:update; git add .github/workflows/test-suite.yaml; git commit --no-verify -m 'Update GitHub Actions workflow'; git push origin dev");
-    }
+  private function updateRepository(array $repository_data) {
+    $this->say(
+      sprintf(
+        self::MESSAGE_CHECKING_OUT_REPO,
+        $repository_data['name']
+      )
+    );
+    $repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
+    $repo->repo->checkout('dev');
+    $repo_path = $repo->repo->getRepositoryPath();
+    passthru("cd $repo_path; composer install; ./vendor/bin/dockworker dockworker:gh-actions:update; git add .github/workflows/test-suite.yaml; git commit --no-verify -m 'Update GitHub Actions workflow'; git push origin dev");
   }
 
 }
