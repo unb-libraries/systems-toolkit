@@ -63,16 +63,16 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    * @param string $commit_message
    *   The commit message to use.
    *
-   * @option namespace
+   * @option namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
    * @option int multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
-   * @command drupal:8:bulk-dockworker-command
+   * @command github:dockworker:bulk-command
    *
-   * @usage drupal:8:bulk-dockworker-command 'dockworker:readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
+   * @usage github:dockworker:bulk-command 'dockworker:readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */
