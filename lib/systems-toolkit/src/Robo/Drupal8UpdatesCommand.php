@@ -81,12 +81,14 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *   Only perform security updates.
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
+   * @option int multi-repo-delay
+   *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
    *
    * @command drupal:8:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'security-only' => FALSE, 'yes' => FALSE]) {
+  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => 120]) {
     $this->getDrupal8Updates($options);
     $this->noConfirm = $options['yes'];
 
@@ -102,7 +104,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       );
 
       if ($continue) {
-        $this->updateAllRepositories();
+        $this->updateAllRepositories($options);
       }
     }
     else {
@@ -333,9 +335,11 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   /**
    * Update all queued GitHub repositories.
    */
-  private function updateAllRepositories() {
+  private function updateAllRepositories($options) {
     foreach($this->githubRepositories as $repository) {
       $this->updateRepository($repository);
+      $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+      sleep($options['multi-repo-delay']);
     }
   }
 
