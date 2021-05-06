@@ -46,11 +46,6 @@ composer install --prefer-dist
   ocr:tesseract:file                        Generate OCR for a file.
   ocr:tesseract:tree                        Generate OCR for an entire tree.
   ocr:tesseract:tree:metrics                Generate metrics for OCR confidence and word count for a tree.
- travis
-  travis:build:get-latest                   Get the latest travis build job details for a repository.
-  travis:build:get-latest-id                Get the latest travis build job ID for a repository.
-  travis:build:restart                      Restart a travis build job.
-  travis:build:restart-latest               Restart the latest travis build job in a branch of a repository.
  updater
   updater:composer-apps                     Updates composer-based apps on various servers.
 ```

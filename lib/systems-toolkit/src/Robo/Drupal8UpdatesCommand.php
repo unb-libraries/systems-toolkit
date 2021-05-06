@@ -8,7 +8,6 @@ use UnbLibraries\SystemsToolkit\Robo\Drupal8ModuleCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\Robo\TravisExecTrait;
 
 /**
  * Class for Drupal8UpdatesCommand Robo commands.
@@ -17,7 +16,6 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
   use KubeExecTrait;
-  use TravisExecTrait;
 
   /**
    * Should confirmations for this object be skipped?
@@ -65,7 +63,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     foreach($this->kubeCurPods as $pod) {
       foreach ($options['namespaces'] as $namespace) {
-        $this->restartLatestTravisBuild("unb-libraries/{$pod->metadata->labels->instance}", $namespace);
+        // Replace with gh-actions.
       }
     }
   }
