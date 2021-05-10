@@ -53,6 +53,7 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       'bootstrap_barrio',
       'bootstrap4',
       'search_api_solr',
+      'webform',
     ];
     if (in_array($module, $no_full_refspec_url)) {
       $changelog_uri = str_replace('8.x-', '', $changelog_uri);
