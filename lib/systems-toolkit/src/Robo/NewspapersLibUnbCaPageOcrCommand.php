@@ -455,9 +455,13 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
     $page_no_padded = str_pad($page_no,4, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
+    $this->say("Creating Page [$page_no_padded] From: $file_path");
     $file_entity = $this->uploadDrupalRestFileToEntityField(
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     );
+
+    // Allow the disk to write out the file.
+    sleep(2);
 
     // Create digital page
     $create_content = json_encode(
