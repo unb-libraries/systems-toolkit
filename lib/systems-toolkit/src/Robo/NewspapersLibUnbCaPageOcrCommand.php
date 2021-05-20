@@ -451,7 +451,10 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $ocr_content = strip_tags($hocr_content);
 
     // Upload file to field.
-    $file_contents = file_get_contents($file_path);
+    $handle = fopen($file_path, "rb");
+    $file_contents = fread($handle, filesize($file_path));
+    fclose($handle);
+
     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
     $page_no_padded = str_pad($page_no,4, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
