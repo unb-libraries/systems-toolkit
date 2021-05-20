@@ -375,20 +375,22 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       $this->getConfirmFiles('OCR', TRUE);
 
       foreach ($this->recursiveFiles as $page_image) {
-        $path_info = pathinfo($page_image);
-        $filename_components = explode('_', $path_info['filename']);
-        $this->createSerialPageFromFile(
-          $issue_id,
-          (int) $filename_components[5],
-          str_pad(
-            $filename_components[5],
-            4,
-            '0',
-            STR_PAD_LEFT
-          ),
-          $page_image,
-          $options
-        );
+        if (!file_exists($page_image . '.nbnp_skip')) {
+          $path_info = pathinfo($page_image);
+          $filename_components = explode('_', $path_info['filename']);
+          $this->createSerialPageFromFile(
+            $issue_id,
+            (int) $filename_components[5],
+            str_pad(
+              $filename_components[5],
+              4,
+              '0',
+              STR_PAD_LEFT
+            ),
+            $page_image,
+            $options
+          );
+        }
       }
 
       if (!empty($options['webtree-path'])) {
