@@ -373,14 +373,17 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       $this->recursiveFileRegex = $regex;
       $this->setFilesToIterate();
       $this->getConfirmFiles('OCR', TRUE);
+      $issue_ingested_pages = [];
 
       foreach ($this->recursiveFiles as $page_image) {
         if (!file_exists($page_image . '.nbnp_skip')) {
           $path_info = pathinfo($page_image);
           $filename_components = explode('_', $path_info['filename']);
+          $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
+
           $this->createSerialPageFromFile(
             $issue_id,
-            (int) $filename_components[5],
+            $page_no,
             str_pad(
               $filename_components[5],
               4,
@@ -404,6 +407,23 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     else {
       $this->say("The path $path does not contain a metadata.php file.");
     }
+  }
+
+  /**
+   * Ensure each page in an issue has a unique page_no string.
+   *
+   * @param $issue_ingested_pages
+   * @param $page_no
+   *
+   * @return mixed|string
+   */
+  protected function getUniqueIssuePageNo(&$issue_ingested_pages, $page_no) {
+    $counter = 0;
+    while (in_array($page_no, $issue_ingested_pages)) {
+      $page_no = $page_no . '_' . $counter++;
+    }
+    $issue_ingested_pages[] = $page_no;
+    return $page_no;
   }
 
   /**
@@ -456,7 +476,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     fclose($handle);
 
     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
-    $page_no_padded = str_pad($page_no,4, '0', STR_PAD_LEFT);
+    $additional_pad_chars = strlen(substr(strrchr($page_no, "_"), 0));
+    $page_no_padded = str_pad($page_no,4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
     $this->say("Creating Page [$page_no_padded] From: $file_path");
     $file_entity = $this->uploadDrupalRestFileToEntityField(
