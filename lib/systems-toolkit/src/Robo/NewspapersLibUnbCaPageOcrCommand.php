@@ -2,9 +2,11 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Psr\Log\LogLevel;
+use TrashPanda\ProgressBarLog\ProgressBarLog;
 use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
-use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaPageVerifyCommand;
+use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 
 /**
  * Class for Newspaper Page OCR commands.
@@ -26,6 +28,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
   protected $curTitleId = NULL;
   protected $curIssueId = NULL;
   protected $curIssuePath = NULL;
+  protected $progressLog;
 
   /**
    * Generate and update the OCR content for a digital serial page.
@@ -204,6 +207,9 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
     // We have run OCR on the tree in threads, do not generate it at issue time.
     $options['generate-ocr'] = FALSE;
+    $total_issues = count($this->recursiveDirectories);
+    $this->progressLog = new ProgressBarLog(40, $total_issues);
+    $this->progressLog->start();
 
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->curIssuePath = $directory_to_process;
@@ -233,6 +239,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
           'path' => $this->curIssuePath,
         ];
       }
+      $this->progressLog->advance();
     }
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
@@ -246,6 +253,10 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $filename = 'nbnp_import_' . date('m-d-Y_hia').'.txt';
     $filepath = getcwd() . "/$filename";
     file_put_contents($filepath, print_r($this->resultsLedger, TRUE));
+  }
+
+  protected function say($text, $level = LogLevel::INFO) {
+    $this->progressLog->addLog($level, $text);
   }
 
   /**

@@ -21,7 +21,8 @@
     "php-http/guzzle6-adapter": "^1.1.1",
     "symfony/cache": "^4",
     "symfony/css-selector": "^5",
-    "symfony/dom-crawler": "^4"
+    "symfony/dom-crawler": "^4",
+    "trash-panda/progress-bar-log": "^1"
   },
   "license": "MIT",
   "authors": [
