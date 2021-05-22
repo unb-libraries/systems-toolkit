@@ -18,9 +18,9 @@ trait DockerCommandTrait {
    */
   public function applicationCleanup() {
     $this->say("Cleaning up dangling containers and volumes:");
-    $this->_exec('docker network prune -af');
-    $this->_exec('docker volume prune -af');
-    $this->_exec('docker container prune -af');
+    $this->_exec('docker network prune -f');
+    $this->_exec('docker volume prune -f');
+    $this->_exec('docker container prune -f');
   }
 
 }
