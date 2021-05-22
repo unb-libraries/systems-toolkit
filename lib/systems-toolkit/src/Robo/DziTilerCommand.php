@@ -79,6 +79,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
       $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
     }
 
+    // Remove temporary files from previous runs.
+    $this->exec("sudo rm -rf /tmp/dzi/*");
+
     foreach ($this->recursiveFiles as $file_to_process) {
       $dzi_file_path_info = pathinfo($file_to_process);
       if ($options['skip-existing'] &&
