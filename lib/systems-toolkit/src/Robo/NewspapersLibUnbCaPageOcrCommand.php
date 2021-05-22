@@ -4,7 +4,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
-use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaPageVerifyCommand;
+use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaAuditCommand;
 
 /**
  * Class for Newspaper Page OCR commands.
@@ -188,11 +188,12 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->setDirsToIterate();
     $this->getConfirmDirs('Create Issues');
 
+    // Pull the requisite images now, and avoid further pull attempts.
     $this->setRunOtherCommand('ocr:pull-image');
     $this->setRunOtherCommand('dzi:pull-image');
     $options['no-pull'] = TRUE;
 
-    // Then, run tesseract.
+    // Queue up every file in the tree and run tesseract now.
     $this->ocrTesseractTree(
       $file_path,
       [
@@ -207,12 +208,14 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       ]
     );
 
-    // We have run OCR on the tree in threads, do not generate it at issue time.
+    // We have run OCR on the tree, do not generate it at issue import time.
     $options['generate-ocr'] = FALSE;
 
+    // Main processing loop.
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->curIssuePath = $directory_to_process;
       $processed_flag_file = "$directory_to_process/.nbnp_processed";
+
       try {
         if (!file_exists($processed_flag_file)) {
           $this->createIssueFromDir($title_id, $directory_to_process, $options);
@@ -221,7 +224,6 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'issue' => $this->curIssueId,
             'path' => $this->curIssuePath,
           ];
-
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         } else {
           $this->say("Skipping already-imported issue - {$this->curIssuePath}");
@@ -239,6 +241,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         ];
       }
     }
+
+    // Tidy-up.
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
     $this->writeImportLedger();
@@ -287,6 +291,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
   public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL, 'no-pull' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
 
+    // Pull upstream docker images, if permitted.
     if (!$options['no-pull']) {
       $this->setRunOtherCommand('dzi:pull-image');
       $this->setRunOtherCommand('ocr:pull-image');
@@ -540,7 +545,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
 
     $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content);
     if ($options['no-verify'] == FALSE) {
-      NewspapersLibUnbCaPageVerifyCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options);
+      NewspapersLibUnbCaAuditCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options);
     }
   }
 

@@ -53,7 +53,10 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   public static function verifyPageFromIds($issue_id, $page_no, $local_file_path, $options = ['instance-uri' => 'http://localhost:3095']) {
     $remote_file_path = $options['instance-uri'] . "/serials_pages/download/$issue_id/$page_no/download";
     if (!self::remoteHashIsSame($remote_file_path, $local_file_path)) {
-      throw new \Exception("File integrity mismatch with $local_file_path");
+      $contents = file_get_contents($remote_file_path);
+      $md5_remote = md5($contents);
+      $md5_local = self::md5Sum($local_file_path);
+      throw new \Exception("File integrity mismatch : $local_file_path ($md5_local) | $remote_file_path ($md5_remote)");
     }
     return TRUE;
   }
