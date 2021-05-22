@@ -505,7 +505,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     );
 
     // Allow the disk to write out the file.
-    sleep(2);
+    sleep(1);
 
     // Create digital page
     $create_content = json_encode(
