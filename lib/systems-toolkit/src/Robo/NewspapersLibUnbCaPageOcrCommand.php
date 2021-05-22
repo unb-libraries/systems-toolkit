@@ -419,11 +419,12 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    */
   protected function getUniqueIssuePageNo(&$issue_ingested_pages, $page_no) {
     $counter = 0;
-    while (in_array($page_no, $issue_ingested_pages)) {
-      $page_no = $page_no . '_' . $counter++;
+    $page_check = $page_no;
+    while (in_array($page_check, $issue_ingested_pages)) {
+      $page_check = $page_no . '_' . $counter++;
     }
-    $issue_ingested_pages[] = $page_no;
-    return $page_no;
+    $issue_ingested_pages[] = $page_check;
+    return $page_check;
   }
 
   /**
