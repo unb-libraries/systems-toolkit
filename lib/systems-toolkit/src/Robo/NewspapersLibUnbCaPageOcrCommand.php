@@ -203,7 +203,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         'args' => 'hocr',
         'skip-confirm' => TRUE,
         'skip-existing' => !$options['force-ocr'],
-        $options['no-pull'],
+        'no-pull' => $options['no-pull'],
       ]
     );
 
@@ -376,7 +376,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'args' => 'hocr',
             'skip-confirm' => TRUE,
             'skip-existing' => !$options['force-ocr'],
-            $options['no-pull'],
+            'no-pull' => $options['no-pull'],
           ]
         );
       }
