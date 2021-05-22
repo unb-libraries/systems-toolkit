@@ -59,13 +59,20 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The uid to assign the target files.
    * @option target-gid
    *   The gid to assign the target files.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    *
    * @throws \Exception
    *
    * @command dzi:generate-tiles:tree
    */
-  public function dziFilesTree($root, $options = ['extension' => '.tif', 'prefix' => NULL, 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
+  public function dziFilesTree($root, $options = ['extension' => '.tif', 'prefix' => NULL, 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
     $regex_root = preg_quote($root, '/');
+
+    if (!$options['no-pull']) {
+      $this->setPullTilerImage();
+    }
+    $options['no-pull'] = TRUE;
 
     if (!empty($options['prefix'])) {
       $glob_path = "$root/{$options['prefix']}*.{$options['extension']}";
@@ -112,12 +119,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The number of threads the process should use.
    * @option skip-existing
    *   Skip any issues with tiles that have been previously generated.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    *
    * @throws \Exception
    *
    * @command newspapers.lib.unb.ca:issue:generate-dzi
    */
-  public function nbnpDziIssue($root, $issue_id, $options = ['threads' => 1,  'skip-existing' => FALSE]) {
+  public function nbnpDziIssue($root, $issue_id, $options = ['threads' => 1, 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
     $cmd_options = [
       'extension' => 'jpg',
       'tile-size' => '256',
@@ -127,7 +136,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'threads' => $options['threads'],
       'target-uid' => '100',
       'target-gid' => '102',
-      'skip-existing' => $options['skip-existing']
+      'skip-existing' => $options['skip-existing'],
+      'no-pull' => $options['no-pull'],
     ];
     $this->dziFilesTree($root .'/files/serials/pages', $cmd_options);
   }
@@ -177,12 +187,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The uid to assign the target files.
    * @option target-gid
    *   The gid to assign the target files.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    *
    * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
    *
    * @command dzi:generate-tiles
    */
-  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE]) {
+  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
     $dzi_file_path_info = pathinfo($file);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
@@ -191,9 +203,21 @@ class DziTilerCommand extends SystemsToolkitCommand {
       !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") ||
       !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
     ) {
+      if (!$options['no-pull']) {
+        $this->setPullTilerImage();
+      }
       $command = $this->getDziTileCommand($file, $options);
       $command->run();
     }
+  }
+
+  /**
+   * Pull the docker image required to generate DZI tiles.
+   *
+   * @command dzi:pull-image
+   */
+  public function setPullTilerImage() {
+    shell_exec("docker pull {$this->imagemagickImage}");
   }
 
 }

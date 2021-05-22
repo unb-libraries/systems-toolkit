@@ -124,17 +124,24 @@ class OcrCommand extends SystemsToolkitCommand {
    *   Skip the confirmation process, assume 'yes'.
    * @option skip-existing
    *   If non-empty HOCR exists for the file, do not process again.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    *
    * @throws \Exception
    *
    * @command ocr:tesseract:tree
    */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE]) {
+  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
     $this->setFilesToIterate();
     $this->getConfirmFiles('OCR', $options['skip-confirm']);
+
+    if (!$options['no-pull']) {
+      $this->setPullOcrImage();
+    }
+    $options['no-pull'] = TRUE;
 
     foreach ($this->recursiveFiles as $file_to_process) {
       if (!$options['skip-existing'] != TRUE && $this->fileHasOcrGenerated($file_to_process) != TRUE) {
@@ -144,7 +151,7 @@ class OcrCommand extends SystemsToolkitCommand {
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
-    $this->taskDockerPull($this->tesseractImage)->run();
+
     $this->setRunProcessQueue('OCR');
     $this->recursiveFiles = [];
   }
@@ -210,6 +217,15 @@ class OcrCommand extends SystemsToolkitCommand {
     }
     $command = $this->getOcrFileCommand($file, $options);
     $command->run();
+  }
+
+  /**
+   * Pull the docker image required to generate OCR.
+   *
+   * @command ocr:pull-image
+   */
+  public function setPullOcrImage() {
+    shell_exec("docker pull {$this->tesseractImage}");
   }
 
 }

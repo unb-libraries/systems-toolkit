@@ -188,6 +188,10 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
     $this->setDirsToIterate();
     $this->getConfirmDirs('Create Issues');
 
+    $this->setRunOtherCommand('ocr:pull-image');
+    $this->setRunOtherCommand('dzi:pull-image');
+    $options['no-pull'] = TRUE;
+
     // Then, run tesseract.
     $this->ocrTesseractTree(
       $file_path,
@@ -199,6 +203,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
         'args' => 'hocr',
         'skip-confirm' => TRUE,
         'skip-existing' => !$options['force-ocr'],
+        $options['no-pull'],
       ]
     );
 
@@ -270,6 +275,8 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *   Run OCR on files, even if already exists.
    * @option string $webtree-path
    *   The webtree file path, used to generate DZI tiles.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    *
    * @throws \Exception
    *
@@ -277,8 +284,14 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL]) {
+  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL, 'no-pull' => FALSE]) {
     $this->drupalRestUri = $options['instance-uri'];
+
+    if (!$options['no-pull']) {
+      $this->setRunOtherCommand('dzi:pull-image');
+      $this->setRunOtherCommand('ocr:pull-image');
+    }
+    $options['no-pull'] = TRUE;
 
     // Create issue
     $metadata_filepath = "$path/metadata.php";
@@ -363,6 +376,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
             'args' => 'hocr',
             'skip-confirm' => TRUE,
             'skip-existing' => !$options['force-ocr'],
+            $options['no-pull'],
           ]
         );
       }
@@ -397,7 +411,7 @@ class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
       }
 
       if (!empty($options['webtree-path'])) {
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']}");
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']} --no-pull");
       }
 
       $this->recursiveFiles = [];
