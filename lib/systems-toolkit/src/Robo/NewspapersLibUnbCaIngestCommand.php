@@ -3,13 +3,13 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
-use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaAuditCommand;
+use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 
 /**
  * Class for Newspaper Page OCR commands.
  */
-class NewspapersLibUnbCaPageOcrCommand extends OcrCommand {
+class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
   use DrupalInstanceRestTrait;
   use RecursiveDirectoryTreeTrait;
