@@ -211,13 +211,18 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     // We have run OCR on the tree, do not generate it at issue import time.
     $options['generate-ocr'] = FALSE;
 
+    $total_issues = count($this->recursiveDirectories);
+    $processed_issues = 0;
+
     // Main processing loop.
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->curIssuePath = $directory_to_process;
       $processed_flag_file = "$directory_to_process/.nbnp_processed";
+      $processed_issues++;
 
       try {
         if (!file_exists($processed_flag_file)) {
+          $this->io()->title("Creating Issue $processed_issues/$total_issues");
           $this->createIssueFromDir($title_id, $directory_to_process, $options);
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
