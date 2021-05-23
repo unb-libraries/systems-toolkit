@@ -2,10 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Aws\Credentials\Credentials;
-use Aws\Sns\SnsClient;
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\AwsCommandTrait;
+use UnbLibraries\SystemsToolkit\Robo\AwsSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
@@ -13,49 +11,24 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
  */
 class CyberManCommand extends SystemsToolkitCommand {
 
-  use AwsCommandTrait;
+  use AwsSnsMessageTrait;
 
   const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
 
   /**
-   * The AWS SNS Client.
-   *
-   * @var \Aws\Sns\SnsClient
-   */
-  protected $snsClient;
-
-  /**
-   * The SNS Topic ID for the Cyberman Queue.
-   *
-   * @var string
-   */
-  protected $snsTopicId;
-
-  /**
-   * This hook will fire for all commands in this command file.
-   *
-   * @hook post-init
-   */
-  public function setSnsClient() {
-    $credentials = new Credentials($this->accessKeyId, $this->secretAccessKey);
-    $this->snsClient = new SnsClient([
-        'version'     => 'latest',
-        'region'      => $this->awsDefaultRegion,
-        'credentials' => $credentials
-    ]);
-  }
-
-  /**
-   * Get the SNS Topic ID.
+   * Set the Cyberman SNS Topic ID.
    *
    * @throws \Exception
    *
    * @hook post-init
    */
-  public function setSnsTopicId() {
-    $this->snsTopicId = Robo::Config()->get('syskit.cyberman.awsSnsTopicId');
-    if (empty($this->snsTopicId)) {
+  public function setCybermanSnsTopicId() {
+    $topic_id = Robo::Config()->get('syskit.cyberman.awsSnsTopicId');
+    if (empty($topic_id)) {
       throw new \Exception(sprintf(self::ERROR_SNS_TOPIC_ID_UNSET, $this->configFile));
+    }
+    else {
+      $this->setSnsTopicId($topic_id);
     }
   }
 
@@ -73,14 +46,9 @@ class CyberManCommand extends SystemsToolkitCommand {
    *
    * @command cyberman:sendmessage
    */
-  public function sendMessage($message) {
+  public function sendCybermanMessage($message) {
     $this->say(
-      $this->snsClient->publish(
-        [
-          'Message' => $message,
-          'TopicArn' => $this->snsTopicId,
-        ]
-      )
+      $this->setSendMessage($message)
     );
   }
 
