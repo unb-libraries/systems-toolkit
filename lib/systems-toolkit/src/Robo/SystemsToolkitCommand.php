@@ -34,11 +34,14 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    */
   protected $repoRoot;
 
+  protected $commandStartTime = NULL;
+
   /**
    * Constructor.
    */
   public function __construct() {
     // Read configuration.
+    $this->commandStartTime = microtime(true);
     $this->repoRoot = realpath(__DIR__ . "/../../../../");
     $this->configFile = self::CONFIG_FILENAME;
     Robo::loadConfiguration(

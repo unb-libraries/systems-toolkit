@@ -23,9 +23,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     'fail' => [],
     'skipped' => [],
   ];
+
   protected $curTitleId = NULL;
   protected $curIssueId = NULL;
   protected $curIssuePath = NULL;
+
+  protected $issuesProcessed = 0;
+  protected $totalIssues = 0;
 
   /**
    * Generate and update the OCR content for a digital serial page.
@@ -211,18 +215,18 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     // We have run OCR on the tree, do not generate it at issue import time.
     $options['generate-ocr'] = FALSE;
 
-    $total_issues = count($this->recursiveDirectories);
-    $processed_issues = 0;
+    $this->totalIssues = count($this->recursiveDirectories);
+    $this->issuesProcessed= 0;
 
     // Main processing loop.
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->curIssuePath = $directory_to_process;
       $processed_flag_file = "$directory_to_process/.nbnp_processed";
-      $processed_issues++;
+      $this->issuesProcessed++;
 
       try {
         if (!file_exists($processed_flag_file)) {
-          $this->io()->title("Creating Issue $processed_issues/$total_issues");
+          $this->io()->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues}");
           $this->createIssueFromDir($title_id, $directory_to_process, $options);
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
@@ -250,6 +254,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     // Tidy-up.
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
+    $total_seconds = microtime(true) - $this->commandStartTime;
+    $total_time_string = gmdate("H:i:s", $total_seconds);
+    $seconds_each = $total_seconds / $this->issuesProcessed;
+    $each_string = gmdate("H:i:s", $seconds_each);
+    $this->say("Run Time: $total_time_string");
+    $this->say("Issues : {$this->issuesProcessed}");
+    $this->say("Average Per Issue : $each_string");
     $this->writeImportLedger();
   }
 
