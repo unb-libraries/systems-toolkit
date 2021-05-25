@@ -2,6 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Robo;
+use UnbLibraries\SystemsToolkit\Robo\AwsSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaAuditCommand;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
@@ -11,12 +13,14 @@ use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
  */
 class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
+  use AwsSnsMessageTrait;
   use DrupalInstanceRestTrait;
   use RecursiveDirectoryTreeTrait;
 
   const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
   const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
   const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
+  const ERROR_SNS_TOPIC_ID_UNSET = 'The NBHP SNS topic ID is unset in %s.';
 
   protected $resultsLedger = [
     'success' => [],
@@ -30,6 +34,23 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
   protected $issuesProcessed = 0;
   protected $totalIssues = 0;
+
+  /**
+   * Set the NBHP SNS Topic ID.
+   *
+   * @throws \Exception
+   *
+   * @hook post-init
+   */
+  public function setNbhpSnsTopicId() {
+    $topic_id = Robo::Config()->get('syskit.nbhp.awsSnsTopicId');
+    if (empty($topic_id)) {
+      throw new \Exception(sprintf(self::ERROR_SNS_TOPIC_ID_UNSET, $this->configFile));
+    }
+    else {
+      $this->setSnsTopicId($topic_id);
+    }
+  }
 
   /**
    * Generate and update the OCR content for a digital serial page.
@@ -255,14 +276,31 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     // Tidy-up.
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
+    $output_summary = $this->getNbhpNotificationString($file_path);
+    $this->io()->block($output_summary);
+    $this->setSendMessage($output_summary);
+    $this->writeImportLedger();
+  }
+
+  /**
+   * Generate a summary string for a NBHP import.
+   *
+   * @param string $path
+   *   The path to report as the import source.
+   *
+   * @return string
+   */
+  private function getNbhpNotificationString(string $path) {
     $total_seconds = microtime(true) - $this->commandStartTime;
     $total_time_string = gmdate("H:i:s", $total_seconds);
     $seconds_each = $total_seconds / $this->issuesProcessed;
     $each_string = gmdate("H:i:s", $seconds_each);
-    $this->say("Run Time: $total_time_string");
-    $this->say("Issues : {$this->issuesProcessed}");
-    $this->say("Average Per Issue : $each_string");
-    $this->writeImportLedger();
+    return <<<EOT
+[$path] Import Finished!
+Run Time: $total_time_string
+Issues : {$this->issuesProcessed}
+Average Per Issue : $each_string;
+EOT;
   }
 
   /**
