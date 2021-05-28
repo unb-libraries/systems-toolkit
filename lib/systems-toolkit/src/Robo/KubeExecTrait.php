@@ -136,12 +136,14 @@ trait KubeExecTrait {
    *
    * @throws \Exception
    */
-  private function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod']) {
+  private function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod'], $quiet = FALSE) {
     $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
       $output = shell_exec($command);
-      $this->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
+      if (!$quiet) {
+        $this->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
+      }
       $this->setAddCurPodsFromJson($output);
     }
   }
