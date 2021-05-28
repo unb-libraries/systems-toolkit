@@ -2,13 +2,17 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Robo;
+use UnbLibraries\SystemsToolkit\Robo\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
+use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
 
 /**
  * Class for NewspapersLibUnbCaStatsCommand Robo commands.
  */
 class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
 
+  use NbhpSnsMessageTrait;
   use KubeExecTrait;
 
   const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
@@ -21,6 +25,8 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    * @throws \Exception
    *
    * @command newspapers.lib.unb.ca:stats
+   *
+   * @nbhp
    */
   public function getNewspapersStats() {
     $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
@@ -31,15 +37,16 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
       $issues = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_issue');
       $titles = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_title');
 
-      $this->io()->block(
-          sprintf(
-          '[%s] newspapers.lib.unb.ca: %s digital titles | %s digital issues | %s scanned pages.',
-          date(self::TIME_STRING_FORMAT),
-          number_format($titles),
-          number_format($issues),
-          number_format($pages)
-        )
+      $message = sprintf(
+        "newspapers.lib.unb.ca - %s\n%s digital titles\n%s digital issues\n%s total pages",
+        date(self::TIME_STRING_FORMAT),
+        number_format($titles),
+        number_format($issues),
+        number_format($pages)
       );
+
+      $this->setSendSnsMessage($message);
+      $this->io()->block($message);
     }
   }
 

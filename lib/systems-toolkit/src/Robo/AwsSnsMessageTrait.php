@@ -64,7 +64,7 @@ trait AwsSnsMessageTrait {
    *
    * @throws \Exception
    */
-  protected function setSendMessage(string $message): \Aws\Result {
+  protected function setSendSnsMessage(string $message): \Aws\Result {
     return $this->snsClient->publish(
       [
         'Message' => $message,
