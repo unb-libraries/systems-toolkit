@@ -54,6 +54,7 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       'bootstrap_barrio',
       'bootstrap4',
       'search_api_solr',
+      'simple_gmap',
       'webform',
     ];
     if (in_array($module, $no_full_refspec_url)) {
