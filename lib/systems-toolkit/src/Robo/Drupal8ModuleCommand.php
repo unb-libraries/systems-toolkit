@@ -49,6 +49,7 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
 
     // Exceptions where release URLs don't have 8.x- in URL.
     $no_full_refspec_url = [
+      'admin_toolbar',
       'conditional_fields',
       'drupal',
       'bootstrap_barrio',
