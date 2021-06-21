@@ -75,6 +75,8 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *   The extensions to match when finding files. Defaults to dev only.
    * @option array only-update
    *   A comma separated list of modules to query. Defaults to all.
+   * @option array exclude
+   *   A comma separated list of modules to exclude. Defaults to none.
    * @option bool security-only
    *   Only perform security updates.
    * @option bool yes
@@ -86,7 +88,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:8:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $this->getDrupal8Updates($options);
     $this->noConfirm = $options['yes'];
 
@@ -124,7 +126,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:8:getupdates
    */
-  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'only-update' => [], 'security-only' => FALSE]) {
+  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE]) {
     $this->securityOnly = $options['security-only'];
 
     $pod_selector = [
@@ -132,7 +134,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       'appMajor=8',
     ];
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
-    $this->setAllNeededUpdates($options['only-update']);
+    $this->setAllNeededUpdates($options['only-update'], $options['exclude']);
     $this->tabulateNeededUpdates($options['namespaces']);
     $this->printTabluatedUpdateTables();
   }
@@ -140,9 +142,9 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   /**
    * Set all needed updates for queued pods.
    */
-  private function setAllNeededUpdates($module_whitelist = []) {
+  private function setAllNeededUpdates($module_whitelist = [], $module_exclude = []) {
     foreach($this->kubeCurPods as $pod) {
-      $this->setNeededUpdates($pod, $module_whitelist);
+      $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
     }
   }
 
@@ -152,7 +154,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    * @param object $pod
    *   The kubernetes pod object obtained from JSON.
    */
-  private function setNeededUpdates($pod, $module_whitelist = []) {
+  private function setNeededUpdates($pod, $module_whitelist = [], $module_exclude = []) {
     $args = [];
     $command = '/scripts/listDrupalUpdates.sh';
     if ($this->securityOnly) {
@@ -173,7 +175,9 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     if (!empty($module_whitelist)) {
       $this->filterWhitelistUpdates($updates, $module_whitelist);
     }
-
+    if (!empty($module_exclude)) {
+      $this->filterExcludeUpdates($updates, $module_exclude);
+    }
     if (!empty($updates)) {
       foreach ($updates as $up_idx => $cur_update) {
         if (empty($cur_update->recommended)) {
@@ -325,6 +329,21 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     foreach($updates as $idx => $update) {
       if (!in_array($update->name, $module_whitelist)) {
         $this->say("Ignoring update for {$update->name}...");
+        unset($updates[$idx]);
+      }
+    }
+  }
+
+  /**
+   * Filter any excluded updates.
+   *
+   * @param object[] $updates
+   *   An array of update objects.
+   */
+  private function filterExcludeUpdates(&$updates, $module_exclude) {
+    foreach($updates as $idx => $update) {
+      if (in_array($update->name, $module_exclude)) {
+        $this->say("Ignoring update for {$update->name} (excluded)...");
         unset($updates[$idx]);
       }
     }
