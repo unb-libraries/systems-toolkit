@@ -354,9 +354,11 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    */
   private function updateAllRepositories($options) {
     foreach($this->githubRepositories as $repository) {
-      $this->updateRepository($repository);
-      $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
-      sleep($options['multi-repo-delay']);
+      $updates_pushed = $this->updateRepository($repository);
+      if ($updates_pushed) {
+        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+        sleep($options['multi-repo-delay']);
+      }
     }
   }
 
@@ -365,9 +367,16 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @param array $repository
    *   The associative array describing the repository.
+   *
+   * @return bool
+   *   TRUE if an update was pushed to GitHub. FALSE otherwise.
+   *
+   * @throws \Github\Exception\ErrorException
+   * @throws \Github\Exception\MissingArgumentException
+   * @throws \Psr\Cache\InvalidArgumentException
    */
   private function updateRepository(array $repository) {
-    $this->updateComposerJson($repository);
+    return $this->updateComposerJson($repository);
   }
 
   /**
@@ -377,10 +386,18 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *   The associative array describing the repository.
    * @param string $branch
    *   The repository branch to perform the updates in.
+   *
+   * @return bool
+   *   TRUE if an update was pushed to GitHub. FALSE otherwise.
+   *
+   * @throws \Github\Exception\ErrorException
+   * @throws \Github\Exception\MissingArgumentException
+   * @throws \Psr\Cache\InvalidArgumentException
    */
   private function updateComposerJson($repository, $branch = 'dev') {
     $path = 'build/composer.json';
     $committer = ['name' => $this->userName, 'email' => $this->userEmail];
+    $updates_pushed = FALSE;
 
     if (!empty($this->tabulatedUpdates[$repository['name']][$branch])) {
       $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
@@ -413,6 +430,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
               $this->client->api('repo')
                 ->contents()
                 ->update($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $new_content, $commit_message, $old_file_hashes['sha'], $branch, $committer);
+              $updates_pushed = TRUE;
               if ($do_all) {
                 sleep(2);
               }
@@ -427,6 +445,8 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
         $this->say('Failure to decode composer.json from GitHub!');
       }
     }
+
+    return $updates_pushed;
   }
 
   /**
