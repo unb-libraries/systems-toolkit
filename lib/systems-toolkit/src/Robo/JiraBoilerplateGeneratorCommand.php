@@ -23,6 +23,11 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   protected $jiraInstanceTableHeaders = ['ID', 'Instance'];
 
   /**
+   * The default values for table headers.
+   */
+  protected $jiraInstanceDefaultValues = [];
+
+  /**
    * The actions to perform.
    */
   protected $jiraInstanceTableRows = [];
@@ -37,6 +42,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   public function generateMultiInstanceWorklistTable() {
     $this->io()->title('Generating multi-instance JIRA worklist boilerplate');
     $this->getWorklistTasks();
+    $this->io()->newLine();
     $this->getWorklistRepositories();
     $this->buildJiraTableSource();
     $this->io()->newLine();
@@ -55,6 +61,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
       $action = $this->ask("Enter a short description of task #$action_no (16 Char Max, Enter to Stop)");
       if (!empty($action)) {
         $this->jiraInstanceTableHeaders[] = $action;
+        $this->jiraInstanceDefaultValues[] = $this->ask("Enter a default value for task #$action_no (Enter for None)");
         $action_no++;
       }
       else {
@@ -89,11 +96,29 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
     $this->jiraInstanceSource = '|| '. implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
     foreach ($this->githubRepositories as $idx => $repository) {
       $id = $idx + 1;
-      $this->jiraInstanceSource .= "| $id | {$repository['name']}";
-      for($i=0; $i < count($this->jiraInstanceTableHeaders) - 1; $i++) {
-        $this->jiraInstanceSource .= ' |';
+      $this->jiraInstanceSource .= "| $id | {$repository['name']} |";
+      for($i=0; $i < count($this->jiraInstanceTableHeaders) - 2; $i++) {
+        $this->jiraInstanceSource .= $this->getFormattedWorkItemCellValue($this->jiraInstanceDefaultValues[$i]);
       }
       $this->jiraInstanceSource .= PHP_EOL;
+    }
+  }
+
+  /**
+   * Gets a formatted cell value for a work item.
+   *
+   * @param string $cell_value
+   *   The value of the cell.
+   *
+   * @return string
+   *   The formatted cell value.
+   */
+  private function getFormattedWorkItemCellValue($cell_value = NULL) {
+    if (empty($cell_value)) {
+      return ' |';
+    }
+    else {
+      return " $cell_value |";
     }
   }
 
