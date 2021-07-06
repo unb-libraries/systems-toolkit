@@ -14,6 +14,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
+  const FILE_SOURCE_PATCH = '/tmp/syskit_tmp_cherry_patch.txt';
   const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
   const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
   const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
@@ -110,6 +111,32 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
 
     // Verify commit is in repo and release local source repo.
     $this->getRepoHasCommit($source_repo, $cherry_hash);
+
+    // Write patch to local file.
+    $this->say('Writing patch to local file...');
+    $source_repo->repo->execute(
+      [
+        'diff',
+        '--unified=0',
+        '--output=' . self::FILE_SOURCE_PATCH,
+        "$cherry_hash~1",
+        $cherry_hash,
+      ]
+    );
+
+    $commit_message = trim(
+      implode(
+        "\n",
+        $source_repo->repo->execute(
+          [
+            'log',
+            '--format=%B',
+            '-n 1',
+            $cherry_hash,
+          ]
+        )
+      )
+    );
     unset($source_repo);
 
     // Get repositories.
@@ -148,47 +175,24 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
         );
         $target_repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
         $target_repo->repo->checkout($target_branch);
-        $cherry_output = [];
-        $cherry_output = $cherry_output + $target_repo->repo->execute(
-          [
-            'remote',
-            'add',
-            $source_repository,
-            $this->sourceRepo['ssh_url'],
-          ]
-        );
-        $cherry_output = $cherry_output + $target_repo->repo->execute(
-          [
-            'fetch',
-            '--all',
-          ]
-        );
-        $cherry_output = $cherry_output + $target_repo->repo->execute(
-          [
-            'format-patch',
-            '-n1',
-            $cherry_hash,
-          ]
-        );
 
         // Apply patch.
-        exec("cd {$target_repo->getTmpDir()} && git apply --index 0001*.patch", $output, $return);
+        exec("cd {$target_repo->getTmpDir()} && patch -p1 < " . self::FILE_SOURCE_PATCH . ' && git add .', $output, $return);
         if ($return) {
           $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_FAILED, $target_branch, $repository_data['name']));
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";
           continue;
         }
-        $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
 
-        $cherry_output = $cherry_output + $output;
-        $cherry_output = $cherry_output + $target_repo->repo->execute(
-            [
-              'commit',
-              '--no-gpg-sign',
-              '-m',
-              $cherry_commit_msg,
-            ]
-          );
+        $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
+        $cherry_output = $target_repo->repo->execute(
+          [
+            'commit',
+            '--no-gpg-sign',
+            '-m',
+            $commit_message,
+          ]
+        );
 
         $this->say(self::MESSAGE_CHERRY_RESULTS_TITLE);
         $this->say(implode("\n", $cherry_output));
