@@ -19,6 +19,7 @@
     "league/html-to-markdown": "^4",
     "lesstif/php-jira-rest-client": "^1.19",
     "php-http/guzzle6-adapter": "^1.1.1",
+    "sebastian/diff": "^4",
     "symfony/cache": "^4",
     "symfony/css-selector": "^5",
     "symfony/dom-crawler": "^4",
