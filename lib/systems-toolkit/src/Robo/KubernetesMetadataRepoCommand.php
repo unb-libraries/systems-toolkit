@@ -37,12 +37,12 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Defines the GitHub repository to use as the 'central' metadata repository.
    */
-  const KUBERNETES_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
+  const CENTRAL_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
 
   /**
    * Defines the branch of the 'central' metadata repository to compare against.
    */
-  const KUBERNETES_METADATA_REPO_BRANCH = '1.18';
+  const CENTRAL_METADATA_REPO_BRANCH = '1.18';
 
   /**
    * Defines the branch of the 'lean' repositories to compare against.
@@ -57,7 +57,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Indicates the path in lean repositories where the metadata files are found.
    */
-  const LEAN_REPO_K8S_PATH = '.dockworker/deployment/k8s';
+  const LEAN_REPO_METADATA_PATH = '.dockworker/deployment/k8s';
 
   /**
    * Translates between filenames in lean repositories and the central one.
@@ -170,14 +170,14 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $k8sMetadataRepo;
+  protected $centralMetadataRepo;
 
   /**
-   * Flag if the k8s metadata repo needs push.
+   * Flag if the central metadata repo needs push.
    *
    * @var bool
    */
-  protected $k8sMetadataRepoNeedsPush = FALSE;
+  protected $centralMetadataRepoNeedsPush = FALSE;
 
   /**
    * The name filter to match repositories against.
@@ -229,7 +229,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Selects and audits lean repositories against k8s repo.
+   * Selects and audits lean repositories against the central repo.
    *
    * @throws \Exception
    */
@@ -257,8 +257,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
       $this->say('Cloning central repo...');
-      $this->k8sMetadataRepo = GitRepo::setCreateFromClone(self::KUBERNETES_METADATA_REPO);
-      $this->k8sMetadataRepo->repo->checkout(self::KUBERNETES_METADATA_REPO_BRANCH);
+      $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO);
+      $this->centralMetadataRepo->repo->checkout(self::CENTRAL_METADATA_REPO_BRANCH);
     }
 
     foreach ($this->githubRepositories as $repository) {
@@ -276,16 +276,16 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->io->newLine();
     }
 
-    if ($this->k8sMetadataRepoNeedsPush) {
+    if ($this->centralMetadataRepoNeedsPush) {
       $this->say('Pushing central repo changes to GitHub...');
-      $this->pushK8sRepo();
+      $this->pushCentralRepo();
       $this->say('Done!');
     }
     $this->io->newLine();
   }
 
   /**
-   * Audits the current github repository against the k8s metadata repo.
+   * Audits the lean github repository against the central metadata repo.
    *
    * @throws \Exception
    */
@@ -372,7 +372,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
         '/',
         [
           $this->curLeanRepoClone->getTmpDir(),
-          self::LEAN_REPO_K8S_PATH,
+          self::LEAN_REPO_METADATA_PATH,
           $this->curDeployEnv,
           $this->curMetadataType,
         ]
@@ -397,7 +397,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     $file_path = implode(
       '/',
       [
-        $this->k8sMetadataRepo->getTmpDir(),
+        $this->centralMetadataRepo->getTmpDir(),
         'services',
         $this->curLeanRepoSlug,
         $this->curDeployEnv,
@@ -525,13 +525,13 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     $output_contents = str_replace(self::LEAN_REPO_IMAGE_PLACEHOLDER, $this->curDockerImage . ':' . $this->curDeployEnv, $this->curLeanMetadataFileContents);
     file_put_contents($this->curCentralMetadataFile, $output_contents);
     $commit_message = "Update {$this->curLeanRepo['name']}/$this->curDeployEnv $this->curMetadataType from lean repository";
-    $this->k8sMetadataRepo->repo->execute(
+    $this->centralMetadataRepo->repo->execute(
       [
         'add',
-        str_replace($this->k8sMetadataRepo->getTmpDir() . '/', '', $this->curCentralMetadataFile),
+        str_replace($this->centralMetadataRepo->getTmpDir() . '/', '', $this->curCentralMetadataFile),
       ]
     );
-    $this->k8sMetadataRepo->repo->execute(
+    $this->centralMetadataRepo->repo->execute(
       [
         'commit',
         '--no-gpg-sign',
@@ -539,7 +539,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
         $commit_message,
       ]
     );
-    $this->k8sMetadataRepoNeedsPush = TRUE;
+    $this->centralMetadataRepoNeedsPush = TRUE;
   }
 
   /**
@@ -562,12 +562,12 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Cz\Git\GitException
    */
-  protected function pushK8sRepo() {
-    $this->k8sMetadataRepo->repo->execute(
+  protected function pushCentralRepo() {
+    $this->centralMetadataRepo->repo->execute(
       [
         'push',
         'origin',
-        self::KUBERNETES_METADATA_REPO_BRANCH,
+        self::CENTRAL_METADATA_REPO_BRANCH,
       ]
     );
   }
