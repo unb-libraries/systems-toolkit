@@ -19,7 +19,7 @@ class GitRepo {
   /**
    * The repository object.
    *
-   * @var string
+   * @var \Cz\Git\GitRepository
    */
   public $repo;
 
