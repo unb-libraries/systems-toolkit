@@ -37,7 +37,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $curCentralMetadataFile = NULL;
+  protected $curCentralMetadataFile;
 
   /**
    * Does the current central metadata file exist?
@@ -51,35 +51,35 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $curCentralMetadataFileContents = NULL;
+  protected $curCentralMetadataFileContents;
 
   /**
    * The current docker image.
    *
    * @var string
    */
-  protected $curDockerImage = NULL;
+  protected $curDockerImage;
 
   /**
    * The current deployment env.
    *
    * @var string
    */
-  protected $curDeployEnv = NULL;
+  protected $curDeployEnv;
 
   /**
    * The current metadata file slug to output.
    *
    * @var string
    */
-  protected $curFileSlug = NULL;
+  protected $curFileSlug;
 
   /**
    * The current lean metadata file being audited.
    *
    * @var string
    */
-  protected $curLeanMetadataFile = NULL;
+  protected $curLeanMetadataFile;
 
   /**
    * Does the current lean metadata file exist?
@@ -93,49 +93,49 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $curLeanMetadataFileContents = NULL;
+  protected $curLeanMetadataFileContents;
 
   /**
    * The current lean repo being audited.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $curLeanRepo = NULL;
+  protected $curLeanRepo;
 
   /**
    * The current lean repo being audited.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $curLeanRepoClone = NULL;
+  protected $curLeanRepoClone;
 
   /**
    * Flag if the current lean repo needs push.
    *
    * @var bool
    */
-  protected $curLeanRepoNeedsPush = FALSE;
+  protected $curLeanRepoNeedsPush;
 
   /**
    * The current lean repo being audited.
    *
    * @var string
    */
-  protected $curLeanRepoSlug = NULL;
+  protected $curLeanRepoSlug;
 
   /**
    * The current metadata type.
    *
    * @var string
    */
-  protected $curMetadataType = NULL;
+  protected $curMetadataType;
 
   /**
    * The kubernetes metadata repo.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $k8sMetadataRepo = NULL;
+  protected $k8sMetadataRepo;
 
   /**
    * Flag if the k8s metadata repo needs push.
@@ -149,7 +149,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $nameFilter = NULL;
+  protected $nameFilter;
 
   /**
    * Command options passed.
@@ -163,7 +163,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $tagFilter = NULL;
+  protected $tagFilter;
 
   /**
    * Audits the kubernetes-metadata repo against lean repos.
@@ -351,7 +351,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->curLeanMetadataFileContents = str_replace(self::LEAN_REPO_IMAGE_PLACEHOLDER, $this->curDockerImage . ':' . $this->curDeployEnv, $this->curLeanMetadataFileContents);
     }
     else {
-      $this->curLeanMetadataFileContents = NULL;
+      $this->curLeanMetadataFileContents = '';
     }
   }
 
@@ -384,7 +384,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->curCentralMetadataFileContents = file_get_contents($this->curCentralMetadataFile);
     }
     else {
-      $this->curCentralMetadataFileContents = NULL;
+      $this->curCentralMetadataFileContents = '';
     }
   }
 
@@ -431,7 +431,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *   The value of the choice.
    */
   protected function getRepoCorrectionChoiceValue() : string {
-    $choice = NULL;
+    $choice = '';
     while (!self::isValidCorrectionChoice($choice)) {
       $choice = strtolower($this->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
       if (!self::isValidCorrectionChoice($choice)) {
