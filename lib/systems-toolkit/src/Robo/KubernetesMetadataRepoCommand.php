@@ -16,18 +16,53 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const DIFF_HEADER = "+++ Central Repo\n--- Lean Repo\n";
-  const DOCKER_IMAGE_FORMAT = 'ghcr.io/unb-libraries/%s';
-  const KUBERNETES_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
-  const KUBERNETES_METADATA_REPO_BRANCH = '1.18';
-  const LEAN_REPO_BRANCH = 'dev';
-  const LEAN_REPO_ENVS = [
+  /**
+   * Defines the deploy environments to iterate over when comparing files.
+   */
+  const DEPLOY_ENVS = [
     'dev',
     'prod',
   ];
+
+  /**
+   * Defines the header to use during file diff output.
+   */
+  const DIFF_HEADER = "+++ Central Repo\n--- Lean Repo\n";
+
+  /**
+   * Defines the format of the docker repository/image names.
+   */
+  const DOCKER_IMAGE_FORMAT = 'ghcr.io/unb-libraries/%s';
+
+  /**
+   * Defines the GitHub repository to use as the 'central' metadata repository.
+   */
+  const KUBERNETES_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
+
+  /**
+   * Defines the branch of the 'central' metadata repository to compare against.
+   */
+  const KUBERNETES_METADATA_REPO_BRANCH = '1.18';
+
+  /**
+   * Defines the branch of the 'lean' repositories to compare against.
+   */
+  const LEAN_REPO_BRANCH = 'dev';
+
+  /**
+   * Indicates the placeholder that is used for images in lean repos.
+   */
   const LEAN_REPO_IMAGE_PLACEHOLDER = '||DEPLOYMENTIMAGE||';
+
+  /**
+   * Indicates the path in lean repositories where the metadata files are found.
+   */
   const LEAN_REPO_K8S_PATH = '.dockworker/deployment/k8s';
-  const LEAN_REPO_SLUG_FILES = [
+
+  /**
+   * Translates between filenames in lean repositories and the central one.
+   */
+  const LEAN_CENTRAL_FILENAME_TRANSLATION = [
     'cron' => 'CronJob',
     'deployment' => 'Deployment',
   ];
@@ -263,9 +298,9 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       return;
     }
 
-    foreach (self::LEAN_REPO_ENVS as $deploy_env) {
+    foreach (self::DEPLOY_ENVS as $deploy_env) {
       $this->curDeployEnv = $deploy_env;
-      foreach (array_keys(self::LEAN_REPO_SLUG_FILES) as $metadata_type) {
+      foreach (array_keys(self::LEAN_CENTRAL_FILENAME_TRANSLATION) as $metadata_type) {
         $this->curMetadataType = $metadata_type;
         $this->curFileSlug = "$this->curMetadataType.$this->curDeployEnv";
         $this->setLeanMetadataFile();
@@ -370,7 +405,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
           '.',
           [
             $this->curLeanRepoSlug,
-            self::LEAN_REPO_SLUG_FILES[$this->curMetadataType],
+            self::LEAN_CENTRAL_FILENAME_TRANSLATION[$this->curMetadataType],
             $this->curDeployEnv,
           ]
         ),
