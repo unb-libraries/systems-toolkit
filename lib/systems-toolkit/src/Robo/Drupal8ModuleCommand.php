@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
 use League\HTMLToMarkdown\HtmlConverter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DomCrawler\Crawler;
@@ -47,25 +48,21 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
       $version
     );
 
-    // Exceptions where release URLs don't have 8.x- in URL.
-    $no_full_refspec_url = [
-      'admin_toolbar',
-      'conditional_fields',
-      'drupal',
-      'bootstrap_barrio',
-      'bootstrap4',
-      'search_api_solr',
-      'simple_gmap',
-      'webform',
-    ];
-    if (in_array($module, $no_full_refspec_url)) {
-      $changelog_uri = str_replace('8.x-', '', $changelog_uri);
-    }
-
     $raw_message = $cache->get($cache_tag, function (ItemInterface $item) use ($changelog_uri) {
       $item->expiresAfter(self::CHANGELOG_CACHE_TIME);
       $client = new Client();
-      $response = $client->request('GET', $changelog_uri);
+      try {
+        $response = $client->request('GET', $changelog_uri);
+      }
+      catch (BadResponseException $e) {
+        $changelog_uri = str_replace('8.x-', '', $changelog_uri);
+        try {
+          $response = $client->request('GET', $changelog_uri);
+        }
+        catch (BadResponseException $e) {
+          return NULL;
+        }
+      }
       $htmlResponse = $response->getBody()->__toString();
       $crawler = new Crawler($htmlResponse);
       $changelog_node = $crawler->filter(self::CHANGELOG_CSS_SELECTOR);
