@@ -153,12 +153,24 @@ trait GitHubMultipleInstanceTrait {
 
     // Perform topic filtering.
     if (!empty($topic_filters[0])) {
-      $this->say('Topic filtering repositories. This may take a while, particularly if you have not applied any name filters...');
-      foreach ($this->githubRepositories as $repository_index => $repository) {
-        $repo_topics = $this->client->api('repo')->topics($repository['owner']['login'], $repository['name'])['names'];
-        if (empty(array_intersect($repo_topics, $topic_filters))) {
-          unset($this->githubRepositories[$repository_index]);;
+      $this->say('Topic filtering repositories...');
+      $ids = [];
+      foreach ($topic_filters as $topic) {
+        foreach ($this->organizations as $org) {
+          $repos = $this->client->api('search')->repositories("org:{$org} topic:{$topic}");
+          foreach ($repos['items'] as $repo) {
+            $ids[$repo['id']] = 1;
+          }
         }
+      }
+      if (!$ids) {
+        $this->githubRepositories = [];
+      }
+      else {
+        $ids = array_keys($ids);
+        $this->githubRepositories = array_filter($this->githubRepositories, function ($repo) use ($ids) {
+          return in_array($repo['id'], $ids);
+        });
       }
       $this->say('Topic filtering complete!');
     }
