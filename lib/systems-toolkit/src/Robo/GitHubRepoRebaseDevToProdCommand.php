@@ -13,7 +13,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const MESSAGE_CHECKING_OUT_REPO = 'Cloning %s repository to temporary folder...';
+  const MESSAGE_CHECKING_OUT_REPO = 'Cloning repository to temporary folder...';
   const MESSAGE_CONFIRM_PUSH = 'Was the rebase clean? Still want to push to GitHub?';
   const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
   const MESSAGE_REBASE_RESULTS_TITLE = 'Rebase Results:';
@@ -95,53 +95,107 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
     if ($continue) {
       foreach ($this->githubRepositories as $repository_data) {
         // Pull down.
+        $this->io()->title($repository_data['name']);
         $this->say(
           sprintf(
-            self::MESSAGE_CHECKING_OUT_REPO,
-            $repository_data['name']
+            self::MESSAGE_CHECKING_OUT_REPO
           )
         );
         $repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
-
-        // Rebase.
-        $repo->repo->checkout('prod');
-        $this->say(
-          sprintf(self::MESSAGE_REBASING,
-            self::UPMERGE_SOURCE_BRANCH,
-            self::UPMERGE_TARGET_BRANCH
-          )
-        );
-        $rebase_output = $repo->repo->execute(
-          [
-            'rebase',
-            self::UPMERGE_SOURCE_BRANCH,
-          ]
-        );
-        $this->say(self::MESSAGE_REBASE_RESULTS_TITLE);
-        $this->say(implode("\n", $rebase_output));
-
-        // Push.
-        if (!$options['yes']) {
-          $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
-        }
-        else {
-          $continue = TRUE;
-        }
-        if ($continue) {
-          $push_output = $repo->repo->execute(
+        if (!self::repoBranchesAreSynchronized($repo, self::UPMERGE_SOURCE_BRANCH, self::UPMERGE_TARGET_BRANCH)) {
+          // Rebase.
+          $repo->repo->checkout('prod');
+          $this->say(
+            sprintf(self::MESSAGE_REBASING,
+              self::UPMERGE_SOURCE_BRANCH,
+              self::UPMERGE_TARGET_BRANCH
+            )
+          );
+          $rebase_output = $repo->repo->execute(
             [
-              'push',
-              'origin',
-              self::UPMERGE_TARGET_BRANCH,
+              'rebase',
+              self::UPMERGE_SOURCE_BRANCH,
             ]
           );
-          $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
-          $this->say(implode("\n", $push_output));
+          $this->say(self::MESSAGE_REBASE_RESULTS_TITLE);
+          $this->say(implode("\n", $rebase_output));
+
+          // Push.
+          if (!$options['yes']) {
+            $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
+          }
+          else {
+            $continue = TRUE;
+          }
+          if ($continue) {
+            $push_output = $repo->repo->execute(
+              [
+                'push',
+                'origin',
+                self::UPMERGE_TARGET_BRANCH,
+              ]
+            );
+            $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
+            $this->say(implode("\n", $push_output));
+          }
+          $this->io()->newLine();
+          $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+          sleep($options['multi-repo-delay']);
         }
-        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
-        sleep($options['multi-repo-delay']);
+        else {
+          $this->say(
+            sprintf(
+              "Branches %s and %s are synchronized, skipping...",
+              self::UPMERGE_SOURCE_BRANCH,
+              self::UPMERGE_TARGET_BRANCH
+            )
+          );
+          $this->io()->newLine();
+        }
       }
     }
+  }
+
+  /**
+   * Determines if two branches of a repository are synchronized.
+   *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
+   *   The repository to evaluate.
+   * @param string $branch1
+   *   The first branch.
+   * @param string $branch2
+   *   The second branch.
+   *
+   * @return bool
+   *   TRUE if the branches are synchronized. False otherwise.
+   */
+  private static function repoBranchesAreSynchronized($repo, $branch1, $branch2) {
+    $repo->repo->checkout($branch1);
+    $repo->repo->checkout($branch2);
+    return self::getRepoHeadHash($repo, $branch1) ==
+      self::getRepoHeadHash($repo, $branch2);
+  }
+
+  /**
+   * Retrieves the repository's branch HEAD commit hash.
+   *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
+   *   The repository to query.
+   * @param string $branch
+   *   The branch to query.
+   *
+   * @return string[]
+   *   The value of the branch HEAD commit hash.
+   */
+  private static function getRepoHeadHash($repo, $branch) {
+    return $repo->repo->execute(
+      [
+        'log',
+        $branch,
+        '-1',
+        '--format=%H',
+      ]
+    );
   }
 
 }
