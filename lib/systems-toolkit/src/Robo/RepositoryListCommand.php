@@ -57,4 +57,35 @@ class RepositoryListCommand extends SystemsToolkitCommand {
     }
   }
 
+  /**
+   * List all repositories that contain a specific file.
+   *
+   * @param string $file_path
+   *   The path to the file to query.
+   * @param string $name_filter
+   *   The name filter to apply when choosing the repositories to operate on.
+   * @param string $tag_filter
+   *   The tag filter to apply when choosing the repositories to operate on.
+   * @param string $branch
+   *   The repository branch to query. Defaults to 'dev'.
+   *
+   * @command repository-list:contains-file
+   *
+   * @usage repository-list:contains-file config-yml/samlauth.authentication.yml '' drupal8
+   */
+  public function listContainsFileRepositories($file_path, $name_filter, $tag_filter, $branch = 'dev') {
+    $this->setRepositoryList(
+      [$name_filter],
+      [$tag_filter],
+      [],
+      []
+    );
+    foreach ($this->githubRepositories as $idx => $repository) {
+      if (!$this->client->api('repo')->contents()->exists($repository['owner']['login'], $repository['name'], $file_path, $branch)) {
+        unset($this->githubRepositories[$idx]);
+      }
+    }
+    $this->repositoryListDisplay("[$name_filter|$tag_filter] Repositories containing file $file_path");
+  }
+
 }
