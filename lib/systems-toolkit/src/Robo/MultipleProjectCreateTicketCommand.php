@@ -79,6 +79,8 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
             }
             $issueService = new IssueService($this->jiraConfig);
             $issueService->create($issueField);
+            $this->say("Sleeping to avoid overloading API...");
+            sleep(5);
           }
         }
       }
