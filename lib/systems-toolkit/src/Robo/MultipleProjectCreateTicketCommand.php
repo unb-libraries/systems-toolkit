@@ -18,6 +18,8 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   const EPIC_LINK_FIELD_ID = 'customfield_10002';
+  const DEFAULT_PROJECT_ID = '10600';
+  const DEFAULT_PROJECT_KEY = 'IN';
 
   /**
    * Create a JIRA issue for multiple Github projects based on tags or name.
@@ -67,6 +69,10 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           }
           catch (JiraException $e) {
             print("Error Occured! " . $e->getMessage());
+          }
+          if (empty($verified_projects)) {
+            // Repo with an incorrect Jira project. Add to the default.
+            $verified_projects[self::DEFAULT_PROJECT_ID] = self::DEFAULT_PROJECT_KEY;
           }
           foreach ($verified_projects as $project_id => $project_key) {
             $issueField = new IssueField();
