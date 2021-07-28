@@ -58,8 +58,8 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
     );
 
     if ($continue) {
-      $verified_projects = [];
       foreach ($this->githubRepositories as $repository) {
+        $verified_projects = [];
         if (!empty($slug = $this->getGitHubRepositoryJiraSlug($repository))) {
           try {
             $project = $this->jiraService->get($slug);
