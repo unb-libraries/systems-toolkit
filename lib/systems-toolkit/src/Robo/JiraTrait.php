@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use JiraRestApi\Configuration\ArrayConfiguration;
+use JiraRestApi\Project\ProjectService;
 use Robo\Robo;
 
 /**
@@ -39,6 +40,13 @@ trait JiraTrait {
   protected $jiraUserPassword;
 
   /**
+   * The jira server user password to authenticate with.
+   *
+   * @var object
+   */
+  protected $jiraService;
+
+  /**
    * Set the JIRA host from config.
    *
    * @throws \Exception
@@ -50,6 +58,17 @@ trait JiraTrait {
     if (empty($this->jiraHostName)) {
       throw new \Exception(sprintf('The Jira hostname has not been set in the configuration file. (jiraHostName)'));
     }
+  }
+
+  /**
+   * Set the JIRA service.
+   *
+   * @throws \Exception
+   *
+   * @hook post-init
+   */
+  public function setJiraService() {
+    $this->jiraService = new ProjectService($this->jiraConfig);
   }
 
   /**
@@ -73,12 +92,11 @@ trait JiraTrait {
    *
    * @throws \Exception
    *
-   * @hook init
+   * @hook pre-init
    */
   public function setJiraPass() {
-    $this->jiraUserPassword = $this->askDefault(
-      'Please enter the password for the user ' . $this->jiraUserName,
-      'password'
+    $this->jiraUserPassword = $this->ask(
+      "Enter $this->jiraUserName's JIRA password for $this->jiraHostName"
     );
   }
 
@@ -87,15 +105,15 @@ trait JiraTrait {
    *
    * @throws \Exception
    *
-   * @hook post-init
+   * @hook init
    */
   public function setJiraConfig() {
     $this->jiraConfig = new ArrayConfiguration(
-      array(
+      [
         'jiraHost' => $this->jiraHostName,
         'jiraUser' => $this->jiraUserName,
         'jiraPassword' => $this->jiraUserPassword,
-      )
+      ]
     );
   }
 

@@ -2,6 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use JiraRestApi\Field\FieldService;
+use JiraRestApi\Field\Field;
 use JiraRestApi\JiraException;
 use JiraRestApi\Project\ProjectService;
 use UnbLibraries\SystemsToolkit\Robo\JiraTrait;
@@ -29,7 +31,14 @@ class BasicJiraCommand extends SystemsToolkitCommand {
       $project = new ProjectService($this->jiraConfig);
       $project_info = $project->get($project_id);
       var_dump($project_info);
-    } catch (JiraException $e) {
+      $fieldService = new FieldService($this->jiraConfig);
+
+      // return custom field only.
+      $ret = $fieldService->getAllFields(Field::CUSTOM);
+
+      var_dump($ret);
+    }
+    catch (JiraException $e) {
       print("Error Occured! " . $e->getMessage());
     }
   }

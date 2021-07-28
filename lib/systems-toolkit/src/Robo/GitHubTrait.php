@@ -160,4 +160,27 @@ trait GitHubTrait {
     return FALSE;
   }
 
+  /**
+   * Gets a GitHub repository's dockworker defined JIRA project slug.
+   *
+   * @param object $repository
+   *   The owner of the repository.
+   * @param string $branch
+   *   The branch of the repository to query.
+   *
+   * @return string
+   *   The value of the project slug, if set. Returns an empty string if not.
+   *
+   * @throws \Github\Exception\ErrorException
+   */
+  protected function getGitHubRepositoryJiraSlug($repository, $branch = 'dev') {
+    $dockworker_yml_path = '.dockworker/dockworker.yml';
+    $dockworker_file_content = $this->client->api('repo')->contents()->download($repository['owner']['login'], $repository['name'], $dockworker_yml_path, $branch);
+    $dockworker_yml = yaml_parse($dockworker_file_content);
+    if (!empty($dockworker_yml['dockworker']['application']['project_prefix'])) {
+      return $dockworker_yml['dockworker']['application']['project_prefix'];
+    }
+    return '';
+  }
+
 }
