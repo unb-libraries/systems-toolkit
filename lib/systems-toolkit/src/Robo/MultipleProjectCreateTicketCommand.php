@@ -73,17 +73,22 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           if (empty($verified_projects)) {
             // Repo with an incorrect Jira project. Add to the default.
             $verified_projects[self::DEFAULT_PROJECT_ID] = self::DEFAULT_PROJECT_KEY;
+            $issue_summary = "{$repository['name']} : $summary";
+          }
+          else {
+            $issue_summary = $summary;
           }
           foreach ($verified_projects as $project_id => $project_key) {
             $issueField = new IssueField();
             $issueField->setProjectId($project_id)
-              ->setSummary($summary)
+              ->setSummary($issue_summary)
               ->setIssueType($type)
               ->setDescription($description);
             if (!empty($epic)) {
               $issueField->addCustomField(self::EPIC_LINK_FIELD_ID, $epic);
             }
             $issueService = new IssueService($this->jiraConfig);
+            $this->say("Creating issue for {$repository['name']}..");
             $issueService->create($issueField);
             $this->say("Sleeping to avoid overloading API...");
             sleep(5);
