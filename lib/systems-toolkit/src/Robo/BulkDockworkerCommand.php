@@ -21,14 +21,14 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $commandString = NULL;
+  protected $commandString;
 
   /**
    * The commit message to use.
    *
    * @var string
    */
-  protected $commitMessage = NULL;
+  protected $commitMessage;
 
   /**
    * The name filter to match repositories against.

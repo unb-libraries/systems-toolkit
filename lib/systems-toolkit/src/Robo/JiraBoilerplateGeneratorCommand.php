@@ -15,7 +15,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   /**
    * The JIRA actions to perform.
    */
-  protected $jiraInstanceSource = NULL;
+  protected $jiraInstanceSource;
 
   /**
    * The actions to perform.
@@ -92,8 +92,8 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * Build the multi-instance worklist table JIRA source.
    */
   private function buildJiraTableSource() {
-    $this->jiraInstanceSource = NULL;
-    $this->jiraInstanceSource = '|| '. implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
+    $this->jiraInstanceSource = '';
+    $this->jiraInstanceSource = '|| ' . implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
     foreach ($this->githubRepositories as $idx => $repository) {
       $id = $idx + 1;
       $this->jiraInstanceSource .= "| $id | {$repository['name']} |";

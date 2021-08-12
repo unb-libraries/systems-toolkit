@@ -19,7 +19,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  private $email = NULL;
+  private $email;
 
   /**
    * The user to query.

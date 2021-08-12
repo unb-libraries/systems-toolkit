@@ -19,11 +19,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
   const NULL_STRING_PLACEHOLDER = 'LULL';
 
-  protected $issueConfig = NULL;
+  protected $issueConfig;
   protected $issueLocalFiles = [];
-  protected $issueMetadataFile = NULL;
-  protected $issueParentTitle = NULL;
-  protected $issuePath = NULL;
+  protected $issueMetadataFile;
+  protected $issueParentTitle;
+  protected $issuePath;
   protected $issuePossibleEntityIds = [];
   protected $issueRemoteFiles = [];
   protected $options = [];
@@ -37,7 +37,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected $missingRemoteIssues = [];
   protected $auditIssueCount = 0;
   protected $goodIssueCount = 0;
-  protected $webStorageBasePath = NULL;
+  protected $webStorageBasePath;
 
   /**
    * Verify an issue page image file contains the same content as a local file.
@@ -401,10 +401,10 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    */
   private function setIssueInit() {
-    $this->issueConfig = NULL;
+    $this->issueConfig = '';
     $this->issueLocalFiles = [];
-    $this->issueMetadataFile = NULL;
-    $this->issuePath = NULL;
+    $this->issueMetadataFile = '';
+    $this->issuePath = '';
     $this->issuePossibleEntityIds = [];
     $this->issueRemoteFiles = [];
   }

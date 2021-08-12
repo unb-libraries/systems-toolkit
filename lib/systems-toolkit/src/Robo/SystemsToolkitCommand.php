@@ -34,7 +34,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    */
   protected $repoRoot;
 
-  protected $commandStartTime = NULL;
+  protected $commandStartTime;
 
   /**
    * Constructor.

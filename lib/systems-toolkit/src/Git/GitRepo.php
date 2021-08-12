@@ -155,7 +155,7 @@ class GitRepo {
       ]
     );
 
-    $last_decorator = NULL;
+    $last_decorator = '';
     foreach ($commits as $commit) {
       $commit = str_replace('"', '', $commit);
       $commit_data = explode('|', $commit);

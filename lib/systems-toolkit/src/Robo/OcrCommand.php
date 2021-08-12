@@ -33,7 +33,7 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  private $tesseractImage = NULL;
+  private $tesseractImage;
 
   /**
    * Get the tesseract docker image from config.

@@ -21,7 +21,7 @@ trait QueuedParallelExecTrait {
    *
    * @var int
    */
-  private $threads = NULL;
+  private $threads;
 
   /**
    * Add a command to the process queue.

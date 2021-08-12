@@ -28,9 +28,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     'skipped' => [],
   ];
 
-  protected $curTitleId = NULL;
-  protected $curIssueId = NULL;
-  protected $curIssuePath = NULL;
+  protected $curTitleId;
+  protected $curIssueId;
+  protected $curIssuePath;
 
   protected $issuesProcessed = 0;
   protected $totalIssues = 0;

@@ -17,7 +17,7 @@ trait RecursiveDirectoryTreeTrait {
    *
    * @var string
    */
-  protected $recursiveDirectoryFileRegex = NULL;
+  protected $recursiveDirectoryFileRegex;
 
   /**
    * The directories to operate on.
@@ -31,7 +31,7 @@ trait RecursiveDirectoryTreeTrait {
    *
    * @var string
    */
-  protected $recursiveDirectoryTreeRoot = NULL;
+  protected $recursiveDirectoryTreeRoot;
 
   /**
    * Set up the files to iterate over.

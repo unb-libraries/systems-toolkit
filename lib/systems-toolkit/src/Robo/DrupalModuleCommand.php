@@ -35,7 +35,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    *   The changelog for the module.
    */
   public function getModuleChangelog($module, $version) {
-    $commit_text = NULL;
+    $commit_text = '';
     $cache = new FilesystemAdapter();
     $cache_tag = "$module$version";
 
