@@ -3,7 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

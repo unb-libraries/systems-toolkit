@@ -19,9 +19,8 @@ class UpdaterCommand extends SystemsToolkitCommand {
    */
   public function composerApps() {
     $servers = Robo::Config()->get('syskit.updater.composer-apps');
-
-    foreach($servers as $server => $apps) {
-      foreach($apps as $app) {
+    foreach ($servers as $server => $apps) {
+      foreach ($apps as $app) {
         $this->taskSshExec($server)
           ->exec("cd $app; composer update --prefer-dist")
           ->run();

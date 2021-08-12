@@ -5,8 +5,8 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\DomCrawler\Crawler;
 use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
-use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
-use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

@@ -6,7 +6,7 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

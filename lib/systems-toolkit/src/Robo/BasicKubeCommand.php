@@ -2,7 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
+use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

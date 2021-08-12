@@ -4,9 +4,9 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use UnbLibraries\SystemsToolkit\Robo\DockerCommandTrait;
-use UnbLibraries\SystemsToolkit\Robo\QueuedParallelExecTrait;
-use UnbLibraries\SystemsToolkit\Robo\RecursiveFileTreeTrait;
+use UnbLibraries\SystemsToolkit\DockerCommandTrait;
+use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
+use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

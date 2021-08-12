@@ -2,7 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use \UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use \UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use \UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;

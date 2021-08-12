@@ -1,9 +1,9 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\AwsSnsMessageTrait;
+use UnbLibraries\SystemsToolkit\AwsSnsMessageTrait;
 
 /**
  * Class for easy sending of SNS messages to nbnp channel.

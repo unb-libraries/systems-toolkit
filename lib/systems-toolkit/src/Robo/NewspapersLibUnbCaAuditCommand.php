@@ -5,9 +5,9 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
-use UnbLibraries\SystemsToolkit\Robo\DrupalInstanceRestTrait;
+use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
-use UnbLibraries\SystemsToolkit\Robo\RecursiveDirectoryTreeTrait;
+use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
 
 /**
  * Class for Newspaper Page OCR commands.

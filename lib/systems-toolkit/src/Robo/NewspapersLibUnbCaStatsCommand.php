@@ -3,9 +3,9 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\NbhpSnsMessageTrait;
+use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
-use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
+use UnbLibraries\SystemsToolkit\KubeExecTrait;
 
 /**
  * Class for NewspapersLibUnbCaStatsCommand Robo commands.

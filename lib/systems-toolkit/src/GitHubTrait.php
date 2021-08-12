@@ -1,6 +1,6 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use Github\Client;
 use Robo\Robo;

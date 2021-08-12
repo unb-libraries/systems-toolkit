@@ -4,7 +4,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use DateTime;
 use Symfony\Component\Console\Helper\Table;
-use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
+use UnbLibraries\SystemsToolkit\GitHubTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

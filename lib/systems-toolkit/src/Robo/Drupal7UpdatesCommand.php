@@ -3,7 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 
 /**
  * Class for DrupalUpdatesCommand Robo commands.

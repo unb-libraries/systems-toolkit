@@ -3,7 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\AwsSnsMessageTrait;
+use UnbLibraries\SystemsToolkit\AwsSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

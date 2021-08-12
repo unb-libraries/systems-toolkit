@@ -1,11 +1,11 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use Github\ResultPager;
 use Symfony\Component\Console\Helper\Table;
-use UnbLibraries\SystemsToolkit\Robo\GitHubTrait;
-use UnbLibraries\SystemsToolkit\Robo\GitTrait;
+use UnbLibraries\SystemsToolkit\GitHubTrait;
+use UnbLibraries\SystemsToolkit\GitTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitGitHubCommand;
 
 /**

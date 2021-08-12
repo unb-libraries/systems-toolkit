@@ -5,9 +5,9 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use JiraRestApi\JiraException;
 use JiraRestApi\Issue\IssueField;
 use JiraRestApi\Issue\IssueService;
-use UnbLibraries\SystemsToolkit\Robo\JiraTrait;
+use UnbLibraries\SystemsToolkit\JiraTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 
 /**
  * Class for MultipleProjectCreateTicketCommand Robo commands.

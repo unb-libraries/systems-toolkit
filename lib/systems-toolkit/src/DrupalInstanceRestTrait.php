@@ -1,10 +1,10 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use GuzzleHttp\Exception\BadResponseException;
 use Robo\Robo;
-use UnbLibraries\SystemsToolkit\Robo\GuzzleClientTrait;
+use UnbLibraries\SystemsToolkit\GuzzleClientTrait;
 
 /**
  * Trait for interacting with a drupal instance with enabled REST.

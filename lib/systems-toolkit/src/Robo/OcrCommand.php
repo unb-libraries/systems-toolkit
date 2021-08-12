@@ -7,9 +7,9 @@ use League\Csv\Statement;
 use Robo\Robo;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use UnbLibraries\SystemsToolkit\Robo\DockerCommandTrait;
-use UnbLibraries\SystemsToolkit\Robo\QueuedParallelExecTrait;
-use UnbLibraries\SystemsToolkit\Robo\RecursiveFileTreeTrait;
+use UnbLibraries\SystemsToolkit\DockerCommandTrait;
+use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
+use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**

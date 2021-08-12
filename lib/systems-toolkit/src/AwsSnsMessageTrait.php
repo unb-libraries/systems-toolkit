@@ -1,9 +1,10 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use Aws\Credentials\Credentials;
 use Aws\Sns\SnsClient;
+use UnbLibraries\SystemsToolkit\AwsCommandTrait;
 
 /**
  * Class for easy sending of SNS messages.

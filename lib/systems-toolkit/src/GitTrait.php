@@ -1,6 +1,6 @@
 <?php
 
-namespace UnbLibraries\SystemsToolkit\Robo;
+namespace UnbLibraries\SystemsToolkit;
 
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
