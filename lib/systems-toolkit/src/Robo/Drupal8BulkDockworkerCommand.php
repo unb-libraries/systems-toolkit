@@ -29,10 +29,10 @@ class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
    * @throws \Exception
    */
   public function setDoBulkDrupal8ReadmeUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+    $options['repo-name'] = [];
+    $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
       'dockworker:readme:update',
-      '',
-      'drupal8',
       $commit_message,
       $options
     );
@@ -58,10 +58,10 @@ class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
    * @throws \Exception
    */
   public function setDoBulkDrupal8ActionsUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+    $options['repo-name'] = [];
+    $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
       'dockworker:gh-actions:update',
-      '',
-      'drupal8',
       $commit_message,
       $options
     );

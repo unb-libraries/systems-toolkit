@@ -96,7 +96,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
       $this->say('Updates needed, querying corresponding repositories in GitHub');
       $continue = $this->setConfirmRepositoryList(
         array_keys($this->tabulatedUpdates),
-        ['drupal8'],
+        ['drupal8', 'drupal9'],
         [],
         [],
         'Upgrade Drupal Modules',

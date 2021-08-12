@@ -33,9 +33,9 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   /**
    * The name filter to match repositories against.
    *
-   * @var string
+   * @var string[]
    */
-  protected $nameFilter = NULL;
+  protected $nameFilter = [];
 
   /**
    * Command options passed.
@@ -47,24 +47,24 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   /**
    * The tag filter to match repositories against.
    *
-   * @var string
+   * @var string[]
    */
-  protected $tagFilter = NULL;
+  protected $tagFilter = [];
 
   /**
    * Run a dockworker command across several repositories and commit the result.
    *
    * @param string $command_string
    *   The entire dockworker command to run. Quote it!
-   * @param string $name_filter
-   *   The name filter to apply when choosing the repositories to operate on.
-   * @param string $tag_filter
-   *   The tag filter to apply when choosing the repositories to operate on.
    * @param string $commit_message
    *   The commit message to use.
    *
    * @option namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
+   * @option repo-name
+   *   Only perform operations to repository names matching the provided string.
+   * @option repo-tag
+   *   Only perform operations to repository tags matching the provided string.
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
    * @option int multi-repo-delay
@@ -76,11 +76,11 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  public function setDoBulkDockworkerCommands($command_string, $name_filter, $tag_filter, $commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoBulkDockworkerCommands($command_string, $commit_message, $options = ['namespaces' => ['dev'], 'repo-name' => [], 'repo-tag' => [], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $this->options = $options;
     $this->commandString = $command_string;
-    $this->nameFilter = $name_filter;
-    $this->tagFilter = $tag_filter;
+    $this->nameFilter = $options['repo-name'];
+    $this->tagFilter = $options['repo-tag'];
     $this->commitMessage = $commit_message;
     $this->runDockworkerCommand();
   }
@@ -92,8 +92,8 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    */
   protected function runDockworkerCommand() {
     $continue = $this->setConfirmRepositoryList(
-      [$this->nameFilter],
-      [$this->tagFilter],
+      $this->nameFilter,
+      $this->tagFilter,
       [],
       [],
       'Bulk Dockworker Operations',
