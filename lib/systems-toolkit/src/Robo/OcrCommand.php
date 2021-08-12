@@ -76,7 +76,7 @@ class OcrCommand extends SystemsToolkitCommand {
 
     foreach ($this->recursiveFiles as $file) {
       $num_words = 0;
-      $total_confidence=0;
+      $total_confidence = 0;
       $reader = Reader::createFromPath("$file.tsv", 'r');
       $reader->setOutputBOM(Reader::BOM_UTF8);
       $reader->setDelimiter("\t");

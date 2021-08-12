@@ -48,10 +48,10 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
     );
 
     if ($continue) {
-      $workflow_data=[];
+      $workflow_data = [];
       foreach ($this->githubRepositories as $repository_data) {
-        $repo_owner=$repository_data['owner']['login'];
-        $repo_name=$repository_data['name'];
+        $repo_owner = $repository_data['owner']['login'];
+        $repo_name = $repository_data['name'];
         $workflows = $this->client->api('repo')->workflows()->all($repo_owner,$repo_name);
         if (!empty($workflows['workflows'])) {
           foreach ($workflows['workflows'] as $workflow) {
@@ -67,7 +67,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
       }
 
       // Tabulate Data
-      if(!empty($workflow_data)) {
+      if (!empty($workflow_data)) {
         $table_rows = [];
         foreach ($workflow_data as $repository_data) {
           if (!empty($repository_data['runs'])) {

@@ -483,7 +483,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *   The value to audit.
    *
    * @return bool
-   *   TRUE if the value is valid, false otherwise.
+   *   TRUE if the value is valid, FALSE otherwise.
    */
   private static function isValidCorrectionChoice(string $value) : bool {
     return $value == 'c' || $value == 'l' || $value == 's';

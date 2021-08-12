@@ -9,7 +9,6 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\Cache\ItemInterface;
 
-
 /**
  * Class for DrupalModuleCommand Robo commands.
  */
@@ -66,11 +65,10 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
       $htmlResponse = $response->getBody()->__toString();
       $crawler = new Crawler($htmlResponse);
       $changelog_node = $crawler->filter(self::CHANGELOG_CSS_SELECTOR);
-      if ($changelog_node->count() > 0 ) {
+      if ($changelog_node->count() > 0) {
         $converter = new HtmlConverter();
         try {
-          $message = $converter->convert($changelog_node->outerHtml());
-          return $message;
+          return $converter->convert($changelog_node->outerHtml());
         }
         catch (Exception $e) {
           return NULL;

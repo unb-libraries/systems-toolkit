@@ -97,7 +97,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
     foreach ($this->githubRepositories as $idx => $repository) {
       $id = $idx + 1;
       $this->jiraInstanceSource .= "| $id | {$repository['name']} |";
-      for($i=0; $i < count($this->jiraInstanceTableHeaders) - 2; $i++) {
+      for ($i = 0; $i < count($this->jiraInstanceTableHeaders) - 2; $i++) {
         $this->jiraInstanceSource .= $this->getFormattedWorkItemCellValue($this->jiraInstanceDefaultValues[$i]);
       }
       $this->jiraInstanceSource .= PHP_EOL;

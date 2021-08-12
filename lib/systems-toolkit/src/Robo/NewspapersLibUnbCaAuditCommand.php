@@ -236,7 +236,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         $page_no = array_column($issue['images'], 'page_no');
         array_multisort($page_no, SORT_ASC, $issue['images']);
 
-        foreach($issue['images'] as $page) {
+        foreach ($issue['images'] as $page) {
           if ($first_row) {
             $missing_pages[] = [
               $issue['issue_id'],
@@ -277,7 +277,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         $page_no = array_column($issue['images'], 'page_no');
         array_multisort($page_no, SORT_ASC, $issue['images']);
 
-        foreach($issue['images'] as $page) {
+        foreach ($issue['images'] as $page) {
           if ($first_row) {
             $duplicate_pages[] = [
               $issue['issue_id'],

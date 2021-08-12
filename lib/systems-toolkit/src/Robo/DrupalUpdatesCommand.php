@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\DomCrawler\Crawler;
 use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
@@ -60,7 +59,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       'app=drupal',
     ];
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
-    foreach($this->kubeCurPods as $pod) {
+    foreach ($this->kubeCurPods as $pod) {
       foreach ($options['namespaces'] as $namespace) {
         // Replace with gh-actions.
       }
@@ -141,7 +140,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * Set all needed updates for queued pods.
    */
   private function setAllNeededUpdates($module_whitelist = [], $module_exclude = []) {
-    foreach($this->kubeCurPods as $pod) {
+    foreach ($this->kubeCurPods as $pod) {
       $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
     }
   }
@@ -215,7 +214,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    */
   private function printTabluatedUpdateTables() {
     if (!empty($this->tabulatedUpdates)) {
-      foreach($this->tabulatedUpdates as $instance => $updates) {
+      foreach ($this->tabulatedUpdates as $instance => $updates) {
         $this->printTabluatedInstanceUpdateTable($instance);
       }
     }
@@ -232,7 +231,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $this->say("Updates available:");
       $table = new Table($this->output());
       $table->setHeaders([$instance_name]);
-      $rows=[];
+      $rows = [];
       foreach ($this->tabulatedUpdates[$instance_name] as $environment => $data) {
         $rows[] = ["$environment:"];
         foreach ($data['updates'] as $module_update) {
@@ -308,7 +307,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    */
   private function filterIgnoredUpdates(&$updates) {
     if (!empty($updates)) {
-      foreach($updates as $idx => $update) {
+      foreach ($updates as $idx => $update) {
         if ($this->isIgnoredUpdate($update)) {
           $this->say("Ignoring update for {$update->name}...");
           unset($updates[$idx]);
@@ -324,7 +323,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   An array of update objects.
    */
   private function filterWhitelistUpdates(&$updates, $module_whitelist) {
-    foreach($updates as $idx => $update) {
+    foreach ($updates as $idx => $update) {
       if (!in_array($update->name, $module_whitelist)) {
         $this->say("Ignoring update for {$update->name}...");
         unset($updates[$idx]);
@@ -339,7 +338,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   An array of update objects.
    */
   private function filterExcludeUpdates(&$updates, $module_exclude) {
-    foreach($updates as $idx => $update) {
+    foreach ($updates as $idx => $update) {
       if (in_array($update->name, $module_exclude)) {
         $this->say("Ignoring update for {$update->name} (excluded)...");
         unset($updates[$idx]);
@@ -351,7 +350,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * Update all queued GitHub repositories.
    */
   private function updateAllRepositories($options) {
-    foreach($this->githubRepositories as $repository) {
+    foreach ($this->githubRepositories as $repository) {
       $updates_pushed = $this->updateRepository($repository);
       if ($updates_pushed) {
         $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
@@ -477,7 +476,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   The formatted project name.
    */
   private function getFormattedProjectName($update) {
-    if($update->name == 'drupal') {
+    if ($update->name == 'drupal') {
       return "drupal/core";
     }
     else {

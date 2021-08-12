@@ -131,7 +131,7 @@ class GitRepo {
    *   The hash of the commit to check for.
    *
    * @return mixed
-   *   The commit message, false if the commit does not exist in the repository.
+   *   The commit message, FALSE if the commit does not exist in the repository.
    */
   public function getCommitMessage($hash) {
     foreach ($this->commits as $commit) {

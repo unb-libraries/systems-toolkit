@@ -39,7 +39,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
       var_dump($ret);
     }
     catch (JiraException $e) {
-      print("Error Occured! " . $e->getMessage());
+      print("Error Occurred! " . $e->getMessage());
     }
   }
 

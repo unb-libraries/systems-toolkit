@@ -56,7 +56,7 @@ trait QueuedParallelExecTrait {
 
     while (!empty($this->queue)) {
       $parallel_stack = $this->taskParallelExec();
-      for ($i=0; $i < $this->threads; $i++) {
+      for ($i = 0; $i < $this->threads; $i++) {
         if (!empty($this->queue)) {
           $parallel_stack->process(array_shift($this->queue));
           $item_counter++;

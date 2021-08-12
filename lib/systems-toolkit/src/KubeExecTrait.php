@@ -136,7 +136,7 @@ trait KubeExecTrait {
    *
    * @throws \Exception
    */
-  private function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod'], $quiet = FALSE) {
+  protected function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod'], $quiet = FALSE) {
     $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";

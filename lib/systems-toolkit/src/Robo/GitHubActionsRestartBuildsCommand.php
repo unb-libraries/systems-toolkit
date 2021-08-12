@@ -47,9 +47,9 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
 
     if ($continue) {
       foreach ($this->githubRepositories as $repository_data) {
-        $repo_owner=$repository_data['owner']['login'];
-        $repo_name=$repository_data['name'];
-        $workflows = $this->client->api('repo')->workflows()->all($repo_owner,$repo_name);
+        $repo_owner = $repository_data['owner']['login'];
+        $repo_name = $repository_data['name'];
+        $workflows = $this->client->api('repo')->workflows()->all($repo_owner, $repo_name);
         if (!empty($workflows['workflows'])) {
           foreach ($workflows['workflows'] as $workflow) {
             if ($workflow['name'] == $repo_name) {

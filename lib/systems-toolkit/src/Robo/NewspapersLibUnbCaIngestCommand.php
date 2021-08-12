@@ -114,7 +114,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  private function downloadPageEntityImageFile($page_details, $output_dir ='/tmp') {
+  private function downloadPageEntityImageFile($page_details, $output_dir = '/tmp') {
     if (!empty($page_details->page_image[0]->url)) {
       $page_uri = $page_details->page_image[0]->url;
       $path_parts = pathinfo($page_uri);
@@ -221,7 +221,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $options['generate-ocr'] = FALSE;
 
     $this->totalIssues = count($this->recursiveDirectories);
-    $this->issuesProcessed= 0;
+    $this->issuesProcessed = 0;
 
     // Main processing loop.
     foreach ($this->recursiveDirectories as $directory_to_process) {
@@ -275,7 +275,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @return string
    */
   private function getNbhpNotificationString(string $path) {
-    $total_seconds = microtime(true) - $this->commandStartTime;
+    $total_seconds = microtime(TRUE) - $this->commandStartTime;
     $total_time_string = gmdate("H:i:s", $total_seconds);
     $seconds_each = $total_seconds / $this->issuesProcessed;
     $each_string = gmdate("H:i:s", $seconds_each);

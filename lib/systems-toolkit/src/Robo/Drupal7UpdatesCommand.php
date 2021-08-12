@@ -23,7 +23,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
    * @command drupal:7:doupdates
    */
   public function doDrupal7Updates(array $updates) {
-    if(empty($updates)) {
+    if (empty($updates)) {
       return $this->say('No updates requested!');
     }
 
@@ -36,7 +36,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
     );
 
     $parsedUpdates = [];
-    foreach($updates as $update) {
+    foreach ($updates as $update) {
       $line = explode(',', $update);
       $find = "projects[{$line[0]}][version] = \"{$line[1]}\"";
       $replace = "projects[{$line[0]}][version] = \"{$line[2]}\"";
@@ -48,7 +48,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
     $branch = 'master';
     $committer = ['name' => $this->userName, 'email' => $this->userEmail];
 
-    foreach($this->githubRepositories as $repository) {
+    foreach ($this->githubRepositories as $repository) {
       $owner = $repository['owner']['login'];
       $repo = $repository['name'];
 
@@ -56,8 +56,8 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
       $file = 'make/' . preg_replace(['/build-profile-/', '/\./'], ['', '_'], $repo) . '.makefile';
       $oldContent = $this->client->api('repo')->contents()->download($owner, $repo, $file, $branch);
 
-      foreach($parsedUpdates as $find => $info) {
-        if(preg_match("/$find/", $oldContent)) {
+      foreach ($parsedUpdates as $find => $info) {
+        if (preg_match("/$find/", $oldContent)) {
           $newContent = preg_replace("/$find/", $info['replace'], $oldContent);
           $this->say($info['commit']);
           $oldHashes = $this->client->api('repo')->contents()->show($owner, $repo, $file, $branch);
@@ -67,7 +67,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
             ->update($owner, $repo, $file, $newContent, $info['commit'], $oldHashes['sha'], $branch, $committer);
 
           $oldContent = $newContent;
-          if(count($parsedUpdates) > 1) {
+          if (count($parsedUpdates) > 1) {
             sleep(2);
           }
         }
