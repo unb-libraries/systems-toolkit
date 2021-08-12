@@ -30,7 +30,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * List all D8 repositories.
+   * List all Drupal repositories.
    *
    * @throws \Exception
    *
@@ -39,13 +39,19 @@ class RepositoryListCommand extends SystemsToolkitCommand {
   public function listDrupalRepositories() {
     $this->setRepositoryList(
       [],
-      ['drupal8'],
+      ['drupal8', 'drupal9'],
       [],
       []
     );
     $this->repositoryListDisplay('Drupal Repositories:');
   }
 
+  /**
+   * Displays a list of selected repositories.
+   *
+   * @param string $title
+   *   The string to use as the title.
+   */
   protected function repositoryListDisplay($title) {
     if (empty($this->githubRepositories)) {
       $this->say('No repositories found!');
