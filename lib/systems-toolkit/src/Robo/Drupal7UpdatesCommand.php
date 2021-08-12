@@ -6,7 +6,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 
 /**
- * Class for Drupal8UpdatesCommand Robo commands.
+ * Class for DrupalUpdatesCommand Robo commands.
  */
 class Drupal7UpdatesCommand extends SystemsToolkitCommand {
 

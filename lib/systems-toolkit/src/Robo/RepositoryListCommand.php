@@ -34,16 +34,16 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @command repository-list:drupal8
+   * @command repository-list:drupal
    */
-  public function listDrupalEightRepositories() {
+  public function listDrupalRepositories() {
     $this->setRepositoryList(
       [],
       ['drupal8'],
       [],
       []
     );
-    $this->repositoryListDisplay('Drupal 8 Repositories:');
+    $this->repositoryListDisplay('Drupal Repositories:');
   }
 
   protected function repositoryListDisplay($title) {

@@ -11,9 +11,9 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 
 /**
- * Class for Drupal8ModuleCommand Robo commands.
+ * Class for DrupalModuleCommand Robo commands.
  */
-class Drupal8ModuleCommand extends SystemsToolkitCommand {
+class DrupalModuleCommand extends SystemsToolkitCommand {
 
   const CHANGELOG_CACHE_TIME = 3600;
   const CHANGELOG_CSS_SELECTOR = '#release-notes .field-items';
@@ -30,7 +30,7 @@ class Drupal8ModuleCommand extends SystemsToolkitCommand {
    * @throws \Exception
    * @throws \Psr\Cache\InvalidArgumentException
    *
-   * @command drupal:8:module:changelog
+   * @command drupal:module:changelog
    *
    * @return string
    *   The changelog for the module.

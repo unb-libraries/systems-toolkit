@@ -4,15 +4,15 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\DomCrawler\Crawler;
-use UnbLibraries\SystemsToolkit\Robo\Drupal8ModuleCommand;
+use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\Robo\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
- * Class for Drupal8UpdatesCommand Robo commands.
+ * Class for DrupalUpdatesCommand Robo commands.
  */
-class Drupal8UpdatesCommand extends SystemsToolkitCommand {
+class DrupalUpdatesCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
   use KubeExecTrait;
@@ -46,19 +46,18 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   private $updates = [];
 
   /**
-   * Rebuild all Drupal 8 docker images and redeploy in their current state.
+   * Rebuild all Drupal docker images and redeploy in their current state.
    *
    * @option array namespaces
    *   The namespaces to rebuild and deploy.
    *
    * @throws \Exception
    *
-   * @command drupal:8:rebuild-redeploy
+   * @command drupal:rebuild-redeploy
    */
-  public function getRebuildDeployDrupal8Containers($options = ['namespaces' => ['dev', 'prod']]) {
+  public function getRebuildDeployDrupalContainers($options = ['namespaces' => ['dev', 'prod']]) {
     $pod_selector = [
       'app=drupal',
-      'appMajor=8',
     ];
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     foreach($this->kubeCurPods as $pod) {
@@ -69,7 +68,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Perform needed Drupal 8 updates automatically.
+   * Perform needed Drupal updates automatically.
    *
    * @option namespaces
    *   The extensions to match when finding files. Defaults to dev only.
@@ -86,10 +85,10 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @command drupal:8:doupdates
+   * @command drupal:doupdates
    */
-  public function setDoDrupal8Updates($options = ['namespaces' => ['dev'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
-    $this->getDrupal8Updates($options);
+  public function setDoDrupalUpdates($options = ['namespaces' => ['dev'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+    $this->getDrupalUpdates($options);
     $this->noConfirm = $options['yes'];
 
     if (!empty($this->updates)) {
@@ -113,7 +112,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the list of needed Drupal 8 updates .
+   * Get the list of needed Drupal updates .
    *
    * @option array namespaces
    *   The extensions to match when finding files.
@@ -124,14 +123,13 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @command drupal:8:getupdates
+   * @command drupal:getupdates
    */
-  public function getDrupal8Updates($options = ['namespaces' => ['dev', 'prod'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE]) {
+  public function getDrupalUpdates($options = ['namespaces' => ['dev', 'prod'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE]) {
     $this->securityOnly = $options['security-only'];
 
     $pod_selector = [
       'app=drupal',
-      'appMajor=8',
     ];
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     $this->setAllNeededUpdates($options['only-update'], $options['exclude']);
@@ -271,7 +269,7 @@ class Drupal8UpdatesCommand extends SystemsToolkitCommand {
     );
 
     if ($add_changelog) {
-      $changelog = Drupal8ModuleCommand::moduleChangeLog($update->name, $update->recommended);
+      $changelog = DrupalModuleCommand::moduleChangeLog($update->name, $update->recommended);
       if (!empty($changelog)) {
         $message = sprintf(
           "$message\n\n%s",

@@ -5,15 +5,15 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use UnbLibraries\SystemsToolkit\Robo\GitHubRepoRebaseDevToProdCommand;
 
 /**
- * Class for GitHubDrupal8RebaseDevToProdCommand Robo commands.
+ * Class for GitHubDrupalRebaseDevToProdCommand Robo commands.
  */
-class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdCommand {
+class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdCommand {
 
   /**
-   * Rebase dev onto prod for multiple Drupal 8 Repositories. Robo Command.
+   * Rebase dev onto prod for multiple Drupal Repositories. Robo Command.
    *
    * This command will rebase all commits that exist in the dev branch of a
-   * GitHub Drupal 8 lean repository onto the prod branch.
+   * GitHub Drupal lean repository onto the prod branch.
    *
    * @param string $match
    *   A comma separated list of names to match. Only repositories whose names
@@ -29,7 +29,7 @@ class GitHubDrupal8RebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComma
    *
    * @usage unbherbarium,pmportal
    *
-   * @command drupal:8:rebasedevprod
+   * @command drupal:rebasedevprod
    */
   public function upmergeDrupalDevToProd($match = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '240']) {
     $match_array = explode(",", $match);

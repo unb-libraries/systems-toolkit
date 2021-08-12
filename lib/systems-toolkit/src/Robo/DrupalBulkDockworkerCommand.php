@@ -5,12 +5,12 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use UnbLibraries\SystemsToolkit\Robo\BulkDockworkerCommand;
 
 /**
- * Class for Drupal8BulkDockworkerCommand Robo commands.
+ * Class for DrupalBulkDockworkerCommand Robo commands.
  */
-class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
+class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
 
   /**
-   * Update the README file for all Drupal 8 instances.
+   * Update the README file for all Drupal instances.
    *
    * @param string $commit_message
    *   The commit message to use.
@@ -22,13 +22,13 @@ class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
    * @option int multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
-   * @command drupal:8:readme-bulk-update
+   * @command drupal:readme-bulk-update
    *
-   * @usage drupal:8:readme-bulk-update 'IN-244 Update Readme Files' --yes
+   * @usage drupal:readme-bulk-update 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */
-  public function setDoBulkDrupal8ReadmeUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoBulkDrupalReadmeUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
@@ -39,7 +39,7 @@ class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
   }
 
   /**
-   * Update the github actions workflow file for all Drupal 8 instances.
+   * Update the github actions workflow file for all Drupal instances.
    *
    * @param string $commit_message
    *   The commit message to use.
@@ -51,13 +51,13 @@ class Drupal8BulkDockworkerCommand extends BulkDockworkerCommand {
    * @option int multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
-   * @command drupal:8:actions-bulk-update
+   * @command drupal:actions-bulk-update
    *
-   * @usage drupal:8:actions-bulk-update 'IN-244 Update Readme Files' --yes
+   * @usage drupal:actions-bulk-update 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */
-  public function setDoBulkDrupal8ActionsUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoBulkDrupalActionsUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
