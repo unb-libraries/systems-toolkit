@@ -10,10 +10,12 @@ use UnbLibraries\SystemsToolkit\Robo\BulkDockworkerCommand;
 class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
 
   /**
-   * Update the README file for all Drupal instances.
+   * Updates the README file for all Drupal instances.
    *
    * @param string $commit_message
    *   The commit message to use.
+   * @param array $options
+   *   An array of CLI options to pass to the command.
    *
    * @option namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
@@ -28,7 +30,14 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    *
    * @throws \Exception
    */
-  public function setDoBulkDrupalReadmeUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoBulkDrupalReadmeUpdate(
+    string $commit_message,
+    array $options = [
+      'namespaces' => ['dev'],
+      'yes' => FALSE,
+      'multi-repo-delay' => '240',
+    ]
+  ) {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
@@ -39,10 +48,12 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
   }
 
   /**
-   * Update the github actions workflow file for all Drupal instances.
+   * Updates the GitHub Actions workflow file for all Drupal instances.
    *
    * @param string $commit_message
    *   The commit message to use.
+   * @param array $options
+   *   An array of CLI options to pass to the command.
    *
    * @option namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
@@ -57,7 +68,14 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    *
    * @throws \Exception
    */
-  public function setDoBulkDrupalActionsUpdate($commit_message, $options = ['namespaces' => ['dev'], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoBulkDrupalActionsUpdate(
+    string $commit_message,
+    array $options = [
+      'namespaces' => ['dev'],
+      'yes' => FALSE,
+      'multi-repo-delay' => '240',
+    ]
+  ) {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
