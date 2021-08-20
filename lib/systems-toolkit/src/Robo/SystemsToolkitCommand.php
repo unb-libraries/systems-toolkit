@@ -21,11 +21,25 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   const ERROR_CONFIG_MISSING = 'The config file was not found. Please copy %s.sample to %s and add your values.';
 
   /**
+   * The start time of the command.
+   *
+   * @var string
+   */
+  protected $commandStartTime;
+
+  /**
    * The path to the configuration file.
    *
    * @var string
    */
   protected $configFile;
+
+  /**
+   * The current command options.
+   *
+   * @var array
+   */
+  protected $options;
 
   /**
    * The path to the Syskit repo.
@@ -34,7 +48,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    */
   protected $repoRoot;
 
-  protected $commandStartTime;
+
 
   /**
    * Constructor.

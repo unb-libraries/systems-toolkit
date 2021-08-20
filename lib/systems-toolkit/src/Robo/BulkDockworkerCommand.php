@@ -45,13 +45,6 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   protected $options = [];
 
   /**
-   * Sets if changes were pushed to the repository.
-   *
-   * @var bool
-   */
-  protected $repoChangesPushed = FALSE;
-
-  /**
    * The tag filter to match repositories against.
    *
    * @var string[]

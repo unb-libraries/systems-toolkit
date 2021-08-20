@@ -17,6 +17,13 @@ trait GitHubMultipleInstanceTrait {
   use GitHubTrait;
 
   /**
+   * The repository commits.
+   *
+   * @var array
+   */
+  protected $failedRepos = [];
+
+  /**
    * The repositories to operate on.
    *
    * @var array
@@ -24,18 +31,18 @@ trait GitHubMultipleInstanceTrait {
   protected $githubRepositories;
 
   /**
-   * The repository commits.
+   * Sets whether changes to the current repo are pushed.
    *
-   * @var array
+   * @var bool
    */
-  protected $successfulRepos = [];
+  protected $repoChangesPushed = FALSE;
 
   /**
    * The repository commits.
    *
    * @var array
    */
-  protected $failedRepos = [];
+  protected $successfulRepos = [];
 
   /**
    * Store the list of repositories to operate on and confirm list with user.
