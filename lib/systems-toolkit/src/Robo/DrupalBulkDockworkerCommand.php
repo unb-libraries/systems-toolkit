@@ -41,7 +41,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
-      'dockworker:readme:update',
+      'readme:update',
       $commit_message,
       $options
     );
@@ -79,7 +79,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
-      'dockworker:gh-actions:update',
+      'ci:update-workflow-file',
       $commit_message,
       $options
     );

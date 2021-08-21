@@ -74,7 +74,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @command github:dockworker:bulk-command
    *
-   * @usage github:dockworker:bulk-command 'dockworker:readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
+   * @usage github:dockworker:bulk-command 'readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */
