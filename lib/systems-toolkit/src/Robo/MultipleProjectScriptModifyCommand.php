@@ -98,7 +98,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     $script_path,
     array $options = [
       'yes' => FALSE,
-      'multi-repo-delay' => '120',
+      'multi-repo-delay' => '240',
       'skip-commit-prefix' => FALSE,
       'target-branch' => 'dev',
     ]
@@ -129,6 +129,8 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
           if ($options['yes'] || $this->confirm(self::QUESTION_SCRIPT_EXECUTION_OK)) {
             $this->commitAllChangesInRepo();
             $this->pushRepositoryChangesToGitHub();
+            $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+            sleep($options['multi-repo-delay']);
           }
         }
         else {
@@ -199,7 +201,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     $this->say(
       sprintf(
         self::MESSAGE_COMMITTING_CHANGES,
-        $this->curCloneRepo['name']
+        $this->curRepoMetadata['name']
       )
     );
     $commit_prefix = '';
