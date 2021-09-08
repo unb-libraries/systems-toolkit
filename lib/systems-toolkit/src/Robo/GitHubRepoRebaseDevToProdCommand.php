@@ -38,13 +38,18 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   topics contain at least one of the comma separated values exactly will be
    *   processed. Optional.
    *
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
+   * @option int multi-repo-delay
+   *   The amount of time to delay between updating repositories.
+   *
    * @throws \Exception
    *
    * @usage unbherbarium,pmportal drupal8
    *
    * @command github:repo:rebasedevprod
    */
-  public function upmergeRepoDevToProd($match = '', $topics = '') {
+  public function upmergeRepoDevToProd($match = '', $topics = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '120']) {
     $match_array = explode(",", $match);
     $topics_array = explode(",", $topics);
 
@@ -55,7 +60,8 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
 
     $this->rebaseDevToProd(
       $match_array,
-      $topics_array
+      $topics_array,
+      $options
     );
   }
 
