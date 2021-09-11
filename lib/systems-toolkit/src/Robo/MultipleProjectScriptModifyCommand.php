@@ -18,7 +18,13 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   const MESSAGE_COPYING_SCRIPT = 'Copying script to clone location...';
   const MESSAGE_EXCEPTION_SCRIPT_NOT_FOUND = 'The script %s either does not exist, or is not executable.';
   const MESSAGE_EXECUTING_SCRIPT = 'Executing script...';
+  const MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY = 'Manually stage files, then hit Enter to continue...';
+  const MESSAGE_MANUAL_STAGE_REPO_LOCATION = 'Repository location : %s';
   const MESSAGE_NO_CHANGES_TO_REPO = 'The script\'s execution did not result in any changes to the repository.';
+  const MESSAGE_NO_STAGED_CHANGES = 'No staged changes were found, skipping commit!';
+  const MESSAGE_PUSHING_CHANGES = 'Pushing repository changes to GitHub...';
+  const MESSAGE_SLEEPING ='Sleeping for %s seconds to spread build times...';
+  const MESSAGE_STAGING_CHANGES ='Staging changes in repository...';
   const MESSAGE_STEP_DONE = 'Done!';
   const QUESTION_COMMIT_PREFIX_TO_USE = 'Commit prefix to use (i.e. PMPOR-45, Blank for None)? :';
   const QUESTION_SCRIPT_EXECUTION_OK = 'Script execution complete, commit and push changes?';
@@ -79,6 +85,8 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
+   * @option bool manual-file-stage
+   *   Do not commit all changes, rather allow the user to manually stage files.
    * @option int multi-repo-delay
    *   The amount of time to delay between updating repositories.
    * @option bool skip-commit-prefix
@@ -89,7 +97,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command github:multiple-repo:script-modify
-   * @usage github:multiple-repo:script-modify '' 'drupal8' 'Drupal 9.x Upgrade' '/tmp/doDrupal9Upgrade.sh' --yes
+   * @usage github:multiple-repo:script-modify '' 'drupal9' 'Config catch-up related to core update 8.x -> 9.x' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/updateRepoWithProdConfig.sh --yes --skip-commit-prefix --manual-file-stage
    */
   public function setModifyMultipleRepositoriesFromScript(
     $match,
@@ -98,6 +106,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     $script_path,
     array $options = [
       'yes' => FALSE,
+      'manual-file-stage' => FALSE,
       'multi-repo-delay' => '240',
       'skip-commit-prefix' => FALSE,
       'target-branch' => 'dev',
@@ -127,10 +136,22 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
         $this->executeModifyingScript();
         if ($this->curCloneRepo->repo->hasChanges()) {
           if ($options['yes'] || $this->confirm(self::QUESTION_SCRIPT_EXECUTION_OK)) {
-            $this->commitAllChangesInRepo();
-            $this->pushRepositoryChangesToGitHub();
-            $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
-            sleep($options['multi-repo-delay']);
+            $this->stageChangesInRepo();
+            // Check for staged changes - may simply be ignoring all changes.
+            if (!empty($this->curCloneRepo->repo->execute(['diff', '--cached']))) {
+              $this->commitChangesInRepo();
+              $this->pushRepositoryChangesToGitHub();
+              $this->say(
+                sprintf(
+                  self::MESSAGE_SLEEPING,
+                  $options['multi-repo-delay']
+                )
+              );
+              sleep($options['multi-repo-delay']);
+            }
+            else {
+              $this->say(self::MESSAGE_NO_STAGED_CHANGES);
+            }
           }
         }
         else {
@@ -193,11 +214,32 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Commits all changes in the current temporary repository.
+   * Stages changes in the current temporary repository.
    *
    * @throws \Exception
    */
-  protected function commitAllChangesInRepo() {
+  protected function stageChangesInRepo() {
+    $this->say(self::MESSAGE_STAGING_CHANGES);
+    if ($this->options['manual-file-stage']) {
+      $this->say(
+        sprintf(
+          self::MESSAGE_MANUAL_STAGE_REPO_LOCATION,
+          $this->curCloneRepo->getTmpDir()
+        )
+      );
+      $this->ask(self::MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY);
+    }
+    else {
+      $this->curCloneRepo->repo->addAllChanges();
+    }
+  }
+
+  /**
+   * Commits changes in the current temporary repository.
+   *
+   * @throws \Exception
+   */
+  protected function commitChangesInRepo() {
     $this->say(
       sprintf(
         self::MESSAGE_COMMITTING_CHANGES,
@@ -208,7 +250,6 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     if (!$this->options['skip-commit-prefix']) {
       $commit_prefix = trim($this->ask(self::QUESTION_COMMIT_PREFIX_TO_USE)) . ' ';
     }
-    $this->curCloneRepo->repo->addAllChanges();
     $this->curCloneRepo->repo->commit("$commit_prefix{$this->commitMessage}", ['--no-verify']);
   }
 
@@ -218,6 +259,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function pushRepositoryChangesToGitHub() {
+    $this->say(self::MESSAGE_PUSHING_CHANGES);
     $this->curCloneRepo->repo->push('origin', [$this->options['target-branch']]);
     $this->repoChangesPushed = TRUE;
   }
