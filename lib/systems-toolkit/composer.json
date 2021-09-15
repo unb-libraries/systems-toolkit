@@ -17,6 +17,7 @@
     "guzzlehttp/guzzle": "^6.3",
     "knplabs/github-api": "^2.8.0",
     "league/html-to-markdown": "^4",
+    "league/csv": "^9",
     "lesstif/php-jira-rest-client": "^1.19",
     "php-http/guzzle6-adapter": "^1.1.1",
     "sebastian/diff": "^4",

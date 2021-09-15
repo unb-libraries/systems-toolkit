@@ -72,12 +72,22 @@ class OcrCommand extends SystemsToolkitCommand {
    */
   public function ocrTesseractMetrics($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL]) {
     $options['args'] = 'tsv';
+    $options['skip-existing'] = FALSE;
+    $options['skip-confirm'] = TRUE;
+    $options['no-unset-files'] = TRUE;
+    $options['no-pull'] = FALSE;
+
     $this->ocrTesseractTree($root, $options);
+
+    $running_conf_total = 0;
+    $running_word_total = 0;
+    $file_conf_count = 0;
 
     foreach ($this->recursiveFiles as $file) {
       $num_words = 0;
       $total_confidence = 0;
-      $reader = Reader::createFromPath("$file.tsv", 'r');
+      $tsv_filename = "$file.tsv";
+      $reader = Reader::createFromPath($tsv_filename, 'r');
       $reader->setOutputBOM(Reader::BOM_UTF8);
       $reader->setDelimiter("\t");
 
@@ -89,17 +99,33 @@ class OcrCommand extends SystemsToolkitCommand {
           $total_confidence += floatval($record[10]);
         }
       }
+      $running_conf_total = $running_conf_total + ($total_confidence / $num_words);
+      $running_word_total = $running_word_total + $num_words;
+      $file_conf_count++;
       $this->metrics[] = [
         'filename' => $file,
         'words' => $num_words,
         'total_confidence' => $total_confidence,
-        'average_confidence' => $total_confidence/$num_words,
+        'average_confidence' => $total_confidence / $num_words,
       ];
     }
 
+    $this->metrics[] = [
+      'filename' => "mean value ($file_conf_count files)",
+      'words' => $running_word_total / $file_conf_count,
+      'total_confidence' => NULL,
+      'average_confidence' => $running_conf_total / $file_conf_count,
+    ];
+
     $table = new Table($this->output());
-    $table->setHeaders(['File', 'Words', 'Total Confidence', 'Average Confidence'])
-      ->setRows($this->metrics);
+    $table->setHeaders(
+      [
+        'File',
+        'Words',
+        'Total Confidence',
+        'Average Confidence',
+      ]
+    )->setRows($this->metrics);
     $table->setStyle('borderless');
     $table->render();
   }
@@ -126,12 +152,14 @@ class OcrCommand extends SystemsToolkitCommand {
    *   If non-empty HOCR exists for the file, do not process again.
    * @option no-pull
    *   Do not pull docker images prior to running.
+   * @option no-unset-files
+   *   Do not unset the recursive file stack after processing.
    *
    * @throws \Exception
    *
    * @command ocr:tesseract:tree
    */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
+  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE, 'no-pull' => FALSE, 'no-unset-files' => FALSE]) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -144,16 +172,17 @@ class OcrCommand extends SystemsToolkitCommand {
     $options['no-pull'] = TRUE;
 
     foreach ($this->recursiveFiles as $file_to_process) {
-      if (!$options['skip-existing'] != TRUE && $this->fileHasOcrGenerated($file_to_process) != TRUE) {
+      if ($options['skip-existing'] != TRUE && $this->fileHasOcrGenerated($file_to_process) != TRUE) {
         $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
       }
     }
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
-
     $this->setRunProcessQueue('OCR');
-    $this->recursiveFiles = [];
+    if (!$options['no-unset-files']) {
+      $this->recursiveFiles = [];
+    }
   }
 
   /**
