@@ -12,6 +12,7 @@
   "require": {
     "aws/aws-sdk-php": "^3.62.9",
     "consolidation/robo": "^1.0",
+    "consolidation/annotated-command": "4.3.1",
     "czproject/git-php": "^3.13.0",
     "ext-json": "*",
     "guzzlehttp/guzzle": "^6.3",
