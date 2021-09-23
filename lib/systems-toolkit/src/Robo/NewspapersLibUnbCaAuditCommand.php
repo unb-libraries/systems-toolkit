@@ -6,51 +6,171 @@ use Psr\Log\LogLevel;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
-use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
+use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 
 /**
  * Class for Newspaper Page OCR commands.
  */
 class NewspapersLibUnbCaAuditCommand extends OcrCommand {
+
   use DrupalInstanceRestTrait;
   use RecursiveDirectoryTreeTrait;
 
-  const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
   const NULL_STRING_PLACEHOLDER = 'LULL';
+  const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
 
+  /**
+   * The number of issues audited in the current session.
+   *
+   * @var int
+   */
+  protected $auditIssueCount = 0;
+
+  /**
+   * Issues identified as duplicates.
+   *
+   * @var string[]
+   */
+  protected $duplicateIssues = [];
+
+  /**
+   * Issues that are suspected to be empty - no remote pages attached to them.
+   *
+   * @var string[]
+   */
+  protected $emptyRemoteIssues = [];
+
+  /**
+   * The number of issues that have validated properly.
+   *
+   * @var string[]
+   */
+  protected $goodIssueCount = 0;
+
+  /**
+   * Current issue remote images that are suspected to be duplicates.
+   *
+   * @var string[]
+   */
+  protected $imagesDuplicateOnRemote = [];
+
+  /**
+   * Current issue remote images that are suspected to be missing.
+   *
+   * @var string[]
+   */
+  protected $imagesMissingOnRemote = [];
+
+  /**
+   * Current issue configuration as read from the metadata file.
+   *
+   * @var string[]
+   */
   protected $issueConfig;
+
+  /**
+   * Local files that are part of the current issue.
+   *
+   * @var string[]
+   */
   protected $issueLocalFiles = [];
+
+  /**
+   * Path to the current issue metadata file.
+   *
+   * @var string
+   */
   protected $issueMetadataFile;
+
+  /**
+   * The current issue parent title entity ID.
+   *
+   * @var string
+   */
   protected $issueParentTitle;
+
+  /**
+   * The path to the current issue.
+   *
+   * @var string
+   */
   protected $issuePath;
+
+  /**
+   * Remote entity IDs that are possible matches for the current issue.
+   *
+   * @var string[]
+   */
   protected $issuePossibleEntityIds = [];
+
+  /**
+   * Files attached to remote version of the current issue.
+   *
+   * @var string[]
+   */
   protected $issueRemoteFiles = [];
+
+  /**
+   * Issues that have been identified as missing remotely.
+   *
+   * @var string[]
+   */
+  protected $missingRemoteIssues = [];
+
+  /**
+   * The current options passed to the CLI.
+   *
+   * @var string[]
+   */
   protected $options = [];
+
+  /**
+   * The current progress bar object for the CLI.
+   *
+   * @var \Symfony\Component\Console\Helper\ProgressBar
+   */
   protected $progressBar;
 
-  protected $zeroLengthFiles = [];
-  protected $duplicateIssues = [];
-  protected $imagesMissingOnRemote = [];
-  protected $imagesDuplicateOnRemote = [];
-  protected $emptyRemoteIssues = [];
-  protected $missingRemoteIssues = [];
-  protected $auditIssueCount = 0;
-  protected $goodIssueCount = 0;
+  /**
+   * The path to the remote Drupal instance filestore, typically mounted.
+   *
+   * @var string
+   */
   protected $webStorageBasePath;
 
   /**
-   * Verify an issue page image file contains the same content as a local file.
+   * Files that have been identified as zero length - both remote and local.
    *
-   * @param $issue_id
-   * @param $page_no
-   * @param $local_file_path
+   * @var string[]
+   */
+  protected $zeroLengthFiles = [];
+
+  /**
+   * Verifies that a page image file contains the same content as a local file.
+   *
+   * @param int $issue_id
+   *   The issue's remote entity ID.
+   * @param string $page_no
+   *   The issue's remote page_no.
+   * @param string $local_file_path
+   *   The path to the local file.
    * @param string[] $options
+   *   The array of available CLI options.
    *
    * @return bool
+   *   TRUE if the files contain the same content. FALSE otherwise.
+   *
    * @throws \Exception
    */
-  public static function verifyPageFromIds($issue_id, $page_no, $local_file_path, $options = ['instance-uri' => 'http://localhost:3095']) {
+  public static function verifyPageFromIds(
+    $issue_id,
+    $page_no,
+    $local_file_path,
+    array $options = [
+      'instance-uri' => 'http://localhost:3095',
+    ]
+  ) {
     $remote_file_path = $options['instance-uri'] . "/serials_pages/download/$issue_id/$page_no/download";
     if (!self::remoteHashIsSame($remote_file_path, $local_file_path)) {
       $contents = file_get_contents($remote_file_path);
@@ -62,10 +182,15 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $uri
-   * @param $file
+   * Determines if a remote file is the same as a local file.
+   *
+   * @param string $uri
+   *   The URI to the remote file.
+   * @param string $file
+   *   The path to the local file.
    *
    * @return bool
+   *   TRUE if the files are the same. FALSE otherwise.
    */
   public static function remoteHashIsSame($uri, $file) {
     $contents = file_get_contents($uri);
@@ -78,7 +203,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * Verify one or a tree of directories for import against the newspaper site.
+   * Verifies one or a tree of directories for import against a remote site.
    *
    * @param string $title_id
    *   The parent digital title ID.
@@ -86,6 +211,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *   The tree file path.
    * @param string $web_storage_path
    *   The web storage path.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option issue-page-extension
    *   The file extension to match for issue pages.
@@ -98,7 +225,15 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @command newspapers.lib.unb.ca:audit-tree
    */
-  public function auditTree($title_id, $file_path, $web_storage_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg']) {
+  public function auditTree(
+    $title_id,
+    $file_path,
+    $web_storage_path,
+    array $options = [
+      'instance-uri' => 'http://localhost:3095',
+      'issue-page-extension' => 'jpg',
+    ]
+  ) {
     $this->options = $options;
     $this->drupalRestUri = $this->options['instance-uri'];
     $this->webStorageBasePath = $web_storage_path;
@@ -108,6 +243,12 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->displayAuditFailures();
   }
 
+  /**
+   * Determines if a remote issue is fully valid.
+   *
+   * @return bool
+   *   TRUE if the issue is valid remotely, FALSE otherwise.
+   */
   protected function issueIsFullyValid() {
     return empty($this->missingRemoteIssues) &&
       empty($this->zeroLengthFiles) &&
@@ -116,6 +257,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       empty($this->imagesDuplicateOnRemote);
   }
 
+  /**
+   * Displays the audit failures from the current issue.
+   */
   protected function displayAuditFailures() {
     if ($this->issueIsFullyValid()) {
       $this->io()->newLine();
@@ -132,6 +276,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->reportIssueFailures();
   }
 
+  /**
+   * Reports the failures from the current issue.
+   */
   protected function reportIssueFailures() {
     $this->io()->newLine();
     $this->say(
@@ -149,11 +296,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     );
   }
 
+  /**
+   * Displays the files identified as zero-length from the current issue.
+   */
   protected function displayZeroLengthFiles() {
     if (!empty($this->zeroLengthFiles)) {
       $this->io()->newLine();
       $column_names = [
-        'Path'
+        'Path',
       ];
       $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
       $zero_length_count = count($this->zeroLengthFiles);
@@ -161,11 +311,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Displays the issues identified as missing remotely.
+   */
   protected function displayMissingRemoteIssues() {
     if (!empty($this->missingRemoteIssues)) {
       $this->io()->newLine();
       $column_names = [
-        'Local Path'
+        'Local Path',
       ];
       $this->outputTable('Missing Remote Issues Found!', $column_names, array_values($this->missingRemoteIssues));
       $missing_issue_count = count($this->missingRemoteIssues);
@@ -173,6 +326,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Displays the issues identified as duplicate.
+   */
   protected function displayDuplicateIssues() {
     if (!empty($this->duplicateIssues)) {
       $this->io()->newLine();
@@ -183,7 +339,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         'Volume',
         'Issue',
         'eid',
-        'URI'
+        'URI',
       ];
       $issue_counter = 0;
 
@@ -221,13 +377,16 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Displays the pages identified as missing remotely.
+   */
   protected function displayMissingRemotePages() {
     $missing_pages = [];
     $column_names = [
       'eid',
       'URI',
       'Page #',
-      'Local Path'
+      'Local Path',
     ];
     if (!empty($this->imagesMissingOnRemote)) {
       $this->io()->newLine();
@@ -262,13 +421,16 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Displays the pages identified as duplicate remotely.
+   */
   protected function displayDuplicateRemotePages() {
     $duplicate_pages = [];
     $column_names = [
       'eid',
       'URI',
       'Page #',
-      'Local Path'
+      'Local Path',
     ];
     if (!empty($this->imagesDuplicateOnRemote)) {
       $this->io()->newLine();
@@ -303,18 +465,23 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Outputs a table to the console IO.
+   */
   protected function outputTable($title, $column_names, $rows) {
     $this->io()->title($title);
     $table = new Table($this->output());
     $table
       ->setHeaders($column_names)
-      ->setRows($rows)
-    ;
+      ->setRows($rows);
     $table->render();
   }
 
   /**
-   * @param $file_path
+   * Sets up the issue queue for auditing.
+   *
+   * @param string $file_path
+   *   The local path to recursively parse for issues.
    *
    * @throws \Exception
    */
@@ -327,6 +494,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
+   * Audits the queued issues.
+   *
    * @throws \Exception
    */
   private function setAuditIssues() {
@@ -341,7 +510,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   *
+   * Sets up the progress bar that monitors the recursive audit.
    */
   private function setUpProgressBar() {
     $issue_count = count($this->recursiveDirectories);
@@ -353,9 +522,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $path
+   * Verifies a local issue has been properly uploaded remotely.
    *
-   * @return array|mixed|null
+   * @param string $path
+   *   The path to the local issue.
+   *
    * @throws \Exception
    */
   private function verifyIssueFromDir($path) {
@@ -393,12 +564,10 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     else {
       $this->printMessage(LogLevel::WARNING, "The path $path does not contain a metadata.php file.");
     }
-
-    return NULL;
   }
 
   /**
-   *
+   * Initializes the current issue metadata values.
    */
   private function setIssueInit() {
     $this->issueConfig = '';
@@ -409,6 +578,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->issueRemoteFiles = [];
   }
 
+  /**
+   * Sets the current issue configuration values.
+   */
   private function setIssueConfig() {
     $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php {$this->issuePath}/metadata.php";
     exec($rewrite_command);
@@ -418,6 +590,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
+   * Queues the issues for audit.
+   *
    * @throws \Exception
    */
   private function setPagesForAudit() {
@@ -430,6 +604,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
+   * Sets the possible remote entity IDs for the current local issue.
+   *
    * @throws \Exception
    */
   private function setPossibleEntityIds() {
@@ -476,6 +652,15 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     }
   }
 
+  /**
+   * Constructs a non-empty string, tokenizing empty strings with a standard.
+   *
+   * @param string $string
+   *   The string to parse.
+   *
+   * @return string
+   *   The created non-empty string.
+   */
   private function getNullifiedString($string) {
     if (empty($string)) {
       return self::NULL_STRING_PLACEHOLDER;
@@ -484,7 +669,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   *
+   * Sets up the current issue's local files.
    */
   private function setIssueLocalFiles() {
     $this->issueLocalFiles = [];
@@ -502,9 +687,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $filename
+   * Constructs a page number based on the standardized filepath / name.
+   *
+   * @param string $filename
+   *   The filename to use when determining the page number.
    *
    * @return string
+   *   The constructed page number.
    */
   private static function getPageNumberFromMikeFileName($filename) {
     $path_info = pathinfo($filename);
@@ -513,9 +702,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $path
+   * Determines the MD5 hash of a file.
    *
-   * @return string|null
+   * @param string $path
+   *   The path the the file.
+   *
+   * @return string
+   *   The MD5 hash.
    */
   private function getMd5Sum($path) {
     $this->printMessage(LogLevel::INFO, "Running MD5 Sum on $path....");
@@ -523,9 +716,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $path
+   * Determines the MD5 hash of a file.
    *
-   * @return string|null
+   * @param string $path
+   *   The path the the file.
+   *
+   * @return string
+   *   The MD5 hash.
    */
   public static function md5Sum($path) {
     if (file_exists($path)) {
@@ -535,18 +732,26 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
+   * Prints a message to the console.
+   *
    * @param string $level
+   *   The error level of the message.
    * @param string $message
+   *   The message.
    * @param array $context
+   *   The context for the message.
    */
-  protected function printMessage($level, $message, $context = []) {
+  protected function printMessage($level, $message, array $context = []) {
     $this->logger->log($level, $message, $context);
   }
 
   /**
-   * @param $response
+   * Sets up the files that are attached to the remote issue.
+   *
+   * @param string[] $response
+   *   The REST entity object returned from the query.
    */
-  private function setIssueRemoteFiles($response) {
+  private function setIssueRemoteFiles(array $response) {
     $this->issueRemoteFiles = [];
     foreach ($response as $remote_file) {
       $remote_file_path = str_replace('/sites/default', $this->webStorageBasePath, $remote_file->page_image__target_id);
@@ -557,13 +762,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       $this->issueRemoteFiles[] = [
         'file' => $remote_file->page_image__target_id,
         'page_no' => $remote_file->page_no,
-        'hash' => $md5_sum
+        'hash' => $md5_sum,
       ];
     }
   }
 
   /**
-   * @return array
+   * Audits if the current local issue matches the remote one.
    */
   private function auditIssue($issue_id, $path) {
     $issue_fail = FALSE;
@@ -574,14 +779,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         'path' => $path,
         'issue_id' => $issue_id,
         'uri' => "{$this->options['instance-uri']}/serials/{$this->issueParentTitle}/issues/$issue_id/",
-        'images' => $missing_remote_images
+        'images' => $missing_remote_images,
       ];
       $issue_fail = TRUE;
     }
 
     $duplicate_remote_images = $this->arrayKeyDupes($this->issueRemoteFiles, 'hash');
 
-    # Zero hash isn't really a duplicate. This should be handled elsewhere.
+    // Zero hash isn't really a duplicate - this should be handled elsewhere.
     foreach ($duplicate_remote_images as $duplicate_remote_image_idx => $duplicate_remote_image) {
       if (empty($duplicate_remote_image['hash'])) {
         unset($duplicate_remote_images[$duplicate_remote_image_idx]);
@@ -593,7 +798,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         'path' => $path,
         'issue_id' => $issue_id,
         'uri' => "{$this->options['instance-uri']}/serials/{$this->issueParentTitle}/issues/$issue_id/",
-        'images' => $duplicate_remote_images
+        'images' => $duplicate_remote_images,
       ];
       $issue_fail = TRUE;
     }
@@ -605,7 +810,10 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $path
+   * Sets the processed and verified 'flag files' for the current local issue.
+   *
+   * @param string $path
+   *   The path to the local issue.
    */
   protected function setIssueFlagFiles($path) {
     // Also set the 'processed' flag as well. Old imports did not set this.
@@ -614,16 +822,22 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $arr1
-   * @param $arr2
-   * @param $key
+   * Diffs elements of two associative arrays, based on element key value.
    *
-   * @return mixed
+   * @param string[] $arr1
+   *   The first associative array to compare.
+   * @param string[] $arr2
+   *   The second associative array to compare.
+   * @param string $key
+   *   The key value to use as the duplicate comparator.
+   *
+   * @return string[]
+   *   The difference between the two values.
    */
-  private static function arrayKeyDiff($arr1, $arr2, $key) {
+  private static function arrayKeyDiff(array $arr1, array $arr2, $key) {
     foreach ($arr1 as $idx1 => $val1) {
       $found = FALSE;
-      foreach ($arr2 as $idx2 => $val2) {
+      foreach ($arr2 as $val2) {
         if ($val1[$key] == $val2[$key]) {
           $found = TRUE;
           break;
@@ -637,12 +851,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * @param $arr1
-   * @param $key
+   * Determines duplicate values in an associative array, based on a key value.
    *
-   * @return array
+   * @param string[] $arr1
+   *   The array to query.
+   * @param string $key
+   *   The array key value to query.
+   *
+   * @return string[]
+   *   The values that are duplicates in the array.
    */
-  private static function arrayKeyDupes($arr1, $key) {
+  private static function arrayKeyDupes(array $arr1, $key) {
     $dupes = [];
     $arr2 = $arr1;
     foreach ($arr1 as $idx1 => $val1) {
