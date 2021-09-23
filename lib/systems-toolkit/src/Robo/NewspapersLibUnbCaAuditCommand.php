@@ -203,6 +203,22 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
+   * Determines the MD5 hash of a file.
+   *
+   * @param string $path
+   *   The path the the file.
+   *
+   * @return string
+   *   The MD5 hash.
+   */
+  public static function md5Sum($path) {
+    if (file_exists($path)) {
+      return trim(md5_file($path));
+    }
+    return NULL;
+  }
+
+  /**
    * Verifies one or a tree of directories for import against a remote site.
    *
    * @param string $title_id
@@ -241,240 +257,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->setIssuesQueue($file_path);
     $this->setAuditIssues();
     $this->displayAuditFailures();
-  }
-
-  /**
-   * Determines if a remote issue is fully valid.
-   *
-   * @return bool
-   *   TRUE if the issue is valid remotely, FALSE otherwise.
-   */
-  protected function issueIsFullyValid() {
-    return empty($this->missingRemoteIssues) &&
-      empty($this->zeroLengthFiles) &&
-      empty($this->duplicateIssues) &&
-      empty($this->imagesMissingOnRemote) &&
-      empty($this->imagesDuplicateOnRemote);
-  }
-
-  /**
-   * Displays the audit failures from the current issue.
-   */
-  protected function displayAuditFailures() {
-    if ($this->issueIsFullyValid()) {
-      $this->io()->newLine();
-      $this->say("{$this->auditIssueCount} issues auditied and no discrepancies found!");
-      return;
-    }
-
-    $this->io()->newLine();
-    $this->displayMissingRemoteIssues();
-    $this->displayZeroLengthFiles();
-    $this->displayDuplicateIssues();
-    $this->displayMissingRemotePages();
-    $this->displayDuplicateRemotePages();
-    $this->reportIssueFailures();
-  }
-
-  /**
-   * Reports the failures from the current issue.
-   */
-  protected function reportIssueFailures() {
-    $this->io()->newLine();
-    $this->say(
-      sprintf(
-        "%s total issues audited",
-        $this->auditIssueCount
-      )
-    );
-    $this->say(
-      sprintf(
-        "%s passed, %s failures",
-        $this->goodIssueCount,
-        $this->auditIssueCount - $this->goodIssueCount
-      )
-    );
-  }
-
-  /**
-   * Displays the files identified as zero-length from the current issue.
-   */
-  protected function displayZeroLengthFiles() {
-    if (!empty($this->zeroLengthFiles)) {
-      $this->io()->newLine();
-      $column_names = [
-        'Path',
-      ];
-      $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
-      $zero_length_count = count($this->zeroLengthFiles);
-      $this->say("$zero_length_count zero length files found.");
-    }
-  }
-
-  /**
-   * Displays the issues identified as missing remotely.
-   */
-  protected function displayMissingRemoteIssues() {
-    if (!empty($this->missingRemoteIssues)) {
-      $this->io()->newLine();
-      $column_names = [
-        'Local Path',
-      ];
-      $this->outputTable('Missing Remote Issues Found!', $column_names, array_values($this->missingRemoteIssues));
-      $missing_issue_count = count($this->missingRemoteIssues);
-      $this->say("$missing_issue_count missing issues found.");
-    }
-  }
-
-  /**
-   * Displays the issues identified as duplicate.
-   */
-  protected function displayDuplicateIssues() {
-    if (!empty($this->duplicateIssues)) {
-      $this->io()->newLine();
-      $duplicate_issues = [];
-      $column_names = [
-        'Local Path',
-        'Title',
-        'Volume',
-        'Issue',
-        'eid',
-        'URI',
-      ];
-      $issue_counter = 0;
-
-      foreach ($this->duplicateIssues as $issues) {
-        $first_row = TRUE;
-        sort($issues['remote_entities']);
-
-        foreach ($issues['remote_entities'] as $entity) {
-          if ($first_row) {
-            $duplicate_issues[] = [
-              $issues['local_path'],
-              $this->issueParentTitle,
-              $this->issueConfig->volume,
-              $this->issueConfig->issue,
-              $entity,
-              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
-            ];
-            $issue_counter++;
-            $first_row = FALSE;
-          }
-          else {
-            $duplicate_issues[] = [
-              NULL,
-              NULL,
-              NULL,
-              NULL,
-              $entity,
-              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
-            ];
-          }
-        }
-      }
-      $this->outputTable('Ingested Issues with Duplicate Metadata Found!', $column_names, $duplicate_issues);
-      $this->say("$issue_counter (possible) multiply ingested issues found.");
-    }
-  }
-
-  /**
-   * Displays the pages identified as missing remotely.
-   */
-  protected function displayMissingRemotePages() {
-    $missing_pages = [];
-    $column_names = [
-      'eid',
-      'URI',
-      'Page #',
-      'Local Path',
-    ];
-    if (!empty($this->imagesMissingOnRemote)) {
-      $this->io()->newLine();
-      foreach ($this->imagesMissingOnRemote as $issue) {
-        $first_row = TRUE;
-        $page_no = array_column($issue['images'], 'page_no');
-        array_multisort($page_no, SORT_ASC, $issue['images']);
-
-        foreach ($issue['images'] as $page) {
-          if ($first_row) {
-            $missing_pages[] = [
-              $issue['issue_id'],
-              $issue['uri'],
-              $page['page_no'],
-              $page['file'],
-            ];
-            $first_row = FALSE;
-          }
-          else {
-            $missing_pages[] = [
-              NULL,
-              NULL,
-              $page['page_no'],
-              $page['file'],
-            ];
-          }
-        }
-      }
-      $this->outputTable('Some Local Pages are Missing From Remote Issues!', $column_names, $missing_pages);
-      $missing_page_count = count($missing_pages);
-      $this->say("$missing_page_count missing remote pages found.");
-    }
-  }
-
-  /**
-   * Displays the pages identified as duplicate remotely.
-   */
-  protected function displayDuplicateRemotePages() {
-    $duplicate_pages = [];
-    $column_names = [
-      'eid',
-      'URI',
-      'Page #',
-      'Local Path',
-    ];
-    if (!empty($this->imagesDuplicateOnRemote)) {
-      $this->io()->newLine();
-      foreach ($this->imagesDuplicateOnRemote as $issue) {
-        $first_row = TRUE;
-        $page_no = array_column($issue['images'], 'page_no');
-        array_multisort($page_no, SORT_ASC, $issue['images']);
-
-        foreach ($issue['images'] as $page) {
-          if ($first_row) {
-            $duplicate_pages[] = [
-              $issue['issue_id'],
-              $issue['uri'],
-              $page['page_no'],
-              $page['file'],
-            ];
-            $first_row = FALSE;
-          }
-          else {
-            $missing_pages[] = [
-              NULL,
-              NULL,
-              $page['page_no'],
-              $page['file'],
-            ];
-          }
-        }
-      }
-      $this->outputTable('Remote Issues Have Duplicate Pages!', $column_names, $missing_pages);
-      $duplicate_page_count = count($duplicate_pages);
-      $this->say("$duplicate_page_count duplicate remote pages found.");
-    }
-  }
-
-  /**
-   * Outputs a table to the console IO.
-   */
-  protected function outputTable($title, $column_names, $rows) {
-    $this->io()->title($title);
-    $table = new Table($this->output());
-    $table
-      ->setHeaders($column_names)
-      ->setRows($rows);
-    $table->render();
   }
 
   /**
@@ -687,21 +469,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * Constructs a page number based on the standardized filepath / name.
-   *
-   * @param string $filename
-   *   The filename to use when determining the page number.
-   *
-   * @return string
-   *   The constructed page number.
-   */
-  private static function getPageNumberFromMikeFileName($filename) {
-    $path_info = pathinfo($filename);
-    $filename_components = explode('_', $path_info['filename']);
-    return ltrim($filename_components[5], '0');
-  }
-
-  /**
    * Determines the MD5 hash of a file.
    *
    * @param string $path
@@ -716,22 +483,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * Determines the MD5 hash of a file.
-   *
-   * @param string $path
-   *   The path the the file.
-   *
-   * @return string
-   *   The MD5 hash.
-   */
-  public static function md5Sum($path) {
-    if (file_exists($path)) {
-      return trim(md5_file($path));
-    }
-    return NULL;
-  }
-
-  /**
    * Prints a message to the console.
    *
    * @param string $level
@@ -743,6 +494,21 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function printMessage($level, $message, array $context = []) {
     $this->logger->log($level, $message, $context);
+  }
+
+  /**
+   * Constructs a page number based on the standardized filepath / name.
+   *
+   * @param string $filename
+   *   The filename to use when determining the page number.
+   *
+   * @return string
+   *   The constructed page number.
+   */
+  private static function getPageNumberFromMikeFileName($filename) {
+    $path_info = pathinfo($filename);
+    $filename_components = explode('_', $path_info['filename']);
+    return ltrim($filename_components[5], '0');
   }
 
   /**
@@ -810,18 +576,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   }
 
   /**
-   * Sets the processed and verified 'flag files' for the current local issue.
-   *
-   * @param string $path
-   *   The path to the local issue.
-   */
-  protected function setIssueFlagFiles($path) {
-    // Also set the 'processed' flag as well. Old imports did not set this.
-    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_processed"));
-    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_verified"));
-  }
-
-  /**
    * Diffs elements of two associative arrays, based on element key value.
    *
    * @param string[] $arr1
@@ -876,6 +630,252 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       }
     }
     return $dupes;
+  }
+
+  /**
+   * Sets the processed and verified 'flag files' for the current local issue.
+   *
+   * @param string $path
+   *   The path to the local issue.
+   */
+  protected function setIssueFlagFiles($path) {
+    // Also set the 'processed' flag as well. Old imports did not set this.
+    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_processed"));
+    shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_verified"));
+  }
+
+  /**
+   * Displays the audit failures from the current issue.
+   */
+  protected function displayAuditFailures() {
+    if ($this->issueIsFullyValid()) {
+      $this->io()->newLine();
+      $this->say("{$this->auditIssueCount} issues auditied and no discrepancies found!");
+      return;
+    }
+
+    $this->io()->newLine();
+    $this->displayMissingRemoteIssues();
+    $this->displayZeroLengthFiles();
+    $this->displayDuplicateIssues();
+    $this->displayMissingRemotePages();
+    $this->displayDuplicateRemotePages();
+    $this->reportIssueFailures();
+  }
+
+  /**
+   * Determines if a remote issue is fully valid.
+   *
+   * @return bool
+   *   TRUE if the issue is valid remotely, FALSE otherwise.
+   */
+  protected function issueIsFullyValid() {
+    return empty($this->missingRemoteIssues) &&
+      empty($this->zeroLengthFiles) &&
+      empty($this->duplicateIssues) &&
+      empty($this->imagesMissingOnRemote) &&
+      empty($this->imagesDuplicateOnRemote);
+  }
+
+  /**
+   * Displays the issues identified as missing remotely.
+   */
+  protected function displayMissingRemoteIssues() {
+    if (!empty($this->missingRemoteIssues)) {
+      $this->io()->newLine();
+      $column_names = [
+        'Local Path',
+      ];
+      $this->outputTable('Missing Remote Issues Found!', $column_names, array_values($this->missingRemoteIssues));
+      $missing_issue_count = count($this->missingRemoteIssues);
+      $this->say("$missing_issue_count missing issues found.");
+    }
+  }
+
+  /**
+   * Outputs a table to the console IO.
+   */
+  protected function outputTable($title, $column_names, $rows) {
+    $this->io()->title($title);
+    $table = new Table($this->output());
+    $table
+      ->setHeaders($column_names)
+      ->setRows($rows);
+    $table->render();
+  }
+
+  /**
+   * Displays the files identified as zero-length from the current issue.
+   */
+  protected function displayZeroLengthFiles() {
+    if (!empty($this->zeroLengthFiles)) {
+      $this->io()->newLine();
+      $column_names = [
+        'Path',
+      ];
+      $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
+      $zero_length_count = count($this->zeroLengthFiles);
+      $this->say("$zero_length_count zero length files found.");
+    }
+  }
+
+  /**
+   * Displays the issues identified as duplicate.
+   */
+  protected function displayDuplicateIssues() {
+    if (!empty($this->duplicateIssues)) {
+      $this->io()->newLine();
+      $duplicate_issues = [];
+      $column_names = [
+        'Local Path',
+        'Title',
+        'Volume',
+        'Issue',
+        'eid',
+        'URI',
+      ];
+      $issue_counter = 0;
+
+      foreach ($this->duplicateIssues as $issues) {
+        $first_row = TRUE;
+        sort($issues['remote_entities']);
+
+        foreach ($issues['remote_entities'] as $entity) {
+          if ($first_row) {
+            $duplicate_issues[] = [
+              $issues['local_path'],
+              $this->issueParentTitle,
+              $this->issueConfig->volume,
+              $this->issueConfig->issue,
+              $entity,
+              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
+            ];
+            $issue_counter++;
+            $first_row = FALSE;
+          }
+          else {
+            $duplicate_issues[] = [
+              NULL,
+              NULL,
+              NULL,
+              NULL,
+              $entity,
+              "{$this->drupalRestUri}/serials/{$this->issueParentTitle}/issues/$entity/",
+            ];
+          }
+        }
+      }
+      $this->outputTable('Ingested Issues with Duplicate Metadata Found!', $column_names, $duplicate_issues);
+      $this->say("$issue_counter (possible) multiply ingested issues found.");
+    }
+  }
+
+  /**
+   * Displays the pages identified as missing remotely.
+   */
+  protected function displayMissingRemotePages() {
+    $missing_pages = [];
+    $column_names = [
+      'eid',
+      'URI',
+      'Page #',
+      'Local Path',
+    ];
+    if (!empty($this->imagesMissingOnRemote)) {
+      $this->io()->newLine();
+      foreach ($this->imagesMissingOnRemote as $issue) {
+        $first_row = TRUE;
+        $page_no = array_column($issue['images'], 'page_no');
+        array_multisort($page_no, SORT_ASC, $issue['images']);
+
+        foreach ($issue['images'] as $page) {
+          if ($first_row) {
+            $missing_pages[] = [
+              $issue['issue_id'],
+              $issue['uri'],
+              $page['page_no'],
+              $page['file'],
+            ];
+            $first_row = FALSE;
+          }
+          else {
+            $missing_pages[] = [
+              NULL,
+              NULL,
+              $page['page_no'],
+              $page['file'],
+            ];
+          }
+        }
+      }
+      $this->outputTable('Some Local Pages are Missing From Remote Issues!', $column_names, $missing_pages);
+      $missing_page_count = count($missing_pages);
+      $this->say("$missing_page_count missing remote pages found.");
+    }
+  }
+
+  /**
+   * Displays the pages identified as duplicate remotely.
+   */
+  protected function displayDuplicateRemotePages() {
+    $duplicate_pages = [];
+    $column_names = [
+      'eid',
+      'URI',
+      'Page #',
+      'Local Path',
+    ];
+    if (!empty($this->imagesDuplicateOnRemote)) {
+      $this->io()->newLine();
+      foreach ($this->imagesDuplicateOnRemote as $issue) {
+        $first_row = TRUE;
+        $page_no = array_column($issue['images'], 'page_no');
+        array_multisort($page_no, SORT_ASC, $issue['images']);
+
+        foreach ($issue['images'] as $page) {
+          if ($first_row) {
+            $duplicate_pages[] = [
+              $issue['issue_id'],
+              $issue['uri'],
+              $page['page_no'],
+              $page['file'],
+            ];
+            $first_row = FALSE;
+          }
+          else {
+            $missing_pages[] = [
+              NULL,
+              NULL,
+              $page['page_no'],
+              $page['file'],
+            ];
+          }
+        }
+      }
+      $this->outputTable('Remote Issues Have Duplicate Pages!', $column_names, $missing_pages);
+      $duplicate_page_count = count($duplicate_pages);
+      $this->say("$duplicate_page_count duplicate remote pages found.");
+    }
+  }
+
+  /**
+   * Reports the failures from the current issue.
+   */
+  protected function reportIssueFailures() {
+    $this->io()->newLine();
+    $this->say(
+      sprintf(
+        "%s total issues audited",
+        $this->auditIssueCount
+      )
+    );
+    $this->say(
+      sprintf(
+        "%s passed, %s failures",
+        $this->goodIssueCount,
+        $this->auditIssueCount - $this->goodIssueCount
+      )
+    );
   }
 
 }
