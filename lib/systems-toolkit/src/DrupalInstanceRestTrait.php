@@ -139,8 +139,8 @@ trait DrupalInstanceRestTrait {
    * @throws \Exception
    */
   protected function setUpDrupalRestClientToken() {
-    $response = $this->guzzleClient->get($this->drupalRestUri . "/rest/session/token");
-    $this->drupalRestToken =  (string) ($response->getBody());
+    $response = $this->guzzleClient->get($this->drupalRestUri . "/session/token");
+    $this->drupalRestToken = (string) ($response->getBody());
   }
 
   /**
