@@ -42,12 +42,13 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   /**
    * Delete an issue entity via drush.
    *
-   * @param $pod
+   * @param string[] $pod
    *   The pod ID to query.
-   * @param $issue_id
+   * @param string $issue_id
    *   The issue entity ID to delete.
    *
    * @return string[]
+   *   The result of the command.
    */
   private function setDrushDeleteIssueCommand($pod, $issue_id) {
     $delete_command = sprintf(

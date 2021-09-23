@@ -44,9 +44,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @param string $root
    *   The tree root to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option extension
    *   The extensions to match when finding files.
+   * @option no-pull
+   *   Do not pull docker images prior to running.
    * @option tile-size
    *   The tile size to use.
    * @option step
@@ -59,14 +63,26 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The uid to assign the target files.
    * @option target-gid
    *   The gid to assign the target files.
-   * @option no-pull
-   *   Do not pull docker images prior to running.
    *
    * @throws \Exception
    *
    * @command dzi:generate-tiles:tree
    */
-  public function dziFilesTree($root, $options = ['extension' => '.tif', 'prefix' => NULL, 'tile-size' => '256', 'step' => '200', 'skip-confirm' => FALSE, 'threads' => NULL, 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
+  public function dziFilesTree(
+    $root,
+    array $options = [
+      'extension' => '.tif',
+      'no-pull' => FALSE,
+      'prefix' => NULL,
+      'skip-confirm' => FALSE,
+      'skip-existing' => FALSE,
+      'step' => '200',
+      'target-gid' => '102',
+      'target-uid' => '100',
+      'threads' => NULL,
+      'tile-size' => '256',
+    ]
+  ) {
     $regex_root = preg_quote($root, '/');
 
     if (!$options['no-pull']) {
@@ -114,6 +130,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The NBNP webtree root file location.
    * @param string $issue_id
    *   The issue entity ID to process.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option threads
    *   The number of threads the process should use.
@@ -126,20 +144,28 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command newspapers.lib.unb.ca:issue:generate-dzi
    */
-  public function nbnpDziIssue($root, $issue_id, $options = ['threads' => 1, 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
+  public function nbnpDziIssue(
+    $root,
+    $issue_id,
+    array $options = [
+      'no-pull' => FALSE,
+      'skip-existing' => FALSE,
+      'threads' => 1,
+    ]
+  ) {
     $cmd_options = [
       'extension' => 'jpg',
-      'tile-size' => '256',
-      'prefix' => "{$issue_id}-",
-      'step' => '200',
-      'skip-confirm' => TRUE,
-      'threads' => $options['threads'],
-      'target-uid' => '100',
-      'target-gid' => '102',
-      'skip-existing' => $options['skip-existing'],
       'no-pull' => $options['no-pull'],
+      'prefix' => "{$issue_id}-",
+      'skip-confirm' => TRUE,
+      'skip-existing' => $options['skip-existing'],
+      'step' => '200',
+      'target-gid' => '102',
+      'target-uid' => '100',
+      'threads' => $options['threads'],
+      'tile-size' => '256',
     ];
-    $this->dziFilesTree($root .'/files/serials/pages', $cmd_options);
+    $this->dziFilesTree($root . '/files/serials/pages', $cmd_options);
   }
 
   /**
@@ -147,6 +173,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @param string $file
    *   The file to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option tile-size
    *   The tile size to use.
@@ -159,7 +187,15 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @return \Robo\Contract\CommandInterface
    */
-  private function getDziTileCommand($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102']) {
+  private function getDziTileCommand(
+    $file,
+    array $options = [
+      'step' => '200',
+      'target-gid' => '102',
+      'target-uid' => '100',
+      'tile-size' => '256',
+    ]
+  ) {
     $dzi_file_path_info = pathinfo($file);
     $tmp_dir = "/tmp/dzi/{$dzi_file_path_info['filename']}";
 
@@ -179,6 +215,11 @@ class DziTilerCommand extends SystemsToolkitCommand {
   /**
    * Generate DZI tiles for a file.
    *
+   * @param string $file
+   *   The file to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
+   *
    * @option tile-size
    *   The tile size to use.
    * @option step
@@ -194,7 +235,17 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command dzi:generate-tiles
    */
-  public function generateDziFiles($file, $options = ['tile-size' => '256', 'step' => '200', 'target-uid' => '100', 'target-gid' => '102', 'skip-existing' => FALSE, 'no-pull' => FALSE]) {
+  public function generateDziFiles(
+    $file,
+    array $options = [
+      'no-pull' => FALSE,
+      'skip-existing' => FALSE,
+      'step' => '200',
+      'target-gid' => '102',
+      'target-uid' => '100',
+      'tile-size' => '256',
+    ]
+  ) {
     $dzi_file_path_info = pathinfo($file);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");

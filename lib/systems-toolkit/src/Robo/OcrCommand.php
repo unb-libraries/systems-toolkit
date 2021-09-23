@@ -54,23 +54,34 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @param string $root
    *   The tree root to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
-   * @option extension
-   *   The extensions to match when finding files.
-   * @option oem
-   *   The engine to use.
-   * @option lang
-   *   The language to use.
-   * @option threads
-   *   The number of threads the OCR should use.
    * @option args
    *   Any other arguments to pass.
+   * @option extension
+   *   The extensions to match when finding files.
+   * @option lang
+   *   The language to use.
+   * @option oem
+   *   The engine to use.
+   * @option threads
+   *   The number of threads the OCR should use.
    *
    * @throws \Exception
    *
    * @command ocr:tesseract:tree:metrics
    */
-  public function ocrTesseractMetrics($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL]) {
+  public function ocrTesseractMetrics(
+    $root,
+    array $options = [
+      'args' => NULL,
+      'extension' => 'tif',
+      'lang' => 'eng',
+      'oem' => 1,
+      'threads' => NULL,
+    ]
+  ) {
     $options['args'] = 'tsv';
     $options['skip-existing'] = FALSE;
     $options['skip-confirm'] = TRUE;
@@ -135,31 +146,46 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @param string $root
    *   The tree root to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
-   * @option extension
-   *   The extensions to match when finding files.
-   * @option oem
-   *   The engine to use.
-   * @option lang
-   *   The language to use.
-   * @option threads
-   *   The number of threads the OCR should use.
    * @option args
    *   Any other arguments to pass.
-   * @option skip-confirm
-   *   Skip the confirmation process, assume 'yes'.
-   * @option skip-existing
-   *   If non-empty HOCR exists for the file, do not process again.
+   * @option extension
+   *   The extensions to match when finding files.
+   * @option lang
+   *   The language to use.
    * @option no-pull
    *   Do not pull docker images prior to running.
    * @option no-unset-files
    *   Do not unset the recursive file stack after processing.
+   * @option oem
+   *   The tesseract engine ID to use.
+   * @option skip-confirm
+   *   Skip the confirmation process, assume 'yes'.
+   * @option skip-existing
+   *   If non-empty HOCR exists for the file, do not process again.
+   * @option threads
+   *   The number of threads the OCR should use.
    *
    * @throws \Exception
    *
    * @command ocr:tesseract:tree
    */
-  public function ocrTesseractTree($root, $options = ['extension' => 'tif', 'oem' => 1, 'lang' => 'eng', 'threads' => NULL, 'args' => NULL, 'skip-confirm' => FALSE, 'skip-existing' => FALSE, 'no-pull' => FALSE, 'no-unset-files' => FALSE]) {
+  public function ocrTesseractTree(
+    $root,
+    array $options = [
+      'args' => NULL,
+      'extension' => 'tif',
+      'lang' => 'eng',
+      'no-pull' => FALSE,
+      'no-unset-files' => FALSE,
+      'oem' => 1,
+      'skip-confirm' => FALSE,
+      'skip-existing' => FALSE,
+      'threads' => NULL,
+    ]
+  ) {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -188,10 +214,11 @@ class OcrCommand extends SystemsToolkitCommand {
   /**
    * Determine if OCR has previously been generated for this file.
    *
-   * @param $filepath
+   * @param string $filepath
    *   The file to parse.
    *
    * @return bool
+   *   TRUE if OCR has been previously generated for the file.
    */
   private function fileHasOcrGenerated($filepath) {
     $hocr_filename = "$filepath.hocr";
@@ -206,16 +233,27 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @param string $file
    *   The file to parse.
-   * @option oem
-   *   The engine to use.
-   * @option lang
-   *   The language to use.
+   * @param string[] $options
+   *   The array of available CLI options.
+   *
    * @option args
    *   Any other arguments to pass.
+   * @option lang
+   *   The language to use.
+   * @option oem
+   *   The tesseract engine ID to use.
    *
    * @return \Robo\Contract\CommandInterface
+   *   The command to generate OCR for the file.
    */
-  private function getOcrFileCommand($file, $options = ['oem' => 1, 'lang' => 'eng', 'args' => NULL]) {
+  private function getOcrFileCommand(
+    $file,
+    array $options = [
+      'args' => NULL,
+      'lang' => 'eng',
+      'oem' => 1,
+    ]
+  ) {
     $ocr_file_path_info = pathinfo($file);
     return $this->taskDockerRun($this->tesseractImage)
       ->volume($ocr_file_path_info['dirname'], '/data')
@@ -229,6 +267,9 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @param string $file
    *   The file to parse.
+   * @param string[] $options
+   *   The array of available CLI options.
+   *
    * @option oem
    *   The engine to use.
    * @option lang
@@ -240,7 +281,14 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @command ocr:tesseract:file
    */
-  public function ocrTesseractFile($file, $options = ['oem' => 1, 'lang' => 'eng', 'args' => NULL]) {
+  public function ocrTesseractFile(
+    $file,
+    array $options = [
+      'oem' => 1,
+      'lang' => 'eng',
+      'args' => NULL,
+    ]
+  ) {
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
     }

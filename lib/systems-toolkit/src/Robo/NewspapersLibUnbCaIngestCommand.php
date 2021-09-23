@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Robo;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
@@ -10,29 +9,62 @@ use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaAuditCommand;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 
 /**
- * Class for Newspaper Page OCR commands.
+ * Provides methods to ingest NBNP issues into newspapers.lib.unb.ca.
  */
 class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
-  use NbhpSnsMessageTrait;
   use DrupalInstanceRestTrait;
+  use NbhpSnsMessageTrait;
   use RecursiveDirectoryTreeTrait;
 
-  const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
-  const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
   const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
+  const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
+  const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
 
+  /**
+   * The ID of the current issue being processed.
+   *
+   * @var string
+   */
+  protected $curIssueId;
+
+  /**
+   * The path to the current issue being processed.
+   *
+   * @var string
+   */
+  protected $curIssuePath;
+
+  /**
+   * The title ID of the current issue being processed.
+   *
+   * @var string
+   */
+  protected $curTitleId;
+
+  /**
+   * The number of issues that have been processed in the current session.
+   *
+   * @var string
+   */
+  protected $issuesProcessed = 0;
+
+  /**
+   * The results of issues that have been processed in the current session.
+   *
+   * @var string
+   */
   protected $resultsLedger = [
     'success' => [],
     'fail' => [],
     'skipped' => [],
   ];
 
-  protected $curTitleId;
-  protected $curIssueId;
-  protected $curIssuePath;
-
-  protected $issuesProcessed = 0;
+  /**
+   * The number of issues that are queued in the current session.
+   *
+   * @var string
+   */
   protected $totalIssues = 0;
 
   /**
@@ -40,6 +72,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @param string $id
    *   The page entity ID.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option string $instance-uri
    *   The URI of the target instance.
@@ -54,7 +88,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  public function setOcrForPage($id, $options = ['instance-uri' => 'http://localhost:3095', 'output-dir' => '/tmp']) {
+  public function setOcrForPage(
+    $id,
+    array $options = [
+      'instance-uri' => 'http://localhost:3095',
+      'output-dir' => '/tmp',
+    ]
+  ) {
     $local_file = $this->getPageImage($id, $options);
     $this->ocrTesseractFile(
       $local_file,
@@ -79,24 +119,30 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @param string $id
    *   The page entity ID.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option string $instance-uri
    *   The URI of the target instance.
    * @option string $output-dir
    *   The directory to store the downloaded image.
    *
-   * @throws \Exception
-   *
-   * @usage "1"
-   *
    * @command newspapers.lib.unb.ca:get-page
+   * @usage newspapers.lib.unb.ca:get-page "1"
    *
    * @return string|null
    *   The path to the downloaded file, NULL on failure.
    *
+   * @throws \Exception
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  public function getPageImage($id, $options = ['instance-uri' => 'http://localhost:3095', 'output-dir' => '/tmp']) {
+  public function getPageImage(
+    $id,
+    array $options = [
+      'instance-uri' => 'http://localhost:3095',
+      'output-dir' => '/tmp',
+    ]
+  ) {
     $this->drupalRestUri = $options['instance-uri'];
     $page_details = $this->getDrupalRestEntity("/digital_serial/digital_serial_page/$id");
     return $this->downloadPageEntityImageFile($page_details, $options['output-dir']);
@@ -153,8 +199,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       [
         $field_name => [
           [
-            'value' => $content
-          ]
+            'value' => $content,
+          ],
         ],
       ]
     );
@@ -166,19 +212,21 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @param string $title_id
    *   The parent issue ID.
-   * @option issue-page-extension
-   *   The efile extension to match for issue pages.
    * @param string $file_path
    *   The tree file path.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
-   * @option string $instance-uri
-   *   The URI of the target instance.
-   * @option threads
-   *   The number of threads the OCR process should use.
-   * @option bool $no-verify
-   *   Do not verify if the pages were successfully uploaded.
    * @option bool $force-ocr
    *   Run OCR on files, even if already exists.
+   * @option string $instance-uri
+   *   The URI of the target instance.
+   * @option string issue-page-extension
+   *   The efile extension to match for issue pages.
+   * @option bool $no-verify
+   *   Do not verify if the pages were successfully uploaded.
+   * @option string threads
+   *   The number of threads the OCR process should use.
    * @option string $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    *
@@ -190,7 +238,18 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @nbhp
    */
-  public function createIssuesFromTree($title_id, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL]) {
+  public function createIssuesFromTree(
+    $title_id,
+    $file_path,
+    array $options = [
+      'force-ocr' => FALSE,
+      'instance-uri' => 'http://localhost:3095',
+      'issue-page-extension' => 'jpg',
+      'no-verify' => FALSE,
+      'threads' => NULL,
+      'webtree-path' => NULL,
+    ]
+  ) {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -207,14 +266,14 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->ocrTesseractTree(
       $file_path,
       [
-        'extension' => $options['issue-page-extension'],
-        'oem' => 1,
-        'lang' => 'eng',
-        'threads' => $options['threads'],
         'args' => 'hocr',
+        'extension' => $options['issue-page-extension'],
+        'lang' => 'eng',
+        'no-pull' => $options['no-pull'],
+        'oem' => 1,
         'skip-confirm' => TRUE,
         'skip-existing' => !$options['force-ocr'],
-        'no-pull' => $options['no-pull'],
+        'threads' => $options['threads'],
       ]
     );
 
@@ -241,7 +300,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
             'path' => $this->curIssuePath,
           ];
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
-        } else {
+        }
+        else {
           $this->say("Skipping already-imported issue - {$this->curIssuePath}");
           $this->resultsLedger['skipped'][] = [
             'path' => $this->curIssuePath,
@@ -274,6 +334,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The path to report as the import source.
    *
    * @return string
+   *   The summary.
    */
   private function getNbhpNotificationString(string $path) {
     $total_seconds = microtime(TRUE) - $this->commandStartTime;
@@ -292,7 +353,7 @@ EOT;
    * Write out a summary of the import in a ledger file.
    */
   private function writeImportLedger() {
-    $filename = 'nbnp_import_' . date('m-d-Y_hia').'.txt';
+    $filename = 'nbnp_import_' . date('m-d-Y_hia') . '.txt';
     $filepath = getcwd() . "/$filename";
     file_put_contents($filepath, print_r($this->resultsLedger, TRUE));
   }
@@ -304,23 +365,25 @@ EOT;
    *   The parent issue ID.
    * @param string $path
    *   The tree file path.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
+   * @option bool $force-ocr
+   *   Run OCR on files, even if already exists.
+   * @option generate-ocr
+   *   Generate OCR for files - disable if pre-generated.
    * @option string $instance-uri
    *   The URI of the target instance.
    * @option issue-page-extension
    *   The efile extension to match for issue pages.
-   * @option threads
-   *   The number of threads the OCR process should use.
-   * @option generate-ocr
-   *   Generate OCR for files - disable if pre-generated.
-   * @option bool $no-verify
-   *   Do not verify if the pages were successfully uploaded.
-   * @option bool $force-ocr
-   *   Run OCR on files, even if already exists.
-   * @option string $webtree-path
-   *   The webtree file path, used to generate DZI tiles.
    * @option no-pull
    *   Do not pull docker images prior to running.
+   * @option bool $no-verify
+   *   Do not verify if the pages were successfully uploaded.
+   * @option threads
+   *   The number of threads the OCR process should use.
+   * @option string $webtree-path
+   *   The webtree file path, used to generate DZI tiles.
    *
    * @throws \Exception
    *
@@ -328,7 +391,20 @@ EOT;
    *
    * @command newspapers.lib.unb.ca:create-issue
    */
-  public function createIssueFromDir($title_id, $path, $options = ['instance-uri' => 'http://localhost:3095', 'issue-page-extension' => 'jpg', 'threads' => NULL, 'generate-ocr' => FALSE, 'no-verify' => FALSE, 'force-ocr' => FALSE, 'webtree-path' => NULL, 'no-pull' => FALSE]) {
+  public function createIssueFromDir(
+    $title_id,
+    $path,
+    array $options = [
+      'force-ocr' => FALSE,
+      'generate-ocr' => FALSE,
+      'instance-uri' => 'http://localhost:3095',
+      'issue-page-extension' => 'jpg',
+      'no-pull' => FALSE,
+      'no-verify' => FALSE,
+      'threads' => NULL,
+      'webtree-path' => NULL,
+    ]
+  ) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Pull upstream docker images, if permitted.
@@ -338,7 +414,7 @@ EOT;
     }
     $options['no-pull'] = TRUE;
 
-    // Create issue
+    // Create the issue.
     $metadata_filepath = "$path/metadata.php";
     if (file_exists($metadata_filepath)) {
       $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php $path/metadata.php";
@@ -348,58 +424,58 @@ EOT;
         file_get_contents("$metadata_filepath.json")
       );
 
-      // Create digital page
+      // Create the digital page.
       $create_content = json_encode(
         [
           'parent_title' => [
             [
               'target_id' => $title_id,
-            ]
+            ],
           ],
           'issue_title' => [
             [
-              'value' => $issue_config->title
-            ]
+              'value' => $issue_config->title,
+            ],
           ],
           'issue_vol' => [
             [
               'value' => $issue_config->volume,
-            ]
+            ],
           ],
           'issue_issue' => [
             [
               'value' => $issue_config->issue,
-            ]
+            ],
           ],
           'issue_edition' => [
             [
               'value' => $issue_config->edition,
-            ]
+            ],
           ],
           'issue_date' => [
             [
               'value' => $issue_config->date,
-            ]
+            ],
           ],
           'issue_missingp' => [
             [
               'value' => $issue_config->missing,
-            ]
+            ],
           ],
           'issue_errata' => [
             [
               'value' => $issue_config->errata,
-            ]
+            ],
           ],
           'issue_language' => [
             [
               'value' => $issue_config->language,
-            ]
+            ],
           ],
           'issue_media' => [
             [
               'value' => $issue_config->media,
-            ]
+            ],
           ],
         ]
       );
@@ -426,7 +502,7 @@ EOT;
         );
       }
 
-      // Then, create pages for the issue
+      // Then, create pages for the issue.
       $regex = "/^.+\.{$options['issue-page-extension']}$/i";
       $this->recursiveFileTreeRoot = $path;
       $this->recursiveFileRegex = $regex;
@@ -471,12 +547,15 @@ EOT;
   /**
    * Ensure each page in an issue has a unique page_no string.
    *
-   * @param $issue_ingested_pages
-   * @param $page_no
+   * @param string[] $issue_ingested_pages
+   *   An array of currently ingested pages.
+   * @param string $page_no
+   *   The desired page number to apply.
    *
-   * @return mixed|string
+   * @return string
+   *   The unique page_no string.
    */
-  protected function getUniqueIssuePageNo(&$issue_ingested_pages, $page_no) {
+  protected function getUniqueIssuePageNo(array &$issue_ingested_pages, $page_no) {
     $counter = 0;
     $page_check = $page_no;
     while (in_array($page_check, $issue_ingested_pages)) {
@@ -497,19 +576,29 @@ EOT;
    *   The page sort.
    * @param string $file_path
    *   The path to the file.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option string $instance-uri
    *   The URI of the target instance.
    * @option bool $no-verify
    *   Do not verify the page was successfully uploaded.
    *
-   * @throws \Exception
-   *
-   * @usage "1 10 10 /home/jsanford/test.jpg"
-   *
    * @command newspapers.lib.unb.ca:create-page
+   * @usage "newspapers.lib.unb.ca:create-page 1 10 10 /home/jsanford/test.jpg"
+   *
+   * @throws \Exception
    */
-  public function createSerialPageFromFile($issue_id, $page_no, $page_sort, $file_path, $options = ['instance-uri' => 'http://localhost:3095', 'no-verify' => FALSE]) {
+  public function createSerialPageFromFile(
+    $issue_id,
+    $page_no,
+    $page_sort,
+    $file_path,
+    array $options = [
+      'instance-uri' => 'http://localhost:3095',
+      'no-verify' => FALSE,
+    ]
+  ) {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.
@@ -537,7 +626,7 @@ EOT;
 
     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
     $additional_pad_chars = strlen(substr(strrchr($page_no, "_"), 0));
-    $page_no_padded = str_pad($page_no,4 + $additional_pad_chars, '0', STR_PAD_LEFT);
+    $page_no_padded = str_pad($page_no, 4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
     $this->say("Creating Page [$page_no_padded] From: $file_path");
     $file_entity = $this->uploadDrupalRestFileToEntityField(
@@ -547,38 +636,38 @@ EOT;
     // Allow the disk to write out the file.
     sleep(1);
 
-    // Create digital page
+    // Create the digital page.
     $create_content = json_encode(
       [
         'parent_issue' => [
           [
             'target_id' => $issue_id,
-          ]
+          ],
         ],
         'page_no' => [
           [
             'value' => $page_no,
-          ]
+          ],
         ],
         'page_sort' => [
           [
             'value' => $page_sort,
-          ]
+          ],
         ],
         'page_ocr' => [
           [
             'value' => $ocr_content,
-          ]
+          ],
         ],
         'page_hocr' => [
           [
             'value' => $hocr_content,
-          ]
+          ],
         ],
         'page_image' => [
           [
             'target_id' => $file_entity->fid[0]->value,
-          ]
+          ],
         ],
       ]
     );
@@ -620,7 +709,7 @@ EOT;
         'headers' => [
           'Content-Type' => 'application/octet-stream',
           'Content-Disposition' => "file; filename=\"$file_name\"",
-          'X-CSRF-Token' => $this->drupalRestToken
+          'X-CSRF-Token' => $this->drupalRestToken,
         ],
       ]
     );
