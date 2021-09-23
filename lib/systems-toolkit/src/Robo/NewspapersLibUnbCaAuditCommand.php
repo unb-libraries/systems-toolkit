@@ -65,7 +65,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Current issue configuration as read from the metadata file.
    *
-   * @var string[]
+   * @var object
    */
   protected $issueConfig;
 
