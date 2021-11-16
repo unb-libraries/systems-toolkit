@@ -338,10 +338,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   An array of update objects.
    */
   private function filterExcludeUpdates(&$updates, $module_exclude) {
-    foreach ($updates as $idx => $update) {
-      if (in_array($update->name, $module_exclude)) {
-        $this->say("Ignoring update for {$update->name} (excluded)...");
-        unset($updates[$idx]);
+    if (!empty($updates)) {
+      foreach ($updates as $idx => $update) {
+        if (in_array($update->name, $module_exclude)) {
+          $this->say("Ignoring update for {$update->name} (excluded)...");
+          unset($updates[$idx]);
+        }
       }
     }
   }
