@@ -211,23 +211,11 @@ trait GitHubMultipleInstanceTrait {
   private function filterRepositoriesByTopic(array $topic_filters) {
     if (!empty($topic_filters[0])) {
       $this->say('Topic filtering repositories...');
-      $ids = [];
-      foreach ($topic_filters as $topic) {
-        foreach ($this->organizations as $org) {
-          $repos = $this->client->api('search')->repositories("org:{$org} topic:{$topic}");
-          foreach ($repos['items'] as $repo) {
-            $ids[$repo['id']] = 1;
-          }
+      foreach ($this->githubRepositories as $repo_idx => $repo) {
+        // This assumes an AND filter for multiple repo topics.
+        if (!count(array_intersect($repo['topics'], $topic_filters)) == count($topic_filters)) {
+          unset($this->githubRepositories[$repo_idx]);
         }
-      }
-      if (!$ids) {
-        $this->githubRepositories = [];
-      }
-      else {
-        $ids = array_keys($ids);
-        $this->githubRepositories = array_filter($this->githubRepositories, function ($repo) use ($ids) {
-          return in_array($repo['id'], $ids);
-        });
       }
       $this->say('Topic filtering complete!');
     }
