@@ -173,7 +173,7 @@ trait GitHubTrait {
    *
    * @throws \Github\Exception\ErrorException
    */
-  protected function getGitHubRepositoryJiraSlug($repository, $branch = 'dev') {
+  protected function getGitHubRepositoryJiraSlug($repository, $branch = 'prod') {
     $dockworker_yml_path = '.dockworker/dockworker.yml';
     $dockworker_file_content = $this->client->api('repo')->contents()->download($repository['owner']['login'], $repository['name'], $dockworker_yml_path, $branch);
     $dockworker_yml = yaml_parse($dockworker_file_content);
