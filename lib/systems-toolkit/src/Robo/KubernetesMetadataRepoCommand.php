@@ -40,11 +40,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   const CENTRAL_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
 
   /**
-   * Defines the branch of the 'central' metadata repository to compare against.
-   */
-  const CENTRAL_METADATA_REPO_BRANCH = '1.18';
-
-  /**
    * Defines the branch of the 'lean' repositories to compare against.
    */
   const LEAN_REPO_BRANCH = 'dev';
@@ -210,6 +205,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @param array $options
    *   Provides an option to skip yes/no prompts.
    *
+   * @option string central-repo-branch
+   *   The central repository branch to audit against.
    * @option bool yes
    *   Assume a 'yes' answer for all prompts.
    *
@@ -220,7 +217,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  public function setKubernetesMetadataServiceAudit(string $tag_filter, string $name_filter, array $options = ['yes' => FALSE]) {
+  public function setKubernetesMetadataServiceAudit(string $tag_filter, string $name_filter, array $options = ['central-repo-branch' => '1.23', 'yes' => FALSE]) {
     $this->io = new SymfonyStyle($this->input, $this->output);
     $this->options = $options;
     $this->nameFilter = $name_filter;
@@ -256,9 +253,9 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function auditAllRepositories() {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
-      $this->say('Cloning central repo...');
+      $this->say("Cloning central repo/{$this->options['central-repo-branch']}...");
       $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO);
-      $this->centralMetadataRepo->repo->checkout(self::CENTRAL_METADATA_REPO_BRANCH);
+      $this->centralMetadataRepo->repo->checkout($this->options['central-repo-branch']);
     }
 
     foreach ($this->githubRepositories as $repository) {
@@ -567,7 +564,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       [
         'push',
         'origin',
-        self::CENTRAL_METADATA_REPO_BRANCH,
+        $this->options['central-repo-branch'],
       ]
     );
   }
