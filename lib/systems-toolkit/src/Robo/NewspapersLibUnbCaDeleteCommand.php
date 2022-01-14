@@ -40,15 +40,26 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *   The filename to delete.
    */
   protected function setDeleteFilesInTree($path, $file_name) {
+    $files_to_delete = [];
     $finder = new Finder();
     $finder->files()
       ->in($path)
-      ->name($file_name);
+      ->name($file_name)
+      ->ignoreDotFiles(FALSE);
 
     if ($finder->hasResults()) {
       foreach ($finder as $file) {
-        $fileNameWithExtension = $file->getRelativePathname();
-        print_r($fileNameWithExtension);
+        $files_to_delete[] = $file;
+      }
+    }
+
+    if (!empty($files_to_delete)) {
+      print_r($files_to_delete);
+      if ($this->confirm('OK to delete all the above files?')) {
+        foreach ($files_to_delete as $file_to_delete) {
+          $this->say("Deleting $file_to_delete...");
+          shell_exec("sudo rm -f $file_to_delete");
+        }
       }
     }
   }
