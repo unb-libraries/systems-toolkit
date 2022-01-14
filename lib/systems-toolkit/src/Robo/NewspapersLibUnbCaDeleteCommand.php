@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Symfony\Component\Finder\Finder;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
 
@@ -14,6 +15,43 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
 
   const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
   const NEWSPAPERS_NAMESPACE = 'prod';
+
+  /**
+   * Deletes newspapers.lib.unb.ca imported markers from a tree.
+   *
+   * @param string $path
+   *   The local path to delete the markers from.
+   *
+   * @throws \Exception
+   *
+   * @command newspapers.lib.unb.ca:delete:issue-markers
+   */
+  public function setDeleteNewspapersImportedMarkers($path) {
+    $this->setDeleteFilesInTree($path, '.nbnp_processed');
+    $this->setDeleteFilesInTree($path, '.nbnp_verified');
+  }
+
+  /**
+   * Deletes files matching a name in a tree.
+   *
+   * @param string $path
+   *   The local path to delete the files from.
+   * @param string $file_name
+   *   The filename to delete.
+   */
+  protected function setDeleteFilesInTree($path, $file_name) {
+    $finder = new Finder();
+    $finder->files()
+      ->in($path)
+      ->name($file_name);
+
+    if ($finder->hasResults()) {
+      foreach ($finder as $file) {
+        $fileNameWithExtension = $file->getRelativePathname();
+        print_r($fileNameWithExtension);
+      }
+    }
+  }
 
   /**
    * Delete a newspapers.lib.unb.ca digital issue and associated assets.
