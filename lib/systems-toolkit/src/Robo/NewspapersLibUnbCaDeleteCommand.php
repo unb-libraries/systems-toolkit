@@ -17,6 +17,68 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   const NEWSPAPERS_NAMESPACE = 'prod';
 
   /**
+   * Deletes an entire year of a title's issues.
+   *
+   * @param string $title_id
+   *   The parent digital title ID.
+   * @param string $year
+   *   The year to delete.
+   *
+   * @throws \Exception
+   *
+   * @usage "1 /mnt/issues/archive"
+   *
+   * @command newspapers.lib.unb.ca:delete-year
+   */
+  public function deleteTitleIssuesByYear(
+    $title_id,
+    $year
+  ) {
+    $issues = getTitleYearIssues($title_id, $year);
+    print_r($issues);
+  }
+
+  /**
+   * Gets a list of a a newspaper title's issues.
+   *
+   * @param string $title_id
+   *   The entity ID of the title to query.
+   * @param string $year
+   *   The year of the title to filter on.
+   *
+   * @return string[]
+   *   A list of entity IDs matching the title and year.
+   *
+   * @throws \Exception
+   */
+  private function getTitleYearIssues($title_id, $year) {
+    $ids = [];
+
+    $ch = curl_init();
+    $timeout = 5;
+
+    $rest_uri = sprintf(
+      "%s/serials-year-search/%s/%s",
+      "https://" . self::NEWSPAPERS_FULL_URI,
+      $title_id,
+      $year
+    );
+
+    curl_setopt($ch,CURLOPT_URL, $rest_uri);
+    curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    $raw_response = json_decode($data);
+    if (!empty($raw_response->data)) {
+      foreach ($raw_response->data as $entity_id) {
+        $ids[] = $entity_id;
+      }
+    }
+    return($ids);
+  }
+
+  /**
    * Deletes newspapers.lib.unb.ca imported markers from a tree.
    *
    * @param string $path
