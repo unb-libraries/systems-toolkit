@@ -34,7 +34,17 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     $title_id,
     $year
   ) {
-    $issues = getTitleYearIssues($title_id, $year);
+    $issues = $this->getTitleYearIssues($title_id, $year);
+    if (!empty($issues)) {
+      print_r($issues);
+      if ($this->confirm('OK to delete all the above issues?')) {
+        foreach ($issues as $issue_id) {
+          $this->setDeleteNewspapersIssue($issue_id);
+          $this->say('Sleeping to inject sanity...');
+          sleep(5);
+        }
+      }
+    }
     print_r($issues);
   }
 
