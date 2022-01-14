@@ -41,7 +41,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
         foreach ($issues as $issue_id) {
           $this->setDeleteNewspapersIssue($issue_id);
           $this->say('Sleeping to inject sanity...');
-          sleep(5);
+          sleep(2);
         }
       }
     }
@@ -147,7 +147,10 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @command newspapers.lib.unb.ca:delete:issue
    */
   public function setDeleteNewspapersIssue($issue_id) {
-    $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
+    if (empty($this->kubeCurPods)) {
+      $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
+    }
+
     foreach ($this->kubeCurPods as $pod) {
       $this->say(
         sprintf(
