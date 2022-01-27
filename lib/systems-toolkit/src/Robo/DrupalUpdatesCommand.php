@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Robo;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
@@ -291,9 +292,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
   private function isIgnoredUpdate($update) {
-    $ignored_projects = [
-      'field_collection'
-    ];
+    $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects');
     if (in_array($update->name, $ignored_projects)) {
       return TRUE;
     }
@@ -310,12 +309,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
   private function isLockedUpdate($update) {
-    $locked_projects = [
-      'bootstrap_barrio' => '5.1.6',
-      'drupal' => '8.9.20',
-      'search_api' => '8.x-1.23',
-      'search_api_solr' => '4.2.1',
-    ];
+    $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects');
     if (array_key_exists($update->name, $locked_projects) && $locked_projects[$update->name] == $update->existing_version) {
       return TRUE;
     }
