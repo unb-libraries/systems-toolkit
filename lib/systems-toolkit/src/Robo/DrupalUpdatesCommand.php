@@ -373,9 +373,10 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * Update all queued GitHub repositories.
    */
   private function updateAllRepositories($options) {
-    foreach ($this->githubRepositories as $repository) {
+    $last_repository_key = array_key_last($this->githubRepositories);
+    foreach ($this->githubRepositories as $repository_key => $repository) {
       $updates_pushed = $this->updateRepository($repository);
-      if ($updates_pushed) {
+      if ($updates_pushed && $repository_key != $last_repository_key) {
         $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
         sleep($options['multi-repo-delay']);
       }
