@@ -312,6 +312,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   private function isLockedUpdate($update) {
     $locked_projects = [
       'bootstrap_barrio' => '5.1.6',
+      'drupal' => '8.9.20',
       'search_api' => '8.x-1.23',
       'search_api_solr' => '8.x-4.2.1',
     ];
