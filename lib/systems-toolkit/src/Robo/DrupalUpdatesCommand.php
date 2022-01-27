@@ -462,15 +462,8 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
               $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
               file_put_contents($repo_build_file_path, $new_content);
               $this->say($commit_message);
-              file_put_contents('/tmp/syskit_commit_msg.txt', $commit_message);
               $repo->repo->addFile('build/composer.json');
-              $repo->repo->execute(
-                [
-                  'commit',
-                  '-F',
-                  '/tmp/syskit_commit_msg.txt',
-                ]
-              );
+              $repo->repo->commit($commit_message);
               $updates_committed = TRUE;
             }
           }
