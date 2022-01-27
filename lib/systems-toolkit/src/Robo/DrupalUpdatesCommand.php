@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Symfony\Component\Console\Helper\Table;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
@@ -425,9 +426,16 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
 
     if (!empty($this->tabulatedUpdates[$repository['name']][$branch])) {
       $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
-      $old_file_content = $this->client->api('repo')->contents()->download($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
 
+      $repo_uri = "git@github.com:{$update_data['vcsOwner']}/{$update_data['vcsRepository']}.git";
+      $this->say("Cloning $repo_uri...");
+      $repo = GitRepo::setCreateFromClone($repo_uri);
+      $repo->repo->checkout($branch);
+      $repo_path = $repo->getTmpDir();
+      $repo_build_file_path = "$repo_path/build/composer.json";
+      $old_file_content = file_get_contents($repo_build_file_path);
       $composer_file = json_decode($old_file_content);
+
       if ($composer_file !== NULL) {
         $this->printTabluatedInstanceUpdateTable($repository['name']);
         if (!$this->noConfirm) {
@@ -436,6 +444,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
         else {
           $do_all = TRUE;
         }
+        $updates_committed = FALSE;
         foreach ($update_data['updates'] as $cur_update) {
           if ($this->composerFileNeedsUpdate($composer_file, $cur_update)) {
             $commit_message = $this->getFormattedUpdateMessage($cur_update, TRUE);
@@ -450,19 +459,19 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
                 $cur_update
               );
               $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+              file_put_contents($repo_build_file_path, $new_content);
               $this->say($commit_message);
-              $this->client->api('repo')
-                ->contents()
-                ->update($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $new_content, $commit_message, $old_file_hashes['sha'], $branch, $committer);
-              $updates_pushed = TRUE;
-              if ($do_all) {
-                sleep(2);
-              }
+              $repo->repo->commit($commit_message);
+              $updates_committed = TRUE;
             }
           }
           else {
             $this->say('Skipping already-applied update..');
           }
+        }
+        if ($updates_committed) {
+          $repo->repo->push('origin', [$branch]);
+          $updates_pushed = TRUE;
         }
       }
       else {
