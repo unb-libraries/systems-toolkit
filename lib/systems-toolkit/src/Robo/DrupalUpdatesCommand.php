@@ -300,6 +300,27 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
+   * Determine if an update should be ignored due to version locks.
+   *
+   * @param object $update
+   *   The update object that was generated from the JSON source.
+   *
+   * @return bool
+   *   TRUE if the update should be ignored. FALSE otherwise.
+   */
+  private function isLockedUpdate($update) {
+    $locked_projects = [
+      'bootstrap_barrio' => '5.1.6',
+      'search_api' => '8.x-1.23',
+      'search_api_solr' => '8.x-4.2.1',
+    ];
+    if (array_key_exists($update->name, $locked_projects) && $locked_projects[$update->name] == $update->existing_version) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Filter any ignored updates.
    *
    * @param object[] $updates
@@ -309,7 +330,11 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     if (!empty($updates)) {
       foreach ($updates as $idx => $update) {
         if ($this->isIgnoredUpdate($update)) {
-          $this->say("Ignoring update for {$update->name}...");
+          $this->say("Ignoring (any) update for {$update->name}...");
+          unset($updates[$idx]);
+        }
+        if ($this->isLockedUpdate($update)) {
+          $this->say("Ignoring update for {$update->name} - locked at {$update->existing_version}...");
           unset($updates[$idx]);
         }
       }
