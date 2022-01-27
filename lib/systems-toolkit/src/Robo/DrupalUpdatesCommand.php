@@ -314,7 +314,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       'bootstrap_barrio' => '5.1.6',
       'drupal' => '8.9.20',
       'search_api' => '8.x-1.23',
-      'search_api_solr' => '8.x-4.2.1',
+      'search_api_solr' => '4.2.1',
     ];
     if (array_key_exists($update->name, $locked_projects) && $locked_projects[$update->name] == $update->existing_version) {
       return TRUE;
