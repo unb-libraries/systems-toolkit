@@ -61,7 +61,6 @@ trait AwsSnsMessageTrait {
    * @param string $message
    *   The message to send. Quote it!
    *
-   * @return \Aws\Result
    *
    * @throws \Exception
    */

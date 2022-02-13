@@ -13,7 +13,7 @@ class CyberManCommand extends SystemsToolkitCommand {
 
   use AwsSnsMessageTrait;
 
-  const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
+  public const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
 
   /**
    * Set the Cyberman SNS Topic ID.

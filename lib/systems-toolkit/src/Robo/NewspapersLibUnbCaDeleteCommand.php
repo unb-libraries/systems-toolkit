@@ -13,8 +13,8 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
 
   use KubeExecTrait;
 
-  const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
-  const NEWSPAPERS_NAMESPACE = 'prod';
+  public const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
+  public const NEWSPAPERS_NAMESPACE = 'prod';
 
   /**
    * Deletes an entire year of a title's issues.
@@ -79,7 +79,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
     $data = curl_exec($ch);
     curl_close($ch);
-    $raw_response = json_decode($data);
+    $raw_response = json_decode($data, null, 512, JSON_THROW_ON_ERROR);
     if (!empty($raw_response->data)) {
       foreach ($raw_response->data as $entity_id) {
         $ids[] = $entity_id;

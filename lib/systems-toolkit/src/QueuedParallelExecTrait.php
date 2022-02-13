@@ -26,7 +26,6 @@ trait QueuedParallelExecTrait {
   /**
    * Add a command to the process queue.
    *
-   * @param \Robo\Contract\CommandInterface $command
    *   The command to add.
    */
   public function setAddCommandToQueue(CommandInterface $command) {

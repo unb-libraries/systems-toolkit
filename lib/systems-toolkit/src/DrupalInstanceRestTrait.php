@@ -123,8 +123,8 @@ trait DrupalInstanceRestTrait {
         $endpoint_uri,
         array_merge($auth_args, $args)
       );
-      return json_decode((string) $this->drupalRestResponse->getBody());
-    } catch (BadResponseException $e) {
+      return json_decode((string) $this->drupalRestResponse->getBody(), null, 512, JSON_THROW_ON_ERROR);
+    } catch (BadResponseException) {
       $retry_counter++;
       if ($retry_on_error && $retry_counter < $max_retries) {
         return $this->getGuzzleRequest($uri, $method, $args, $silent, $retry_on_error, $retry_counter);

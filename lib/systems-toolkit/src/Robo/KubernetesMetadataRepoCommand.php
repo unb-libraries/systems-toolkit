@@ -19,7 +19,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Defines the deploy environments to iterate over when comparing files.
    */
-  const DEPLOY_ENVS = [
+  public const DEPLOY_ENVS = [
     'dev',
     'prod',
   ];
@@ -27,37 +27,37 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Defines the header to use during file diff output.
    */
-  const DIFF_HEADER = "+++ Central Repo\n--- Lean Repo\n";
+  public const DIFF_HEADER = "+++ Central Repo\n--- Lean Repo\n";
 
   /**
    * Defines the format of the docker repository/image names.
    */
-  const DOCKER_IMAGE_FORMAT = 'ghcr.io/unb-libraries/%s';
+  public const DOCKER_IMAGE_FORMAT = 'ghcr.io/unb-libraries/%s';
 
   /**
    * Defines the GitHub repository to use as the 'central' metadata repository.
    */
-  const CENTRAL_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
+  public const CENTRAL_METADATA_REPO = 'git@github.com:unb-libraries/kubernetes-metadata.git';
 
   /**
    * Defines the branch of the 'lean' repositories to compare against.
    */
-  const LEAN_REPO_BRANCH = 'dev';
+  public const LEAN_REPO_BRANCH = 'dev';
 
   /**
    * Indicates the placeholder that is used for images in lean repos.
    */
-  const LEAN_REPO_IMAGE_PLACEHOLDER = '||DEPLOYMENTIMAGE||';
+  public const LEAN_REPO_IMAGE_PLACEHOLDER = '||DEPLOYMENTIMAGE||';
 
   /**
    * Indicates the path in lean repositories where the metadata files are found.
    */
-  const LEAN_REPO_METADATA_PATH = '.dockworker/deployment/k8s';
+  public const LEAN_REPO_METADATA_PATH = '.dockworker/deployment/k8s';
 
   /**
    * Translates between filenames in lean repositories and the central one.
    */
-  const LEAN_CENTRAL_FILENAME_TRANSLATION = [
+  public const LEAN_CENTRAL_FILENAME_TRANSLATION = [
     'cron' => 'CronJob',
     'deployment' => 'Deployment',
   ];
@@ -354,7 +354,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Gets the repo name, slugified.
    *
-   * @return string
    *   The value of the choice.
    */
   private static function slugifyName($name) : string {
@@ -423,7 +422,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Determines the difference between lean and central repositories for a file.
    *
-   * @return string
    *   A unified diff of the contents, including a header.
    */
   protected function diffRepositoryFiles() : string {
@@ -459,7 +457,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Gets the user's choice regarding which repository to treat as canonical.
    *
-   * @return string
    *   The value of the choice.
    */
   protected function getRepoCorrectionChoiceValue() : string {
@@ -479,7 +476,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @param string $value
    *   The value to audit.
    *
-   * @return bool
    *   TRUE if the value is valid, FALSE otherwise.
    */
   private static function isValidCorrectionChoice(string $value) : bool {

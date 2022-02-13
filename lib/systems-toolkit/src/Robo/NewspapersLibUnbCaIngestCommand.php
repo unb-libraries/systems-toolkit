@@ -17,9 +17,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   use NbhpSnsMessageTrait;
   use RecursiveDirectoryTreeTrait;
 
-  const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
-  const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
-  const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
+  public const NEWSPAPERS_ISSUE_CREATE_PATH = '/entity/digital_serial_issue';
+  public const NEWSPAPERS_PAGE_CREATE_PATH = '/entity/digital_serial_page';
+  public const NEWSPAPERS_PAGE_REST_PATH = '/digital_serial/digital_serial_page/%s';
 
   /**
    * The ID of the current issue being processed.
@@ -202,7 +202,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
             'value' => $content,
           ],
         ],
-      ]
+      ], JSON_THROW_ON_ERROR
     );
     $this->patchDrupalRestEntity(sprintf(self::NEWSPAPERS_PAGE_REST_PATH, $id), $patch_content);
   }
@@ -422,7 +422,7 @@ EOT;
       exec($rewrite_command);
 
       $issue_config = json_decode(
-        file_get_contents("$metadata_filepath.json")
+        file_get_contents("$metadata_filepath.json"), null, 512, JSON_THROW_ON_ERROR
       );
 
       // Create the digital page.
@@ -715,7 +715,7 @@ EOT;
         ],
       ]
     );
-    return json_decode((string) $this->drupalRestResponse->getBody());
+    return json_decode((string) $this->drupalRestResponse->getBody(), null, 512, JSON_THROW_ON_ERROR);
   }
 
 }

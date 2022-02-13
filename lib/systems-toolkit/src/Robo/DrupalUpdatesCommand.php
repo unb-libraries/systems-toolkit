@@ -20,31 +20,27 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
 
   /**
    * Should confirmations for this object be skipped?
-   *
-   * @var bool
    */
-  private $noConfirm = FALSE;
+  private bool $noConfirm = FALSE;
 
   /**
    * Should only security updates be listed/applied?
-   *
-   * @var bool
    */
-  private $securityOnly = FALSE;
+  private bool $securityOnly = FALSE;
 
   /**
    * A list of required updates in a tabular format.
    *
    * @var string[]
    */
-  private $tabulatedUpdates = [];
+  private array $tabulatedUpdates = [];
 
   /**
    * A list of required updates .
    *
    * @var string[]
    */
-  private $updates = [];
+  private array $updates = [];
 
   /**
    * Rebuild all Drupal docker images and redeploy in their current state.
@@ -169,7 +165,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     );
 
     $updates_needed = $result->getMessage();
-    $updates = json_decode($updates_needed);
+    $updates = json_decode($updates_needed, null, 512, JSON_THROW_ON_ERROR);
     $this->filterIgnoredUpdates($updates);
     if (!empty($module_whitelist)) {
       $this->filterWhitelistUpdates($updates, $module_whitelist);
@@ -429,7 +425,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $repo_path = $repo->getTmpDir();
       $repo_build_file_path = "$repo_path/build/composer.json";
       $old_file_content = file_get_contents($repo_build_file_path);
-      $composer_file = json_decode($old_file_content);
+      $composer_file = json_decode($old_file_content, null, 512, JSON_THROW_ON_ERROR);
 
       if ($composer_file !== NULL) {
         $this->printTabluatedInstanceUpdateTable($repository['name']);

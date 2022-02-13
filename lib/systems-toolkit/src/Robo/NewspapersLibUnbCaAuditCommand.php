@@ -17,8 +17,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   use DrupalInstanceRestTrait;
   use RecursiveDirectoryTreeTrait;
 
-  const NULL_STRING_PLACEHOLDER = 'LULL';
-  const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
+  public const NULL_STRING_PLACEHOLDER = 'LULL';
+  public const ZERO_LENGTH_MD5 = 'd41d8cd98f00b204e9800998ecf8427e';
 
   /**
    * The number of issues audited in the current session.
@@ -367,7 +367,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php {$this->issuePath}/metadata.php";
     exec($rewrite_command);
     $this->issueConfig = json_decode(
-      file_get_contents("$this->issueMetadataFile.json")
+      file_get_contents("$this->issueMetadataFile.json"), null, 512, JSON_THROW_ON_ERROR
     );
   }
 
@@ -416,7 +416,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
       $data = curl_exec($ch);
       curl_close($ch);
-      $raw_response = json_decode($data);
+      $raw_response = json_decode($data, null, 512, JSON_THROW_ON_ERROR);
       if (!empty($raw_response->data)) {
         foreach ($raw_response->data as $entity_id) {
           $this->issuePossibleEntityIds[] = $entity_id;
@@ -429,7 +429,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         ];
       }
     }
-    catch (Exception $e) {
+    catch (Exception) {
       // pass.
     }
   }
@@ -539,7 +539,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   private function auditIssue($issue_id, $path) {
     $issue_fail = FALSE;
 
-    $missing_remote_images = $this->arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash');
+    $missing_remote_images = self::arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash');
     if (!empty($missing_remote_images)) {
       $this->imagesMissingOnRemote[] = [
         'path' => $path,
@@ -550,7 +550,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       $issue_fail = TRUE;
     }
 
-    $duplicate_remote_images = $this->arrayKeyDupes($this->issueRemoteFiles, 'hash');
+    $duplicate_remote_images = self::arrayKeyDupes($this->issueRemoteFiles, 'hash');
 
     // Zero hash isn't really a duplicate - this should be handled elsewhere.
     foreach ($duplicate_remote_images as $duplicate_remote_image_idx => $duplicate_remote_image) {
@@ -818,6 +818,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * Displays the pages identified as duplicate remotely.
    */
   protected function displayDuplicateRemotePages() {
+    $missing_pages = [];
     $duplicate_pages = [];
     $column_names = [
       'eid',

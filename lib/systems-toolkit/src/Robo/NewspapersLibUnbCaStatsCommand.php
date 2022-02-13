@@ -15,9 +15,9 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
   use NbhpSnsMessageTrait;
   use KubeExecTrait;
 
-  const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
-  const NEWSPAPERS_NAMESPACE = 'prod';
-  const TIME_STRING_FORMAT = \DateTime::ISO8601;
+  public const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
+  public const NEWSPAPERS_NAMESPACE = 'prod';
+  public const TIME_STRING_FORMAT = \DateTime::ISO8601;
 
   /**
    * Displays stats regarding newspapers.lib.unb.ca's digital content.

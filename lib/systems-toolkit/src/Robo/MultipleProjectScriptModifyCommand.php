@@ -13,21 +13,21 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const MESSAGE_CLONING_REPO = 'Cloning repository to temporary folder...';
-  const MESSAGE_COMMITTING_CHANGES = 'Committing changes to %s...';
-  const MESSAGE_COPYING_SCRIPT = 'Copying script to clone location...';
-  const MESSAGE_EXCEPTION_SCRIPT_NOT_FOUND = 'The script %s either does not exist, or is not executable.';
-  const MESSAGE_EXECUTING_SCRIPT = 'Executing script...';
-  const MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY = 'Manually stage files, then hit Enter to continue...';
-  const MESSAGE_MANUAL_STAGE_REPO_LOCATION = 'Repository location : %s';
-  const MESSAGE_NO_CHANGES_TO_REPO = 'The script\'s execution did not result in any changes to the repository.';
-  const MESSAGE_NO_STAGED_CHANGES = 'No staged changes were found, skipping commit!';
-  const MESSAGE_PUSHING_CHANGES = 'Pushing repository changes to GitHub...';
-  const MESSAGE_SLEEPING ='Sleeping for %s seconds to spread build times...';
-  const MESSAGE_STAGING_CHANGES ='Staging changes in repository...';
-  const MESSAGE_STEP_DONE = 'Done!';
-  const QUESTION_COMMIT_PREFIX_TO_USE = 'Commit prefix to use (i.e. PMPOR-45, Blank for None)? :';
-  const QUESTION_SCRIPT_EXECUTION_OK = 'Script execution complete, commit and push changes?';
+  public const MESSAGE_CLONING_REPO = 'Cloning repository to temporary folder...';
+  public const MESSAGE_COMMITTING_CHANGES = 'Committing changes to %s...';
+  public const MESSAGE_COPYING_SCRIPT = 'Copying script to clone location...';
+  public const MESSAGE_EXCEPTION_SCRIPT_NOT_FOUND = 'The script %s either does not exist, or is not executable.';
+  public const MESSAGE_EXECUTING_SCRIPT = 'Executing script...';
+  public const MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY = 'Manually stage files, then hit Enter to continue...';
+  public const MESSAGE_MANUAL_STAGE_REPO_LOCATION = 'Repository location : %s';
+  public const MESSAGE_NO_CHANGES_TO_REPO = 'The script\'s execution did not result in any changes to the repository.';
+  public const MESSAGE_NO_STAGED_CHANGES = 'No staged changes were found, skipping commit!';
+  public const MESSAGE_PUSHING_CHANGES = 'Pushing repository changes to GitHub...';
+  public const MESSAGE_SLEEPING ='Sleeping for %s seconds to spread build times...';
+  public const MESSAGE_STAGING_CHANGES ='Staging changes in repository...';
+  public const MESSAGE_STEP_DONE = 'Done!';
+  public const QUESTION_COMMIT_PREFIX_TO_USE = 'Commit prefix to use (i.e. PMPOR-45, Blank for None)? :';
+  public const QUESTION_SCRIPT_EXECUTION_OK = 'Script execution complete, commit and push changes?';
 
   /**
    * The commit message to use for the changes.

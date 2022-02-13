@@ -14,9 +14,9 @@ use Symfony\Contracts\Cache\ItemInterface;
  */
 class DrupalModuleCommand extends SystemsToolkitCommand {
 
-  const CHANGELOG_CACHE_TIME = 3600;
-  const CHANGELOG_CSS_SELECTOR = '#release-notes .field-items';
-  const CHANGELOG_URI = 'https://www.drupal.org/project/%s/releases/8.x-%s';
+  public const CHANGELOG_CACHE_TIME = 3600;
+  public const CHANGELOG_CSS_SELECTOR = '#release-notes .field-items';
+  public const CHANGELOG_URI = 'https://www.drupal.org/project/%s/releases/8.x-%s';
 
   /**
    * Display the changelog from a drupal module release.
@@ -53,12 +53,12 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
       try {
         $response = $client->request('GET', $changelog_uri);
       }
-      catch (BadResponseException $e) {
+      catch (BadResponseException) {
         $changelog_uri = str_replace('8.x-', '', $changelog_uri);
         try {
           $response = $client->request('GET', $changelog_uri);
         }
-        catch (BadResponseException $e) {
+        catch (BadResponseException) {
           return NULL;
         }
       }
@@ -70,7 +70,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
         try {
           return $converter->convert($changelog_node->outerHtml());
         }
-        catch (Exception $e) {
+        catch (Exception) {
           return NULL;
         }
       }

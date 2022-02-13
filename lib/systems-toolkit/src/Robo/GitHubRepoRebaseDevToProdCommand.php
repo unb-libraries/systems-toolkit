@@ -13,15 +13,15 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const MESSAGE_CHECKING_OUT_REPO = 'Cloning repository to temporary folder...';
-  const MESSAGE_CONFIRM_PUSH = 'Was the rebase clean? Still want to push to GitHub?';
-  const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
-  const MESSAGE_REBASE_RESULTS_TITLE = 'Rebase Results:';
-  const MESSAGE_REBASING = 'Rebasing %s onto %s...';
-  const MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES = 'Cowardly refusing to rebase all repositories on GitHub. Please include a $match argument or $topics. If you are having issues, try github:repo:rebasedevprod --help';
-  const OPERATION_TYPE = 'REBASE %s ONTO %s';
-  const UPMERGE_SOURCE_BRANCH = 'dev';
-  const UPMERGE_TARGET_BRANCH = 'prod';
+  public const MESSAGE_CHECKING_OUT_REPO = 'Cloning repository to temporary folder...';
+  public const MESSAGE_CONFIRM_PUSH = 'Was the rebase clean? Still want to push to GitHub?';
+  public const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
+  public const MESSAGE_REBASE_RESULTS_TITLE = 'Rebase Results:';
+  public const MESSAGE_REBASING = 'Rebasing %s onto %s...';
+  public const MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES = 'Cowardly refusing to rebase all repositories on GitHub. Please include a $match argument or $topics. If you are having issues, try github:repo:rebasedevprod --help';
+  public const OPERATION_TYPE = 'REBASE %s ONTO %s';
+  public const UPMERGE_SOURCE_BRANCH = 'dev';
+  public const UPMERGE_TARGET_BRANCH = 'prod';
 
   /**
    * Rebase dev onto prod for multiple GitHub Repositories. Robo Commmand.

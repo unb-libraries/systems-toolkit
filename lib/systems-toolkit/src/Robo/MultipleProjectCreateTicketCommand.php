@@ -17,9 +17,9 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
   use JiraTrait;
   use GitHubMultipleInstanceTrait;
 
-  const EPIC_LINK_FIELD_ID = 'customfield_10002';
-  const DEFAULT_PROJECT_ID = '10600';
-  const DEFAULT_PROJECT_KEY = 'IN';
+  public const EPIC_LINK_FIELD_ID = 'customfield_10002';
+  public const DEFAULT_PROJECT_ID = '10600';
+  public const DEFAULT_PROJECT_KEY = 'IN';
 
   /**
    * Create a JIRA issue for multiple Github projects based on tags or name.

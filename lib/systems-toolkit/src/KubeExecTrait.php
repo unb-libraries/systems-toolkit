@@ -157,7 +157,7 @@ trait KubeExecTrait {
    * @throws \Exception
    */
   private function setAddCurPodsFromJson($json) {
-    $response = json_decode($json);
+    $response = json_decode($json, null, 512, JSON_THROW_ON_ERROR);
     if (!empty($response->items)) {
       $this->kubeCurPods = array_merge($this->kubeCurPods, $response->items);
     }

@@ -193,7 +193,7 @@ trait GitHubMultipleInstanceTrait {
     if (!empty($name_filters[0])) {
       $this->say('Name filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
-        if (!$this->instanceNameMatchesSearchTerms($name_filters, $repository['name'])) {
+        if (!static::instanceNameMatchesSearchTerms($name_filters, $repository['name'])) {
           unset($this->githubRepositories[$repository_index]);
         }
       }
@@ -234,7 +234,7 @@ trait GitHubMultipleInstanceTrait {
    */
   public static function instanceNameMatchesSearchTerms(array $terms, $name) {
     foreach ($terms as $match) {
-      if (stristr($name, $match)) {
+      if (stristr($name, (string) $match)) {
         return TRUE;
       }
     }
@@ -246,9 +246,7 @@ trait GitHubMultipleInstanceTrait {
    */
   protected function listRepositoryNames() {
     $wrapped_rows = array_map(
-      function ($el) {
-        return [$el['name']];
-      },
+      fn($el) => [$el['name']],
       $this->githubRepositories
     );
     $table = new Table($this->output());

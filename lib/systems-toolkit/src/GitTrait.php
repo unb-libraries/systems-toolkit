@@ -13,7 +13,6 @@ trait GitTrait {
   /**
    * Render a list of commits from the repository in table format.
    *
-   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param int $number
    *   The hash of the commit to check for.
@@ -37,11 +36,9 @@ trait GitTrait {
   /**
    * Verify a commit exists in a repository, otherwise throw an exception.
    *
-   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param string $hash
    *   The hash of the commit to check for.
-   *
    * @throws \Exception
    */
   protected function getRepoHasCommit(GitRepo $repo, $hash) {
@@ -53,7 +50,6 @@ trait GitTrait {
   /**
    * Check if a commit exists in a repository.
    *
-   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param string $hash
    *   The hash of the commit to check for.

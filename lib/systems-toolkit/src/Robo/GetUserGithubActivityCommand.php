@@ -16,17 +16,13 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
 
   /**
    * The email address to query.
-   *
-   * @var string
    */
-  private $email;
+  private string $email;
 
   /**
    * The user to query.
-   *
-   * @var array
    */
-  private $user = [];
+  private array $user = [];
 
   /**
    * Get a list of recent commits to GitHub by a user.
@@ -59,7 +55,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
       }
     }
 
-    if (count($commits) < 1) {
+    if ((is_countable($commits) ? count($commits) : 0) < 1) {
       $this->say("No commits found for user $email");
       return;
     }

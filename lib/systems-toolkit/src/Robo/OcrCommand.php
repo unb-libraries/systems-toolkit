@@ -23,17 +23,13 @@ class OcrCommand extends SystemsToolkitCommand {
 
   /**
    * Tesseract metrics stored for current eval.
-   *
-   * @var array
    */
-  private $metrics = [];
+  private array $metrics = [];
 
   /**
    * The docker image to use for Tesseract commands.
-   *
-   * @var string
    */
-  private $tesseractImage;
+  private string $tesseractImage;
 
   /**
    * Get the tesseract docker image from config.

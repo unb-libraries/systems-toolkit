@@ -13,21 +13,21 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
-  const FILE_SOURCE_PATCH = '/tmp/syskit_tmp_cherry_patch.txt';
-  const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
-  const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
-  const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
-  const MESSAGE_CHERRY_PICKING = 'Cherry picking [%s] onto [%s/%s]...';
-  const MESSAGE_CHERRY_RESULTS_TITLE = 'Output from cherry-pick operation:';
-  const MESSAGE_CHOOSE_COMMIT_HASH = 'What commit hash should be cherry-picked onto other repositories';
-  const MESSAGE_CHOOSE_TARGET_BRANCH = 'What branch on the other repositories should receive the commit?';
-  const MESSAGE_CONFIRM_PUSH = 'Was the cherry-pick clean? Still want to push to GitHub?';
-  const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
-  const MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES = 'Cowardly refusing to cherry pick onto all repositories on GitHub. Please include a $match argument or $topics. If you are having issues, try github:repo:cherry-pick-multiple --help';
-  const MESSAGE_TARGET_BRANCH_MISSING_REPO = 'The target branch %s is missing from the [%s] repository. Skipping!';
-  const MESSAGE_TITLE_REPO_COMMIT_LIST = 'Most recent commits in [%s]:';
-  const OPERATION_TYPE = 'cherry pick a commit from %s until other repositories';
+  public const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
+  public const FILE_SOURCE_PATCH = '/tmp/syskit_tmp_cherry_patch.txt';
+  public const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
+  public const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
+  public const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
+  public const MESSAGE_CHERRY_PICKING = 'Cherry picking [%s] onto [%s/%s]...';
+  public const MESSAGE_CHERRY_RESULTS_TITLE = 'Output from cherry-pick operation:';
+  public const MESSAGE_CHOOSE_COMMIT_HASH = 'What commit hash should be cherry-picked onto other repositories';
+  public const MESSAGE_CHOOSE_TARGET_BRANCH = 'What branch on the other repositories should receive the commit?';
+  public const MESSAGE_CONFIRM_PUSH = 'Was the cherry-pick clean? Still want to push to GitHub?';
+  public const MESSAGE_PUSH_RESULTS_TITLE = 'Push Results:';
+  public const MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES = 'Cowardly refusing to cherry pick onto all repositories on GitHub. Please include a $match argument or $topics. If you are having issues, try github:repo:cherry-pick-multiple --help';
+  public const MESSAGE_TARGET_BRANCH_MISSING_REPO = 'The target branch %s is missing from the [%s] repository. Skipping!';
+  public const MESSAGE_TITLE_REPO_COMMIT_LIST = 'Most recent commits in [%s]:';
+  public const OPERATION_TYPE = 'cherry pick a commit from %s until other repositories';
 
   /**
    * The source repository array.

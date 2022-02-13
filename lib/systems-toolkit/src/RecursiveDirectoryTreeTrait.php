@@ -74,7 +74,7 @@ trait RecursiveDirectoryTreeTrait {
     if (!$skip_confirm) {
       $table = new Table($this->output());
       $table_rows = array_map([$this, 'arrayWrap'], $this->recursiveDirectories);
-      $table->setHeaders(array('Directory'))->setRows($table_rows);
+      $table->setHeaders(array(\Directory::class))->setRows($table_rows);
       $table->setStyle('borderless');
       $table->render();
 

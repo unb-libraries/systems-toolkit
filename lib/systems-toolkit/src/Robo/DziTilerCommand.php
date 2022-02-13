@@ -20,10 +20,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
 
   /**
    * The docker image to use for Imagemagick commands.
-   *
-   * @var string
    */
-  private $imagemagickImage;
+  private string $imagemagickImage;
 
   /**
    * Get the tesseract docker image from config.

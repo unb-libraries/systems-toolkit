@@ -13,8 +13,8 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
 
   use GitHubMultipleInstanceTrait;
 
-  const MESSAGE_CHECKING_OUT_REPO = 'Cloning %s repository to temporary folder...';
-  const MESSAGE_SLEEPING = 'Push detected - sleeping for %s seconds to spread build times...';
+  public const MESSAGE_CHECKING_OUT_REPO = 'Cloning %s repository to temporary folder...';
+  public const MESSAGE_SLEEPING = 'Push detected - sleeping for %s seconds to spread build times...';
 
   /**
    * The dockworker command string to run.
