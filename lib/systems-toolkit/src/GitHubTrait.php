@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit;
 
+use Github\AuthMethod;
 use Github\Client;
 use Robo\Robo;
 
@@ -97,7 +98,7 @@ trait GitHubTrait {
   public function setGitHubClient() {
     try {
       $this->client = new Client();
-      $this->client->authenticate($this->authKey, NULL, Client::AUTH_HTTP_TOKEN);
+      $this->client->authenticate($this->authKey, NULL, AuthMethod::ACCESS_TOKEN);
       $this->client->currentUser()->show();
     }
     catch (\Exception) {
