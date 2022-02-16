@@ -2,7 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Git;
 
-use Cz\Git\GitRepository;
+use CzProject\GitPhp\Git;
+use CzProject\GitPhp\GitRepository;
 
 /**
  * Base class for GitRepo object. Wrapper for Cz\Git\GitRepository.
@@ -19,7 +20,7 @@ class GitRepo {
   /**
    * The repository object.
    *
-   * @var \Cz\Git\GitRepository
+   * @var \CzProject\GitPhp\GitRepository
    */
   public $repo;
 
@@ -79,7 +80,8 @@ class GitRepo {
    */
   private function setCloneToTempDir($repo_url) {
     $this->setTempDir();
-    $this->repo = GitRepository::cloneRepository(
+    $git = new Git();
+    $this->repo = $git->cloneRepository(
       $repo_url,
       $this->tmpDir
     );
