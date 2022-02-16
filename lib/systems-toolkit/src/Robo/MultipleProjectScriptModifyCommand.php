@@ -209,7 +209,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    */
   protected function executeModifyingScript() {
     $this->say(self::MESSAGE_EXECUTING_SCRIPT);
-    passthru("cd {$this->curCloneRepo->getTmpDir()} && ./$this->modifyingScriptName {$this->curRepoMetadata['name']} && rm -f {$this->modifyingScriptName}");
+    passthru("cd {$this->curCloneRepo->getTmpDir()} && ./$this->modifyingScriptName {$this->curRepoMetadata['name']} ; rm -f {$this->modifyingScriptName}");
     $this->say(self::MESSAGE_STEP_DONE);
   }
 
