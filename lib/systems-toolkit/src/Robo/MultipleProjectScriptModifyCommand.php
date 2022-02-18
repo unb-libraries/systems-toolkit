@@ -92,7 +92,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @option bool skip-commit-prefix
    *   Do not prompt for a commit prefix when committing.
    * @option string target-branch
-   *   The target branch for the changes.
+   *   The target branch for the changes. Defaults to the default branch.
    *
    * @throws \Exception
    *
@@ -109,7 +109,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
       'manual-file-stage' => FALSE,
       'multi-repo-delay' => '240',
       'skip-commit-prefix' => FALSE,
-      'target-branch' => 'dev',
+      'target-branch' => '',
     ]
   ) {
     $this->modifyingScriptFilePath = $script_path;
@@ -186,7 +186,9 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   protected function cloneTempRepo() {
     $this->say(self::MESSAGE_CLONING_REPO);
     $this->curCloneRepo = GitRepo::setCreateFromClone($this->curRepoMetadata['ssh_url']);
-    $this->curCloneRepo->repo->checkout($this->options['target-branch']);
+    if (!empty($this->options['target-branch'])) {
+      $this->curCloneRepo->repo->checkout($this->options['target-branch']);
+    }
   }
 
   /**
@@ -260,7 +262,12 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    */
   protected function pushRepositoryChangesToGitHub() {
     $this->say(self::MESSAGE_PUSHING_CHANGES);
-    $this->curCloneRepo->repo->push('origin', [$this->options['target-branch']]);
+    if (!empty($this->options['target-branch'])) {
+      $this->curCloneRepo->repo->push('origin', [$this->options['target-branch']]);
+    }
+    else {
+      $this->curCloneRepo->repo->push('origin');
+    }
     $this->repoChangesPushed = TRUE;
   }
 
