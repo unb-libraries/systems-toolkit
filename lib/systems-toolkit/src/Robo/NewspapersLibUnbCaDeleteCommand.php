@@ -23,6 +23,11 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *   The parent digital title ID.
    * @param string $year
    *   The year to delete.
+   * @param array $options
+   *   An array of CLI options to pass to the command.
+   *
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
    *
@@ -32,20 +37,23 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    */
   public function deleteTitleIssuesByYear(
     $title_id,
-    $year
+    $year,
+    array $options = [
+      'yes' => FALSE,
+    ]
   ) {
+    $this->options = $options;
     $issues = $this->getTitleYearIssues($title_id, $year);
     if (!empty($issues)) {
       print_r($issues);
-      if ($this->confirm('OK to delete all the above issues?')) {
+      if ($this->options['yes'] == 'TRUE' || $this->confirm('OK to delete all the above issues?')) {
         foreach ($issues as $issue_id) {
           $this->setDeleteNewspapersIssue($issue_id);
           $this->say('Sleeping to inject sanity...');
-          sleep(2);
+          sleep(1);
         }
       }
     }
-    print_r($issues);
   }
 
   /**
@@ -93,12 +101,23 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @param string $path
    *   The local path to delete the markers from.
+   * @param array $options
+   *   An array of CLI options to pass to the command.
+   *
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
    *
    * @command newspapers.lib.unb.ca:delete:issue-markers
    */
-  public function setDeleteNewspapersImportedMarkers($path) {
+  public function setDeleteNewspapersImportedMarkers(
+    $path,
+    array $options = [
+      'yes' => FALSE,
+    ]
+  ) {
+    $this->options = $options;
     $this->setDeleteFilesInTree($path, '.nbnp_processed');
     $this->setDeleteFilesInTree($path, '.nbnp_verified');
   }
@@ -127,7 +146,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
 
     if (!empty($files_to_delete)) {
       print_r($files_to_delete);
-      if ($this->confirm('OK to delete all the above files?')) {
+      if ($this->options['yes'] == 'TRUE' || $this->confirm('OK to delete all the above files?')) {
         foreach ($files_to_delete as $file_to_delete) {
           $this->say("Deleting $file_to_delete...");
           shell_exec("sudo rm -f $file_to_delete");
