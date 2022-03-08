@@ -229,6 +229,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The number of threads the OCR process should use.
    * @option string $webtree-path
    *   The webtree file path, used to generate DZI tiles.
+   * @option bool yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
    *
@@ -248,14 +250,16 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'no-verify' => FALSE,
       'threads' => NULL,
       'webtree-path' => NULL,
+      'yes' => FALSE,
     ]
   ) {
+    $this->options = $options;
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
     $this->curTitleId = $title_id;
     $this->setDirsToIterate();
-    $this->getConfirmDirs('Create Issues');
+    $this->getConfirmDirs('Create Issues', $this->options['yes']);
 
     // Pull the requisite images now, and avoid further pull attempts.
     $this->setRunOtherCommand('ocr:pull-image');
