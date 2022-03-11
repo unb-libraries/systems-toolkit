@@ -288,7 +288,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
   private function isIgnoredUpdate($update) {
-    $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects');
+    $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects') ?? [];
     if (in_array($update->name, $ignored_projects)) {
       return TRUE;
     }
@@ -305,7 +305,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
   private function isLockedUpdate($update) {
-    $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects');
+    $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects') ?? [];
     if (array_key_exists($update->name, $locked_projects) && $locked_projects[$update->name] == $update->existing_version) {
       return TRUE;
     }
