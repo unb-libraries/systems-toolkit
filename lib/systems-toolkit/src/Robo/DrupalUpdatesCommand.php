@@ -202,6 +202,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
             'vcsRepository' => $update['pod']->metadata->labels->vcsRepository,
             'vcsRef' => $update['pod']->metadata->labels->vcsRef,
           ];
+          ksort($this->tabulatedUpdates);
         }
       }
     }
