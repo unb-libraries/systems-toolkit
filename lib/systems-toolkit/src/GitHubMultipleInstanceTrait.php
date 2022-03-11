@@ -157,6 +157,7 @@ trait GitHubMultipleInstanceTrait {
     $organizationApi = $this->client->api('organization');
     $parameters = $this->organizations;
     $this->githubRepositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
+    usort($this->githubRepositories, fn($a, $b) => strcmp($a['name'], $b['name']));
     $this->say('Repository List retrieved!');
   }
 
