@@ -83,15 +83,15 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option bool manual-file-stage
+   * @option $manual-file-stage
    *   Do not commit all changes, rather allow the user to manually stage files.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
-   * @option bool skip-commit-prefix
+   * @option $skip-commit-prefix
    *   Do not prompt for a commit prefix when committing.
-   * @option string target-branch
+   * @option $target-branch
    *   The target branch for the changes. Defaults to the default branch.
    *
    * @throws \Exception

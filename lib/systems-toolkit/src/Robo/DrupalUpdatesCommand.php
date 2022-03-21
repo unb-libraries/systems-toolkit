@@ -45,7 +45,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   /**
    * Rebuild all Drupal docker images and redeploy in their current state.
    *
-   * @option array namespaces
+   * @option $namespaces
    *   The namespaces to rebuild and deploy.
    *
    * @throws \Exception
@@ -67,17 +67,17 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   /**
    * Perform needed Drupal updates automatically.
    *
-   * @option namespaces
+   * @option $namespaces
    *   The extensions to match when finding files. Defaults to dev only.
-   * @option array only-update
+   * @option $only-update
    *   A comma separated list of modules to query. Defaults to all.
-   * @option array exclude
+   * @option $exclude
    *   A comma separated list of modules to exclude. Defaults to none.
-   * @option bool security-only
+   * @option $security-only
    *   Only perform security updates.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
@@ -111,11 +111,11 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   /**
    * Get the list of needed Drupal updates .
    *
-   * @option array namespaces
+   * @option $namespaces
    *   The extensions to match when finding files.
-   * @option array only-update
+   * @option $only-update
    *   A comma separated list of modules to query. Defaults to all.
-   * @option bool security-only
+   * @option $security-only
    *   Only retrieve security updates.
    *
    * @throws \Exception

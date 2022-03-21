@@ -20,9 +20,11 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    *   partially match at least one of the comma separated values will be
    *   processed. Optional.
    *
-   * @option bool yes
+   * @option $repo-exclude
+   *   A repository to exclude from the rebase. Defaults to none.
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception

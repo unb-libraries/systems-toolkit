@@ -25,9 +25,9 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    *   The tag to match when selecting repositories. Defaults to all github
    *   actions tagged repositories.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between restarting builds.
    *
    * @command github:actions:restart-latest

@@ -61,15 +61,15 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option namespaces
+   * @option $namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
-   * @option repo-name
+   * @option $repo-name
    *   Only perform operations to repository names matching the provided string.
-   * @option repo-tag
+   * @option $repo-tag
    *   Only perform operations to repository tags matching the provided string.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @command github:dockworker:bulk-command

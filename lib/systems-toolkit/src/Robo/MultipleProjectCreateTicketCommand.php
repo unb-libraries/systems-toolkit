@@ -39,9 +39,9 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @param string $epic
    *   The parent issue epic. Optional, defaults to none.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception

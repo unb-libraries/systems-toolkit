@@ -45,21 +45,21 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option extension
+   * @option $extension
    *   The extensions to match when finding files.
-   * @option no-pull
+   * @option $no-pull
    *   Do not pull docker images prior to running.
-   * @option tile-size
+   * @option $tile-size
    *   The tile size to use.
-   * @option step
+   * @option $step
    *   The zoom step to use.
-   * @option threads
+   * @option $threads
    *   The number of threads the process should use.
-   * @option args
+   * @option $args
    *   Any other arguments to pass.
-   * @option target-uid
+   * @option $target-uid
    *   The uid to assign the target files.
-   * @option target-gid
+   * @option $target-gid
    *   The gid to assign the target files.
    *
    * @throws \Exception
@@ -131,11 +131,11 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option threads
+   * @option $threads
    *   The number of threads the process should use.
-   * @option skip-existing
+   * @option $skip-existing
    *   Skip any issues with tiles that have been previously generated.
-   * @option no-pull
+   * @option $no-pull
    *   Do not pull docker images prior to running.
    *
    * @throws \Exception
@@ -174,13 +174,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option tile-size
+   * @option $tile-size
    *   The tile size to use.
-   * @option step
+   * @option $step
    *   The zoom step to use.
-   * @option target-uid
+   * @option $target-uid
    *   The uid to assign the target files.
-   * @option target-gid
+   * @option $target-gid
    *   The gid to assign the target files.
    *
    * @return \Robo\Contract\CommandInterface
@@ -218,15 +218,15 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option tile-size
+   * @option $tile-size
    *   The tile size to use.
-   * @option step
+   * @option $step
    *   The zoom step to use.
-   * @option target-uid
+   * @option $target-uid
    *   The uid to assign the target files.
-   * @option target-gid
+   * @option $target-gid
    *   The gid to assign the target files.
-   * @option no-pull
+   * @option $no-pull
    *   Do not pull docker images prior to running.
    *
    * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException

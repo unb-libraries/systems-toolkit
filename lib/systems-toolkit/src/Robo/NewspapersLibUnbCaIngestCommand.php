@@ -75,9 +75,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
-   * @option string $output-dir
+   * @option $output-dir
    *   The directory to store the downloaded images.
    *
    * @throws \Exception
@@ -122,9 +122,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
-   * @option string $output-dir
+   * @option $output-dir
    *   The directory to store the downloaded image.
    *
    * @command newspapers.lib.unb.ca:get-page
@@ -217,19 +217,19 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option bool $force-ocr
+   * @option $force-ocr
    *   Run OCR on files, even if already exists.
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
-   * @option string issue-page-extension
+   * @option $issue-page-extension
    *   The efile extension to match for issue pages.
-   * @option bool $no-verify
+   * @option $no-verify
    *   Do not verify if the pages were successfully uploaded.
-   * @option string threads
+   * @option $threads
    *   The number of threads the OCR process should use.
-   * @option string $webtree-path
+   * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
@@ -373,21 +373,21 @@ EOT;
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option bool $force-ocr
+   * @option $force-ocr
    *   Run OCR on files, even if already exists.
-   * @option generate-ocr
+   * @option $generate-ocr
    *   Generate OCR for files - disable if pre-generated.
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
-   * @option issue-page-extension
+   * @option $issue-page-extension
    *   The efile extension to match for issue pages.
-   * @option no-pull
+   * @option $no-pull
    *   Do not pull docker images prior to running.
-   * @option bool $no-verify
+   * @option $no-verify
    *   Do not verify if the pages were successfully uploaded.
-   * @option threads
+   * @option $threads
    *   The number of threads the OCR process should use.
-   * @option string $webtree-path
+   * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    *
    * @throws \Exception
@@ -585,9 +585,9 @@ EOT;
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
-   * @option bool $no-verify
+   * @option $no-verify
    *   Do not verify the page was successfully uploaded.
    *
    * @command newspapers.lib.unb.ca:create-page

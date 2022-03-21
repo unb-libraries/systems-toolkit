@@ -38,9 +38,9 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   topics contain at least one of the comma separated values exactly will be
    *   processed. Optional.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception

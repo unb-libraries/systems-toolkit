@@ -17,11 +17,11 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option namespaces
+   * @option $namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @command drupal:readme-bulk-update
@@ -55,11 +55,11 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option namespaces
+   * @option $namespaces
    *   The namespaces to apply the commit in. Defaults to dev.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @command drupal:actions-bulk-update

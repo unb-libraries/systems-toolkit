@@ -205,9 +205,9 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @param array $options
    *   Provides an option to skip yes/no prompts.
    *
-   * @option string central-repo-branch
+   * @option $central-repo-branch
    *   The central repository branch to audit against.
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
    *
    * @command k8s:metadata:audit-repos

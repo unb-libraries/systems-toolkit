@@ -26,7 +26,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
@@ -104,7 +104,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option bool yes
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception

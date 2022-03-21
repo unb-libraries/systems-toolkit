@@ -53,15 +53,15 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option args
+   * @option $args
    *   Any other arguments to pass.
-   * @option extension
+   * @option $extension
    *   The extensions to match when finding files.
-   * @option lang
+   * @option $lang
    *   The language to use.
-   * @option oem
+   * @option $oem
    *   The engine to use.
-   * @option threads
+   * @option $threads
    *   The number of threads the OCR should use.
    *
    * @throws \Exception
@@ -145,23 +145,23 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option args
+   * @option $args
    *   Any other arguments to pass.
-   * @option extension
+   * @option $extension
    *   The extensions to match when finding files.
-   * @option lang
+   * @option $lang
    *   The language to use.
-   * @option no-pull
+   * @option $no-pull
    *   Do not pull docker images prior to running.
-   * @option no-unset-files
+   * @option $no-unset-files
    *   Do not unset the recursive file stack after processing.
-   * @option oem
+   * @option $oem
    *   The tesseract engine ID to use.
-   * @option skip-confirm
+   * @option $skip-confirm
    *   Skip the confirmation process, assume 'yes'.
-   * @option skip-existing
+   * @option $skip-existing
    *   If non-empty HOCR exists for the file, do not process again.
-   * @option threads
+   * @option $threads
    *   The number of threads the OCR should use.
    *
    * @throws \Exception
@@ -232,11 +232,11 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option args
+   * @option $args
    *   Any other arguments to pass.
-   * @option lang
+   * @option $lang
    *   The language to use.
-   * @option oem
+   * @option $oem
    *   The tesseract engine ID to use.
    *
    * @return \Robo\Contract\CommandInterface
@@ -266,11 +266,11 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option oem
+   * @option $oem
    *   The engine to use.
-   * @option lang
+   * @option $lang
    *   The language to use.
-   * @option args
+   * @option $args
    *   Any other arguments to pass.
    *
    * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException

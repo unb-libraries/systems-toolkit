@@ -230,9 +230,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option issue-page-extension
+   * @option $issue-page-extension
    *   The file extension to match for issue pages.
-   * @option string $instance-uri
+   * @option $instance-uri
    *   The URI of the target instance.
    *
    * @throws \Exception

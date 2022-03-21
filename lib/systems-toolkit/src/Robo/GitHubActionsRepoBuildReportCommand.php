@@ -26,7 +26,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
    *   partially match at least one of the comma separated values will be
    *   processed. Optional.
    *
-   * @option bool only-failure
+   * @option $only-failure
    *   Show only failed runs.
    *
    * @throws \Exception
