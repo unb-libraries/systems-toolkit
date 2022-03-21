@@ -75,20 +75,22 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   Only repositories whose topics contain one of $topics values will be
    *   processed. Optional.
    *
-   * @option bool yes
+   * @option $repo-exclude
+   *   A repository to exclude from the rebase. Defaults to none.
+   * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option int multi-repo-delay
+   * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
    */
-  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['yes' => FALSE, 'multi-repo-delay' => '120']) {
+  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['repo-exclude' => [], 'yes' => FALSE, 'multi-repo-delay' => '120']) {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $match,
       $topics,
       [],
-      [],
+      $options['repo-exclude'],
       sprintf(
         self::OPERATION_TYPE,
         self::UPMERGE_SOURCE_BRANCH,

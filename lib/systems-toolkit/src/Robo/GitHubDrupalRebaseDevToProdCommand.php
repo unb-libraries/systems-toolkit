@@ -33,7 +33,7 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    *
    * @command drupal:rebasedevprod
    */
-  public function upmergeDrupalDevToProd($match = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function upmergeDrupalDevToProd($match = '', $options = ['repo-exclude' => [], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,
