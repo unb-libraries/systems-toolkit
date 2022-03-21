@@ -70,7 +70,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @option $namespaces
    *   The extensions to match when finding files. Defaults to dev only.
    * @option $only-update
-   *   A comma separated list of modules to query. Defaults to all.
+   *   Restrict updating to a specific module. Defaults to all modules.
    * @option $exclude
    *   A comma separated list of modules to exclude. Defaults to none.
    * @option $security-only
@@ -109,12 +109,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the list of needed Drupal updates .
+   * Get the list of needed Drupal updates.
    *
    * @option $namespaces
    *   The extensions to match when finding files.
    * @option $only-update
-   *   A comma separated list of modules to query. Defaults to all.
+   *   Restrict needed updates to a specific module. Defaults to all modules.
    * @option $security-only
    *   Only retrieve security updates.
    *
