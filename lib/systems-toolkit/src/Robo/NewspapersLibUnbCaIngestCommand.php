@@ -90,9 +90,12 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
-      'output-dir' => $this->tmpDir,
+      'output-dir' => '',
     ]
   ) {
+    if (empty($options['output-dir'])) {
+      $options['output-dir'] = $this->tmpDir;
+    }
     $local_file = $this->getPageImage($id, $options);
     $this->ocrTesseractFile(
       $local_file,
@@ -138,9 +141,12 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
-      'output-dir' => $this->tmpDir,
+      'output-dir' => '',
     ]
   ) : string {
+    if (empty($options['output-dir'])) {
+      $options['output-dir'] = $this->tmpDir;
+    }
     $this->drupalRestUri = $options['instance-uri'];
     $page_details = $this->getDrupalRestEntity("/digital_serial/digital_serial_page/$id");
     return $this->downloadPageEntityImageFile($page_details, $options['output-dir']);
