@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Git;
 
 use CzProject\GitPhp\Git;
+use CzProject\GitPhp\GitRepository;
 
 /**
  * Base class for GitRepo object. Wrapper for Cz\Git\GitRepository.
@@ -14,28 +15,28 @@ class GitRepo {
    *
    * @var string
    */
-  protected $tmpDir;
+  protected string $tmpDir;
 
   /**
    * The repository object.
    *
    * @var \CzProject\GitPhp\GitRepository
    */
-  public $repo;
+  public GitRepository $repo;
 
   /**
    * The repository commits.
    *
    * @var array
    */
-  public $commits = [];
+  public array $commits = [];
 
   /**
    * The repository branches.
    *
    * @var array
    */
-  public $branches = [];
+  public array $branches = [];
 
   /**
    * Creates and sets the temporary directory location.
@@ -57,8 +58,11 @@ class GitRepo {
 
   /**
    * Gets the temporary directory location for the repository.
+   *
+   * @return string
+   *   The temporary directory.
    */
-  public function getTmpDir() {
+  public function getTmpDir() : string {
     return $this->tmpDir;
   }
 
@@ -71,7 +75,7 @@ class GitRepo {
    * @return array
    *   The commit information array.
    */
-  public function getCommit(string $num) {
+  public function getCommit(string $num) : array {
     return $this->commits[$num];
   }
 
@@ -109,7 +113,10 @@ class GitRepo {
    * @return \UnbLibraries\SystemsToolkit\Git\GitRepo
    *   The GitRepo object.
    */
-  public static function setCreateFromClone(string $repo_url, string $tmp_root = '') {
+  public static function setCreateFromClone(
+    string $repo_url,
+    string $tmp_root = ''
+  ) : self {
     $repo = new static();
     $repo->setCloneToTempDir($repo_url, $tmp_root);
     return $repo;
@@ -117,10 +124,12 @@ class GitRepo {
 
   /**
    * Sets the list of branches in the object property.
+   *
+   * @throws \CzProject\GitPhp\GitException
    */
   private function setBranches() {
     foreach ($this->repo->getBranches() as $repo_branch) {
-      if (strstr($repo_branch, 'HEAD')) {
+      if (str_contains($repo_branch, 'HEAD')) {
         continue;
       }
       $repo_branch = trim(
@@ -141,20 +150,22 @@ class GitRepo {
    * @param string $hash
    *   The hash of the commit to check for.
    *
-   * @return mixed
+   * @return string
    *   The commit message, FALSE if the commit does not exist in the repository.
    */
-  public function getCommitMessage(string $hash) {
+  public function getCommitMessage(string $hash) : string {
     foreach ($this->commits as $commit) {
       if ($commit['hash'] == $hash) {
         return $commit['message'];
       }
     }
-    return FALSE;
+    return '';
   }
 
   /**
    * Sets the list of commits in the object property.
+   *
+   * @throws \CzProject\GitPhp\GitException
    */
   private function setCommits() {
     $commits = $this->repo->execute(
