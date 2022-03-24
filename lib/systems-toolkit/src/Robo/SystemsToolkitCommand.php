@@ -48,7 +48,12 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    */
   protected $repoRoot;
 
-
+  /**
+   * The temporary directory to use, if necessary.
+   *
+   * @var string
+   */
+  protected $tmpDir;
 
   /**
    * Constructor.
@@ -79,6 +84,23 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
           $this->configFile
         )
       );
+    }
+  }
+
+  /**
+   * Sets up the temporary directory to be used by commands.
+   *
+   * @throws \Exception
+   *
+   * @hook pre-init
+   */
+  public function setSyskitTmpDir() {
+    $tmp_dir_root = Robo::Config()->get('syskit.local.tmpdir');
+    if (!empty($tmp_dir_root)) {
+      $this->tmpDir = $tmp_dir_root;
+    }
+    else {
+      $this->tmpDir = sys_get_temp_dir();
     }
   }
 

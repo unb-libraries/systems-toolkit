@@ -185,7 +185,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    */
   protected function cloneTempRepo() {
     $this->say(self::MESSAGE_CLONING_REPO);
-    $this->curCloneRepo = GitRepo::setCreateFromClone($this->curRepoMetadata['ssh_url']);
+    $this->curCloneRepo = GitRepo::setCreateFromClone($this->curRepoMetadata['ssh_url'], $this->tmpDir);
     if (!empty($this->options['target-branch'])) {
       $this->curCloneRepo->repo->checkout($this->options['target-branch']);
     }

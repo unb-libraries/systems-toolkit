@@ -160,7 +160,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
     );
 
     foreach ($this->options['namespaces'] as $namespace) {
-      $repo = GitRepo::setCreateFromClone($repository['ssh_url']);
+      $repo = GitRepo::setCreateFromClone($repository['ssh_url'], $this->tmpDir);
       $repo->repo->checkout($namespace);
       $repo_path = $repo->repo->getRepositoryPath();
       $this->io()->note('Installing Dockworker...');

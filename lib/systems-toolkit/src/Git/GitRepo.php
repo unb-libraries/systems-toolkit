@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Git;
 
 use CzProject\GitPhp\Git;
-use CzProject\GitPhp\GitRepository;
 
 /**
  * Base class for GitRepo object. Wrapper for Cz\Git\GitRepository.
@@ -40,9 +39,15 @@ class GitRepo {
 
   /**
    * Create and set the temporary directory location.
+   *
+   * @param string $tmp_root
+   *   Optional, the root path for the temp dir. Optional, defaults to system.
    */
-  protected function setTempDir() {
-    $tempfile = tempnam(sys_get_temp_dir(), 'syskit_');
+  protected function setTempDir(string $tmp_root = '') {
+    if (empty($tmp_root)) {
+      $tmp_root = sys_get_temp_dir();
+    }
+    $tempfile = tempnam($tmp_root, 'syskit_');
     if (file_exists($tempfile)) {
       unlink($tempfile);
     }
@@ -58,7 +63,7 @@ class GitRepo {
   }
 
   /**
-   * Get a specific commit from the repository.
+   * Gets a specific commit from the repository.
    *
    * @param string $num
    *   The index of the commit, typically a number.
@@ -66,20 +71,22 @@ class GitRepo {
    * @return array
    *   The commit information array.
    */
-  public function getCommit($num) {
+  public function getCommit(string $num) {
     return $this->commits[$num];
   }
 
   /**
-   * Set up the object from a clone to a local, temporary directory.
+   * Sets up the object from a clone to a local, temporary directory.
    *
    * @param string $repo_url
-   *   The github clone URL of the repository.
+   *   The GitHub clone URL of the repository.
+   * @param string $tmp_root
+   *   Optional, the root path for the temp dir. Optional, defaults to system.
    *
    * @throws \Exception
    */
-  private function setCloneToTempDir($repo_url) {
-    $this->setTempDir();
+  private function setCloneToTempDir(string $repo_url, string $tmp_root = '') {
+    $this->setTempDir($tmp_root);
     $git = new Git();
     $this->repo = $git->cloneRepository(
       $repo_url,
@@ -90,19 +97,21 @@ class GitRepo {
   }
 
   /**
-   * Factory to create this object from a github clone URL.
+   * Creates this object from a GitHub clone URL.
    *
    * @param string $repo_url
-   *   The github clone URL of the repository.
+   *   The GitHub clone URL of the repository.
+   * @param string $tmp_root
+   *   Optional, the root path for the temp dir. Optional, defaults to system.
    *
    * @throws \Exception
    *
    * @return \UnbLibraries\SystemsToolkit\Git\GitRepo
    *   The GitRepo object.
    */
-  public static function setCreateFromClone($repo_url) {
+  public static function setCreateFromClone(string $repo_url, string $tmp_root = '') {
     $repo = new static();
-    $repo->setCloneToTempDir($repo_url);
+    $repo->setCloneToTempDir($repo_url, $tmp_root);
     return $repo;
   }
 
@@ -135,7 +144,7 @@ class GitRepo {
    * @return mixed
    *   The commit message, FALSE if the commit does not exist in the repository.
    */
-  public function getCommitMessage($hash) {
+  public function getCommitMessage(string $hash) {
     foreach ($this->commits as $commit) {
       if ($commit['hash'] == $hash) {
         return $commit['message'];

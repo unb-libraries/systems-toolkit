@@ -14,7 +14,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   public const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
-  public const FILE_SOURCE_PATCH = '/tmp/syskit_tmp_cherry_patch.txt';
+  public const FILE_SOURCE_PATCH = 'syskit_tmp_cherry_patch.txt';
   public const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
   public const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
   public const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
@@ -101,7 +101,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     $this->sourceRepo = $this->getRepositoryExists($source_repository);
 
     // Instantiate local source repo.
-    $source_repo = GitRepo::setCreateFromClone($this->sourceRepo['ssh_url']);
+    $source_repo = GitRepo::setCreateFromClone($this->sourceRepo['ssh_url'], $this->tmpDir);
 
     // Ask which Commit to Rebase.
     $this->say(sprintf(self::MESSAGE_TITLE_REPO_COMMIT_LIST, $source_repository));
@@ -118,7 +118,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
       [
         'diff',
         '--unified=0',
-        '--output=' . self::FILE_SOURCE_PATCH,
+        '--output=' . $this->tmpDir . '/' . self::FILE_SOURCE_PATCH,
         "$cherry_hash~1",
         $cherry_hash,
       ]
@@ -173,11 +173,11 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
             $target_branch
           )
         );
-        $target_repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
+        $target_repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
         $target_repo->repo->checkout($target_branch);
 
         // Apply patch.
-        exec("cd {$target_repo->getTmpDir()} && patch -p1 < " . self::FILE_SOURCE_PATCH . ' && git add .', $output, $return);
+        exec("cd {$target_repo->getTmpDir()} && patch -p1 < " . $this->tmpDir . '/' . self::FILE_SOURCE_PATCH . ' && git add .', $output, $return);
         if ($return) {
           $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_FAILED, $target_branch, $repository_data['name']));
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";

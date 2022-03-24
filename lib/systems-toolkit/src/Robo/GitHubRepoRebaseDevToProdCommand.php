@@ -109,7 +109,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
             self::MESSAGE_CHECKING_OUT_REPO
           )
         );
-        $repo = GitRepo::setCreateFromClone($repository_data['ssh_url']);
+        $repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
         if (!self::repoBranchesAreSynchronized($repo, self::UPMERGE_SOURCE_BRANCH, self::UPMERGE_TARGET_BRANCH)) {
           // Rebase.
           $repo->repo->checkout('prod');

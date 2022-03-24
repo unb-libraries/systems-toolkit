@@ -92,7 +92,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
-      'output-dir' => '/tmp',
+      'output-dir' => $this->tmpDir,
     ]
   ) {
     $local_file = $this->getPageImage($id, $options);
@@ -140,7 +140,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
-      'output-dir' => '/tmp',
+      'output-dir' => $this->tmpDir,
     ]
   ) {
     $this->drupalRestUri = $options['instance-uri'];
@@ -161,7 +161,10 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  private function downloadPageEntityImageFile($page_details, $output_dir = '/tmp') {
+  private function downloadPageEntityImageFile($page_details, $output_dir = '') {
+    if (empty($output_dir)) {
+      $output_dir = $this->tmpDir;
+    }
     if (!empty($page_details->page_image[0]->url)) {
       $page_uri = $page_details->page_image[0]->url;
       $path_parts = pathinfo($page_uri);

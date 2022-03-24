@@ -254,7 +254,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
       $this->say("Cloning central repo/{$this->options['central-repo-branch']}...");
-      $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO);
+      $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO, $this->tmpDir);
       $this->centralMetadataRepo->repo->checkout($this->options['central-repo-branch']);
     }
 
@@ -328,7 +328,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     $this->curLeanRepoNeedsPush = FALSE;
     $this->io->title($this->curLeanRepo['name']);
     $this->say('Cloning lean repo...');
-    $this->curLeanRepoClone = GitRepo::setCreateFromClone($this->curLeanRepo['ssh_url']);
+    $this->curLeanRepoClone = GitRepo::setCreateFromClone($this->curLeanRepo['ssh_url'], $this->tmpDir);
     $this->curLeanRepoClone->repo->checkout(self::LEAN_REPO_BRANCH);
     $this->setCurDockerImage();
     $this->setCurLeanRepoSlug();

@@ -101,7 +101,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
     }
 
     // Remove temporary files from previous runs.
-    shell_exec('sudo rm -rf /tmp/dzi/*');
+    shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
 
     foreach ($this->recursiveFiles as $file_to_process) {
       $dzi_file_path_info = pathinfo($file_to_process);
@@ -195,7 +195,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
     ]
   ) {
     $dzi_file_path_info = pathinfo($file);
-    $tmp_dir = "/tmp/dzi/{$dzi_file_path_info['filename']}";
+    $tmp_dir = "$this->tmpDir/dzi/{$dzi_file_path_info['filename']}";
 
     return $this->taskExecStack()
       ->stopOnFail()

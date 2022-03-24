@@ -421,7 +421,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
 
       $repo_uri = "git@github.com:{$update_data['vcsOwner']}/{$update_data['vcsRepository']}.git";
       $this->say("Cloning $repo_uri...");
-      $repo = GitRepo::setCreateFromClone($repo_uri);
+      $repo = GitRepo::setCreateFromClone($repo_uri, $this->tmpDir);
       $repo->repo->checkout($branch);
       $repo_path = $repo->getTmpDir();
       $repo_build_file_path = "$repo_path/build/composer.json";
@@ -453,7 +453,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
               $new_content = json_encode($composer_file, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
               file_put_contents($repo_build_file_path, $new_content);
 
-              $sort_command = "jq --indent 2 --sort-keys . $repo_build_file_path > /tmp/composer-syskit-sort.json && mv /tmp/composer-syskit-sort.json $repo_build_file_path";
+              $sort_command = "jq --indent 2 --sort-keys . $repo_build_file_path > $this->tmpDir/composer-syskit-sort.json && mv $this->tmpDir/composer-syskit-sort.json $repo_build_file_path";
               shell_exec($sort_command);
 
               $this->say($commit_message);
