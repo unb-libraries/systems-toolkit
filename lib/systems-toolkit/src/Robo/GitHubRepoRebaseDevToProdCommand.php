@@ -121,7 +121,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
     if ($continue) {
       foreach ($this->githubRepositories as $repository_data) {
         // Pull down.
-        $this->io()->title($repository_data['name']);
+        $this->syskitIo->title($repository_data['name']);
         $this->say(
           self::MESSAGE_CHECKING_OUT_REPO
         );
@@ -162,7 +162,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
             $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
             $this->say(implode("\n", $push_output));
           }
-          $this->io()->newLine();
+          $this->syskitIo->newLine();
           $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
           sleep($options['multi-repo-delay']);
         }
@@ -174,7 +174,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
               self::UPMERGE_TARGET_BRANCH
             )
           );
-          $this->io()->newLine();
+          $this->syskitIo->newLine();
         }
       }
     }

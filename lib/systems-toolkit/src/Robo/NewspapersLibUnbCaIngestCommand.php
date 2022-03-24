@@ -302,8 +302,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
       try {
         if (!file_exists($processed_flag_file)) {
-          $this->io()->newLine();
-          $this->io()->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
+          $this->syskitIo->newLine();
+          $this->syskitIo->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
           $this->createIssueFromDir($title_id, $directory_to_process, $options);
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
@@ -331,9 +331,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
     // Tidy-up.
     $this->recursiveDirectories = [];
-    $this->io()->title('Operation Complete!');
+    $this->syskitIo->title('Operation Complete!');
     $output_summary = $this->getNbhpNotificationString($file_path);
-    $this->io()->block($output_summary);
+    $this->syskitIo->block($output_summary);
     $this->setSendSnsMessage($output_summary);
     $this->writeImportLedger();
   }

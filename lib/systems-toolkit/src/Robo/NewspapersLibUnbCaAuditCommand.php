@@ -647,12 +647,12 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function displayAuditFailures() {
     if ($this->issueIsFullyValid()) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       $this->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
       return;
     }
 
-    $this->io()->newLine();
+    $this->syskitIo->newLine();
     $this->displayMissingRemoteIssues();
     $this->displayZeroLengthFiles();
     $this->displayDuplicateIssues();
@@ -680,7 +680,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function displayMissingRemoteIssues() {
     if (!empty($this->missingRemoteIssues)) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       $column_names = [
         'Local Path',
       ];
@@ -701,7 +701,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *   The row data.
    */
   protected function outputTable(string $title, array $column_names, array $rows) {
-    $this->io()->title($title);
+    $this->syskitIo->title($title);
     $table = new Table($this->output());
     $table
       ->setHeaders($column_names)
@@ -714,7 +714,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function displayZeroLengthFiles() {
     if (!empty($this->zeroLengthFiles)) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       $column_names = [
         'Path',
       ];
@@ -729,7 +729,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function displayDuplicateIssues() {
     if (!empty($this->duplicateIssues)) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       $duplicate_issues = [];
       $column_names = [
         'Local Path',
@@ -787,7 +787,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'Local Path',
     ];
     if (!empty($this->imagesMissingOnRemote)) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       foreach ($this->imagesMissingOnRemote as $issue) {
         $first_row = TRUE;
         $page_no = array_column($issue['images'], 'page_no');
@@ -832,7 +832,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'Local Path',
     ];
     if (!empty($this->imagesDuplicateOnRemote)) {
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
       foreach ($this->imagesDuplicateOnRemote as $issue) {
         $first_row = TRUE;
         $page_no = array_column($issue['images'], 'page_no');
@@ -868,7 +868,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * Reports the failures from the current issue.
    */
   protected function reportIssueFailures() {
-    $this->io()->newLine();
+    $this->syskitIo->newLine();
     $this->say(
       sprintf(
         "%s total issues audited",

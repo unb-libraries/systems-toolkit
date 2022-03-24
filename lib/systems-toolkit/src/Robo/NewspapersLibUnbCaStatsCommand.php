@@ -46,7 +46,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
       );
 
       $this->setSendSnsMessage($message);
-      $this->io()->block($message);
+      $this->syskitIo->block($message);
     }
   }
 

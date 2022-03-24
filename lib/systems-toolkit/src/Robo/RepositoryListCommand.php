@@ -57,9 +57,9 @@ class RepositoryListCommand extends SystemsToolkitCommand {
       $this->say('No repositories found!');
       return;
     }
-    $this->io()->title($title);
+    $this->syskitIo->title($title);
     foreach ($this->githubRepositories as $repository) {
-      $this->io()->writeln($repository['name']);
+      $this->syskitIo->writeln($repository['name']);
     }
   }
 

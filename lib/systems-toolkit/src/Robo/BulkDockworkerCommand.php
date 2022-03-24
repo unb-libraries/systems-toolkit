@@ -116,10 +116,10 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    */
   private function updateAllRepositories() {
     foreach ($this->githubRepositories as $repository) {
-      $this->io()->title($repository['name']);
+      $this->syskitIo->title($repository['name']);
       $this->updateRepository($repository);
       if ($this->repoChangesPushed) {
-        $this->io()->note(
+        $this->syskitIo->note(
           sprintf(
             self::MESSAGE_SLEEPING,
             $this->options['multi-repo-delay']
@@ -128,9 +128,9 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
         sleep($this->options['multi-repo-delay']);
       }
       else {
-        $this->io()->note("Command [$this->commandString] resulted in no changes!");
+        $this->syskitIo->note("Command [$this->commandString] resulted in no changes!");
       }
-      $this->io()->newLine();
+      $this->syskitIo->newLine();
     }
   }
 
@@ -144,7 +144,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    */
   private function updateRepository(array $repository) {
     $this->repoChangesPushed = FALSE;
-    $this->io()->note(
+    $this->syskitIo->note(
       sprintf(
         self::MESSAGE_CHECKING_OUT_REPO,
         $repository['name']
@@ -155,15 +155,15 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       $repo = GitRepo::setCreateFromClone($repository['ssh_url'], $this->tmpDir);
       $repo->repo->checkout($namespace);
       $repo_path = $repo->repo->getRepositoryPath();
-      $this->io()->note('Installing Dockworker...');
+      $this->syskitIo->note('Installing Dockworker...');
       passthru("cd $repo_path; composer install");
-      $this->io()->note("Running /vendor/bin/dockworker {$this->commandString}...");
+      $this->syskitIo->note("Running /vendor/bin/dockworker {$this->commandString}...");
       passthru("cd $repo_path; ./vendor/bin/dockworker {$this->commandString};");
       if ($repo->repo->hasChanges()) {
-        $this->io()->note('Updates found, committing...');
+        $this->syskitIo->note('Updates found, committing...');
         $repo->repo->addAllChanges();
         $repo->repo->commit($this->commitMessage, ['--no-verify']);
-        $this->io()->note('Pushing Changes to GitHub...');
+        $this->syskitIo->note('Pushing Changes to GitHub...');
         $repo->repo->push('origin', [$namespace]);
         $this->repoChangesPushed = TRUE;
       }

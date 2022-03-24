@@ -48,6 +48,13 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   protected string $repoRoot;
 
   /**
+   * The active output object.
+   *
+   * @var object
+   */
+  protected object $syskitIo;
+
+  /**
    * The temporary directory to use, if necessary.
    *
    * @var string
@@ -62,6 +69,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
     $this->commandStartTime = microtime(TRUE);
     $this->repoRoot = realpath(__DIR__ . "/../../../../");
     $this->configFile = self::CONFIG_FILENAME;
+    $this->syskitIo = $this->io();
     Robo::loadConfiguration(
       [$this->repoRoot . '/' . $this->configFile]
     );
@@ -121,7 +129,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *   The return code of the command.
    */
   public function setRunOtherCommand(string $command_string, string $exception_message = '') : string {
-    $this->io()->note("Spawning new command thread: $command_string");
+    $this->syskitIo->note("Spawning new command thread: $command_string");
     $bin = $_SERVER['argv'][0];
     $command = "$bin --ansi $command_string";
     passthru($command, $return);

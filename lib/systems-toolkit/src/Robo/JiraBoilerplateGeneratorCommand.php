@@ -48,14 +48,14 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * @command jira:boilerplate:multi-instance-worklist
    */
   public function generateMultiInstanceWorklistTable() {
-    $this->io()->title('Generating multi-instance JIRA worklist boilerplate');
+    $this->syskitIo->title('Generating multi-instance JIRA worklist boilerplate');
     $this->getWorklistTasks();
-    $this->io()->newLine();
+    $this->syskitIo->newLine();
     $this->getWorklistRepositories();
     $this->buildJiraTableSource();
-    $this->io()->newLine();
-    $this->io()->title('Worklist Source');
-    $this->io()->text($this->jiraInstanceSource);
+    $this->syskitIo->newLine();
+    $this->syskitIo->title('Worklist Source');
+    $this->syskitIo->text($this->jiraInstanceSource);
   }
 
   /**

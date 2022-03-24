@@ -130,7 +130,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     if ($continue) {
       foreach ($this->githubRepositories as $this->curRepoMetadata) {
         $this->repoChangesPushed = FALSE;
-        $this->io()->title($this->curRepoMetadata['name']);
+        $this->syskitIo->title($this->curRepoMetadata['name']);
         $this->cloneTempRepo();
         $this->copyModifyingScript();
         $this->executeModifyingScript();
