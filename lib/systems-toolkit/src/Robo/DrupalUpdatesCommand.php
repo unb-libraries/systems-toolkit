@@ -110,6 +110,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => '240',
     ]
   ) {
+    $this->setCheckEmptyUpdateDef();
     $this->getDrupalUpdates($options);
     $this->noConfirm = $options['yes'];
 
@@ -130,6 +131,19 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     }
     else {
       $this->say('No updates needed to dev branches!');
+    }
+  }
+
+  /**
+   * Warns if the update exceptions and locked configurations are empty.
+   */
+  public function setCheckEmptyUpdateDef() {
+    $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects') ?? [];
+    $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects') ?? [];
+    if (empty($ignored_projects) && empty($locked_projects)) {
+      if (!$this->confirm("No module ignores/locks have been defined in configuration (syskit.drupal.updates.ignoredProjects/syskit.drupal.updates.lockedProjects). This is atypical and likely will cause issues. Continue?")) {
+        exit(0);
+      }
     }
   }
 
