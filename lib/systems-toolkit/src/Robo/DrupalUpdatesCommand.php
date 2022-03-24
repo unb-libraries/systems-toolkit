@@ -137,7 +137,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   /**
    * Warns if the update exceptions and locked configurations are empty.
    */
-  public function setCheckEmptyUpdateDef() {
+  protected function setCheckEmptyUpdateDef() {
     $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects') ?? [];
     $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects') ?? [];
     if (empty($ignored_projects) && empty($locked_projects)) {
