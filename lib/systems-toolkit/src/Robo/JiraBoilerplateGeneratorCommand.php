@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for JiraBoilerplateGeneratorCommand Robo commands.
@@ -13,24 +13,32 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * The JIRA actions to perform.
+   * The source of the JIRA issue body.
+   *
+   * @var string
    */
-  protected $jiraInstanceSource;
+  protected string $jiraInstanceSource;
 
   /**
-   * The actions to perform.
+   * The headers of the table being generated.
+   *
+   * @var array
    */
-  protected $jiraInstanceTableHeaders = ['ID', 'Instance'];
+  protected array $jiraInstanceTableHeaders = ['ID', 'Instance'];
 
   /**
-   * The default values for table headers.
+   * The default values for actions being defined.
+   *
+   * @var array
    */
-  protected $jiraInstanceDefaultValues = [];
+  protected array $jiraInstanceDefaultValues = [];
 
   /**
-   * The actions to perform.
+   * The instance data (table rows).
+   *
+   * @var array
    */
-  protected $jiraInstanceTableRows = [];
+  protected array $jiraInstanceTableRows = [];
 
   /**
    * Generates a JIRA issue description table for a multi-instance worklist.
@@ -92,7 +100,6 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * Build the multi-instance worklist table JIRA source.
    */
   private function buildJiraTableSource() {
-    $this->jiraInstanceSource = '';
     $this->jiraInstanceSource = '|| ' . implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
     foreach ($this->githubRepositories as $idx => $repository) {
       $id = $idx + 1;
@@ -113,7 +120,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * @return string
    *   The formatted cell value.
    */
-  private function getFormattedWorkItemCellValue($cell_value = NULL) {
+  private function getFormattedWorkItemCellValue(string $cell_value = '') : string {
     if (empty($cell_value)) {
       return ' |';
     }

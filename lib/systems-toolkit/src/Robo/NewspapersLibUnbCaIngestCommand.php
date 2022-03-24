@@ -26,35 +26,35 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @var string
    */
-  protected $curIssueId;
+  protected string $curIssueId;
 
   /**
    * The path to the current issue being processed.
    *
    * @var string
    */
-  protected $curIssuePath;
+  protected string $curIssuePath;
 
   /**
    * The title ID of the current issue being processed.
    *
    * @var string
    */
-  protected $curTitleId;
+  protected string $curTitleId;
 
   /**
    * The number of issues that have been processed in the current session.
    *
-   * @var string
+   * @var int
    */
-  protected $issuesProcessed = 0;
+  protected int $issuesProcessed = 0;
 
   /**
    * The results of issues that have been processed in the current session.
    *
-   * @var string
+   * @var string[]
    */
-  protected $resultsLedger = [
+  protected array $resultsLedger = [
     'success' => [],
     'fail' => [],
     'skipped' => [],
@@ -63,12 +63,12 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   /**
    * The number of issues that are queued in the current session.
    *
-   * @var string
+   * @var int
    */
-  protected $totalIssues = 0;
+  protected int $totalIssues = 0;
 
   /**
-   * Generate and update the OCR content for a digital serial page.
+   * Generates and updates the OCR content for a digital serial page.
    *
    * @param string $id
    *   The page entity ID.
@@ -80,16 +80,14 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @option $output-dir
    *   The directory to store the downloaded images.
    *
-   * @throws \Exception
-   *
-   * @usage "1"
-   *
    * @command newspapers.lib.unb.ca:generate-page-ocr
+   * @usage 1
    *
+   * @throws \Exception
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function setOcrForPage(
-    $id,
+    string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => $this->tmpDir,
@@ -115,7 +113,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   }
 
   /**
-   * Download the image of a digital serial page.
+   * Downloads the image of a digital serial page.
    *
    * @param string $id
    *   The page entity ID.
@@ -128,40 +126,40 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The directory to store the downloaded image.
    *
    * @command newspapers.lib.unb.ca:get-page
-   * @usage newspapers.lib.unb.ca:get-page "1"
+   * @usage 1
    *
-   * @return string|null
-   *   The path to the downloaded file, NULL on failure.
+   * @return string
+   *   The path to the downloaded file, empty on failure.
    *
    * @throws \Exception
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function getPageImage(
-    $id,
+    string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => $this->tmpDir,
     ]
-  ) {
+  ) : string {
     $this->drupalRestUri = $options['instance-uri'];
     $page_details = $this->getDrupalRestEntity("/digital_serial/digital_serial_page/$id");
     return $this->downloadPageEntityImageFile($page_details, $options['output-dir']);
   }
 
   /**
-   * Download the page image file attached to an digital page entity.
+   * Downloads the page image file attached to a digital page entity.
    *
    * @param object $page_details
    *   The page details JSON object from Drupal.
    * @param string $output_dir
    *   The directory to store the downloaded image.
    *
-   * @return string|null
+   * @return string
    *   The path to the downloaded file, NULL on failure.
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  private function downloadPageEntityImageFile($page_details, $output_dir = '') {
+  private function downloadPageEntityImageFile(object $page_details, string $output_dir = '') : string {
     if (empty($output_dir)) {
       $output_dir = $this->tmpDir;
     }
@@ -181,11 +179,11 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     }
 
     $this->say("An image file was not found for the entity.");
-    return NULL;
+    return '';
   }
 
   /**
-   * Update the OCR field values for a digital serial page.
+   * Updates the OCR field values for a digital serial page.
    *
    * @param string $id
    *   The page entity ID.
@@ -196,7 +194,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setPageOcr($id, $field_name, $content) {
+  private function setPageOcr(string $id, string $field_name, string $content) {
     $this->say("Updating page #$id [$field_name]");
     $patch_content = json_encode(
       [
@@ -211,7 +209,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   }
 
   /**
-   * Create digital serial issues from a tree containing files.
+   * Creates digital serial issues from a tree containing files.
    *
    * @param string $title_id
    *   The parent issue ID.
@@ -237,15 +235,14 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \Exception
    *
-   * @usage "1 /mnt/issues/archive"
-   *
    * @command newspapers.lib.unb.ca:create-issues-tree
+   * @usage 1 /mnt/issues/archive
    *
    * @nbhp
    */
   public function createIssuesFromTree(
-    $title_id,
-    $file_path,
+    string $title_id,
+    string $file_path,
     array $options = [
       'force-ocr' => FALSE,
       'instance-uri' => 'http://localhost:3095',
@@ -316,7 +313,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
           ];
         }
       }
-      catch (Exception $e) {
+      catch (\Exception $e) {
         $this->resultsLedger['fail'][] = [
           'exception' => $e->getMessage(),
           'title' => $this->curTitleId,
@@ -336,7 +333,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   }
 
   /**
-   * Generate a summary string for a NBHP import.
+   * Generates a summary string for a NBHP import.
    *
    * @param string $path
    *   The path to report as the import source.
@@ -344,7 +341,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @return string
    *   The summary.
    */
-  private function getNbhpNotificationString(string $path) {
+  private function getNbhpNotificationString(string $path) : string {
     $total_seconds = microtime(TRUE) - $this->commandStartTime;
     $total_time_string = gmdate("H:i:s", $total_seconds);
     $seconds_each = $total_seconds / $this->issuesProcessed;
@@ -358,7 +355,7 @@ EOT;
   }
 
   /**
-   * Write out a summary of the import in a ledger file.
+   * Writes out a summary of the import in a ledger file.
    */
   private function writeImportLedger() {
     $filename = 'nbnp_import_' . date('m-d-Y_hia') . '.txt';
@@ -367,7 +364,7 @@ EOT;
   }
 
   /**
-   * Import a single digital serial issue from a file path.
+   * Imports a single digital serial issue from a file path.
    *
    * @param string $title_id
    *   The parent issue ID.
@@ -400,8 +397,8 @@ EOT;
    * @command newspapers.lib.unb.ca:create-issue
    */
   public function createIssueFromDir(
-    $title_id,
-    $path,
+    string $title_id,
+    string $path,
     array $options = [
       'force-ocr' => FALSE,
       'generate-ocr' => FALSE,
@@ -429,7 +426,10 @@ EOT;
       exec($rewrite_command);
 
       $issue_config = json_decode(
-        file_get_contents("$metadata_filepath.json"), null, 512, JSON_THROW_ON_ERROR
+        file_get_contents("$metadata_filepath.json"),
+        NULL,
+        512,
+        JSON_THROW_ON_ERROR
       );
 
       // Create the digital page.
@@ -554,7 +554,7 @@ EOT;
   }
 
   /**
-   * Ensure each page in an issue has a unique page_no string.
+   * Ensures each page in an issue has a unique page_no string.
    *
    * @param string[] $issue_ingested_pages
    *   An array of currently ingested pages.
@@ -564,7 +564,7 @@ EOT;
    * @return string
    *   The unique page_no string.
    */
-  protected function getUniqueIssuePageNo(array &$issue_ingested_pages, $page_no) {
+  protected function getUniqueIssuePageNo(array &$issue_ingested_pages, string $page_no) : string {
     $counter = 0;
     $page_check = $page_no;
     while (in_array($page_check, $issue_ingested_pages)) {
@@ -575,7 +575,7 @@ EOT;
   }
 
   /**
-   * Create a digital serial page from a source file.
+   * Creates a digital serial page from a source file.
    *
    * @param string $issue_id
    *   The parent issue ID.
@@ -599,10 +599,10 @@ EOT;
    * @throws \Exception
    */
   public function createSerialPageFromFile(
-    $issue_id,
-    $page_no,
-    $page_sort,
-    $file_path,
+    string $issue_id,
+    string $page_no,
+    string $page_sort,
+    string $file_path,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'no-verify' => FALSE,
@@ -688,7 +688,7 @@ EOT;
   }
 
   /**
-   * Upload a file for an entity field using the Drupal REST client.
+   * Uploads a file for an entity field using the Drupal REST client.
    *
    * @param string $entity_type_id
    *   The entity type ID.
@@ -701,12 +701,19 @@ EOT;
    * @param string $file_name
    *   The name to use for the file when attaching.
    *
-   * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    *
    * @return object
    *   The JSON object of the file returned from the server.
    */
-  protected function uploadDrupalRestFileToEntityField($entity_type_id, $entity_bundle, $field_name, $file_contents, $file_name) {
+  protected function uploadDrupalRestFileToEntityField(
+    string $entity_type_id,
+    string $entity_bundle,
+    string $field_name,
+    string $file_contents,
+    string $file_name
+  ) : object {
     $this->setUpDrupalRestClientToken();
     $post_uri = $this->drupalRestUri . "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
     $this->say($post_uri);
@@ -722,7 +729,12 @@ EOT;
         ],
       ]
     );
-    return json_decode((string) $this->drupalRestResponse->getBody(), null, 512, JSON_THROW_ON_ERROR);
+    return json_decode(
+      (string) $this->drupalRestResponse->getBody(),
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
+    );
   }
 
 }

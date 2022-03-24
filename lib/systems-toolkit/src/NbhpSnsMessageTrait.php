@@ -6,14 +6,14 @@ use Robo\Robo;
 use UnbLibraries\SystemsToolkit\AwsSnsMessageTrait;
 
 /**
- * Class for easy sending of SNS messages to nbnp channel.
+ * Class for easy sending of SNS messages to NBHP channel.
  */
 trait NbhpSnsMessageTrait {
 
   use AwsSnsMessageTrait;
 
   /**
-   * Set the NBHP SNS Topic ID.
+   * Sets the NBHP SNS Topic ID.
    *
    * @throws \Exception
    *
@@ -22,7 +22,7 @@ trait NbhpSnsMessageTrait {
   public function setNbhpSnsTopicId() {
     $topic_id = Robo::Config()->get('syskit.nbhp.awsSnsTopicId');
     if (empty($topic_id)) {
-      throw new \Exception(sprintf('The NBHP SNS topic ID is unset in in config (syskit.nbhp.awsSnsTopicId).'));
+      throw new \Exception('The NBHP SNS topic ID is unset in in config (syskit.nbhp.awsSnsTopicId).');
     }
     else {
       $this->setSnsTopicId($topic_id);

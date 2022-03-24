@@ -31,13 +31,12 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @throws \Exception
    *
-   * @usage "1 /mnt/issues/archive"
-   *
    * @command newspapers.lib.unb.ca:delete-year
+   * @usage 1 /mnt/issues/archive
    */
   public function deleteTitleIssuesByYear(
-    $title_id,
-    $year,
+    string $title_id,
+    string $year,
     array $options = [
       'yes' => FALSE,
     ]
@@ -57,7 +56,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   }
 
   /**
-   * Gets a list of a a newspaper title's issues.
+   * Gets a list of a newspaper title's issues.
    *
    * @param string $title_id
    *   The entity ID of the title to query.
@@ -69,7 +68,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @throws \Exception
    */
-  private function getTitleYearIssues($title_id, $year) {
+  private function getTitleYearIssues(string $title_id, string $year) : array {
     $ids = [];
 
     $ch = curl_init();
@@ -87,7 +86,12 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
     $data = curl_exec($ch);
     curl_close($ch);
-    $raw_response = json_decode($data, null, 512, JSON_THROW_ON_ERROR);
+    $raw_response = json_decode(
+      $data,
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
+    );
     if (!empty($raw_response->data)) {
       foreach ($raw_response->data as $entity_id) {
         $ids[] = $entity_id;
@@ -112,7 +116,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @command newspapers.lib.unb.ca:delete:issue-markers
    */
   public function setDeleteNewspapersImportedMarkers(
-    $path,
+    string $path,
     array $options = [
       'yes' => FALSE,
     ]
@@ -130,7 +134,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @param string $file_name
    *   The filename to delete.
    */
-  protected function setDeleteFilesInTree($path, $file_name) {
+  protected function setDeleteFilesInTree(string $path, string $file_name) {
     $files_to_delete = [];
     $finder = new Finder();
     $finder->files()
@@ -156,7 +160,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   }
 
   /**
-   * Delete a newspapers.lib.unb.ca digital issue and associated assets.
+   * Deletes a newspapers.lib.unb.ca digital issue and associated assets.
    *
    * @param string $issue_id
    *   The issue entity ID.
@@ -165,7 +169,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @command newspapers.lib.unb.ca:delete:issue
    */
-  public function setDeleteNewspapersIssue($issue_id) {
+  public function setDeleteNewspapersIssue(string $issue_id) {
     if (empty($this->kubeCurPods)) {
       $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
     }
@@ -183,17 +187,17 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   }
 
   /**
-   * Delete an issue entity via drush.
+   * Deletes an issue entity on a k8s pod via drush.
    *
-   * @param string[] $pod
-   *   The pod ID to query.
+   * @param object $pod
+   *   The k8s pod to query.
    * @param string $issue_id
    *   The issue entity ID to delete.
    *
    * @return string[]
    *   The result of the command.
    */
-  private function setDrushDeleteIssueCommand($pod, $issue_id) {
+  private function setDrushDeleteIssueCommand(object $pod, string $issue_id) : array {
     $delete_command = sprintf(
      '$storage = \Drupal::entityTypeManager()->getStorage("digital_serial_issue"); $page = $storage->load(%s); $page->delete();',
       $issue_id

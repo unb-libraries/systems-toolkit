@@ -2,12 +2,12 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use JiraRestApi\JiraException;
 use JiraRestApi\Issue\IssueField;
 use JiraRestApi\Issue\IssueService;
+use JiraRestApi\JiraException;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\JiraTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 
 /**
  * Class for MultipleProjectCreateTicketCommand Robo commands.
@@ -22,7 +22,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
   public const DEFAULT_PROJECT_KEY = 'IN';
 
   /**
-   * Create a JIRA issue for multiple Github projects based on tags or name.
+   * Creates a JIRA issue for multiple Github projects based on tags or name.
    *
    * @param string $match
    *   Only repositories whose names contain one of $match values will be
@@ -38,6 +38,8 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    *   The type of issue. Optional, defaults to 'task'.
    * @param string $epic
    *   The parent issue epic. Optional, defaults to none.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option $yes
    *   Assume a 'yes' answer for all prompts.
@@ -49,7 +51,18 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @command jira:multiple-repo:create-issue
    * @usage jira:multiple-repo:create '' 'drupal8' 'Drupal 9.x Upgrade' 'Update Drupal to Drupal 9.x. See https://stackoverflow.com/c/unblibsystems/articles/131 .' 'Task' 'IN-243' --yes
    */
-  public function createMultipleJiraTicket($match, $topics, $summary, $description, $type = 'Task', $epic = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '120']) {
+  public function createMultipleJiraTicket(
+    string $match,
+    string $topics,
+    string $summary,
+    string $description,
+    string $type = 'Task',
+    string $epic = '',
+    array $options = [
+      'yes' => FALSE,
+      'multi-repo-delay' => '120',
+    ]
+  ) {
     $continue = $this->setConfirmRepositoryList(
       [$match],
       [$topics],

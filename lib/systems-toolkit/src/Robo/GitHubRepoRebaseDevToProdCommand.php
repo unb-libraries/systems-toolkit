@@ -24,7 +24,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
   public const UPMERGE_TARGET_BRANCH = 'prod';
 
   /**
-   * Rebase dev onto prod for multiple GitHub Repositories. Robo Commmand.
+   * Rebases dev onto prod for multiple GitHub Repositories.
    *
    * This command will rebase all commits that exist in the dev branch of a
    * GitHub repository onto the prod branch.
@@ -37,19 +37,27 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   A comma separated list of topics to match. Only repositories whose
    *   topics contain at least one of the comma separated values exactly will be
    *   processed. Optional.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
-   * @option $yes
-   *   Assume a 'yes' answer for all prompts.
    * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
+   * @option $yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @throws \Exception
    *
-   * @usage unbherbarium,pmportal drupal8
-   *
    * @command github:repo:rebasedevprod
+   * @usage unbherbarium,pmportal drupal8
    */
-  public function upmergeRepoDevToProd($match = '', $topics = '', $options = ['yes' => FALSE, 'multi-repo-delay' => '120']) {
+  public function upmergeRepoDevToProd(
+    string $match = '',
+    string $topics = '',
+    array $options = [
+      'multi-repo-delay' => '120',
+      'yes' => FALSE,
+    ]
+  ) {
     $match_array = explode(",", $match);
     $topics_array = explode(",", $topics);
 
@@ -66,7 +74,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Rebase dev onto prod for one or multiple GitHub repositories.
+   * Rebases dev onto prod for one or multiple GitHub repositories.
    *
    * @param array $match
    *   Only repositories whose names contain one of $match values will be
@@ -74,17 +82,27 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @param array $topics
    *   Only repositories whose topics contain one of $topics values will be
    *   processed. Optional.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
+   * @option $multi-repo-delay
+   *   The amount of time to delay between updating repositories.
    * @option $repo-exclude
    *   A repository to exclude from the rebase. Defaults to none.
    * @option $yes
    *   Assume a 'yes' answer for all prompts.
-   * @option $multi-repo-delay
-   *   The amount of time to delay between updating repositories.
    *
    * @throws \Exception
    */
-  protected function rebaseDevToProd(array $match = [], array $topics = [], $options = ['repo-exclude' => [], 'yes' => FALSE, 'multi-repo-delay' => '120']) {
+  protected function rebaseDevToProd(
+    array $match = [],
+    array $topics = [],
+    array $options = [
+      'multi-repo-delay' => '120',
+      'repo-exclude' => [],
+      'yes' => FALSE,
+    ]
+  ) {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $match,
@@ -105,9 +123,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
         // Pull down.
         $this->io()->title($repository_data['name']);
         $this->say(
-          sprintf(
-            self::MESSAGE_CHECKING_OUT_REPO
-          )
+          self::MESSAGE_CHECKING_OUT_REPO
         );
         $repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
         if (!self::repoBranchesAreSynchronized($repo, self::UPMERGE_SOURCE_BRANCH, self::UPMERGE_TARGET_BRANCH)) {
@@ -174,10 +190,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @param string $branch2
    *   The second branch.
    *
+   * @throws \CzProject\GitPhp\GitException
+   *
    * @return bool
    *   TRUE if the branches are synchronized. False otherwise.
    */
-  private static function repoBranchesAreSynchronized($repo, $branch1, $branch2) {
+  private static function repoBranchesAreSynchronized(GitRepo $repo, string $branch1, string $branch2) : bool {
     $repo->repo->checkout($branch1);
     $repo->repo->checkout($branch2);
     return self::getRepoHeadHash($repo, $branch1) ==
@@ -192,10 +210,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @param string $branch
    *   The branch to query.
    *
+   * @throws \CzProject\GitPhp\GitException
+   *
    * @return string[]
    *   The value of the branch HEAD commit hash.
    */
-  private static function getRepoHeadHash($repo, $branch) {
+  private static function getRepoHeadHash(GitRepo $repo, string $branch) : array {
     return $repo->repo->execute(
       [
         'log',

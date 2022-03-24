@@ -8,7 +8,7 @@ use RegexIterator;
 use Symfony\Component\Console\Helper\Table;
 
 /**
- *  Trait for running commands recursively in directories on a file tree.
+ * Trait for running commands recursively in directories on a file tree.
  */
 trait RecursiveDirectoryTreeTrait {
 
@@ -17,24 +17,24 @@ trait RecursiveDirectoryTreeTrait {
    *
    * @var string
    */
-  protected $recursiveDirectoryFileRegex;
+  protected string $recursiveDirectoryFileRegex;
 
   /**
    * The directories to operate on.
    *
    * @var array
    */
-  protected $recursiveDirectories = [];
+  protected array $recursiveDirectories = [];
 
   /**
    * The tree root to parse recursively.
    *
    * @var string
    */
-  protected $recursiveDirectoryTreeRoot;
+  protected string $recursiveDirectoryTreeRoot;
 
   /**
-   * Set up the files to iterate over.
+   * Sets up the files to iterate over.
    *
    * @throws \Exception
    */
@@ -63,30 +63,35 @@ trait RecursiveDirectoryTreeTrait {
   }
 
   /**
-   * Get and confirm operation on files.
+   * Gets and confirm operation on files.
    *
    * @param string $operation_name
    *   The name of the operation to print.
+   * @param bool $skip_confirm
+   *   TRUE if the confirmations should be skipped. Defaults to FALSE.
    *
    * @throws \Exception
    */
-  public function getConfirmDirs($operation_name = 'Operation', $skip_confirm = FALSE) {
+  public function getConfirmDirs(
+    string $operation_name = 'Operation',
+    bool $skip_confirm = FALSE
+  ) {
     if (!$skip_confirm) {
       $table = new Table($this->output());
       $table_rows = array_map([$this, 'arrayWrap'], $this->recursiveDirectories);
-      $table->setHeaders(array(\Directory::class))->setRows($table_rows);
+      $table->setHeaders([\Directory::class])->setRows($table_rows);
       $table->setStyle('borderless');
       $table->render();
 
       $continue = $this->confirm(sprintf('The %s will be applied to ALL of the above directories. Are you sure you want to continue?', $operation_name));
       if (!$continue) {
-        throw new \Exception(sprintf('Operation cancelled.'));
+        throw new \Exception('Operation cancelled.');
       }
     }
   }
 
   /**
-   * Map items in an array element.
+   * Maps items in an array element to a wrapper array.
    *
    * @param string $item
    *   The item to wrap in array.
@@ -94,7 +99,7 @@ trait RecursiveDirectoryTreeTrait {
    * @return array
    *   An array with the item as a single element.
    */
-  private function arrayWrap($item) {
+  private function arrayWrap(string $item) : array {
     return [$item];
   }
 

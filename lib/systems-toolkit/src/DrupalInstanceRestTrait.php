@@ -18,38 +18,38 @@ trait DrupalInstanceRestTrait {
    *
    * @var string
    */
-  protected $drupalRestUri;
+  protected string $drupalRestUri;
 
   /**
    * The drupal password to leverage for the REST API.
    *
    * @var string
    */
-  protected $drupalRestPassword;
+  protected string $drupalRestPassword;
 
   /**
    * The drupal user to leverage for the REST API.
    *
    * @var string
    */
-  protected $drupalRestUser;
+  protected string $drupalRestUser;
 
   /**
    * The drupal user to leverage for the REST API.
    *
    * @var string
    */
-  protected $drupalRestToken;
+  protected string $drupalRestToken;
 
   /**
    * The drupal user to leverage for the REST API.
    *
    * @var string
    */
-  protected $drupalRestResponse;
+  protected string $drupalRestResponse;
 
   /**
-   * Set the drupal password from config.
+   * Sets the drupal password from config.
    *
    * @throws \Exception
    *
@@ -63,7 +63,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Set the drupal user from config.
+   * Sets the drupal user from config.
    *
    * @throws \Exception
    *
@@ -77,18 +77,22 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Get a entity from the Drupal REST client.
+   * Gets an entity from the Drupal REST client.
    *
    * @param string $entity_uri
    *   The entity URI.
    * @param bool $silent
+   *   TRUE if the query should not display any information.
    *
    * @throws \Exception
    *
    * @return object
    *   The JSON object returned from the server.
    */
-  protected function getDrupalRestEntity($entity_uri, $silent = FALSE) {
+  protected function getDrupalRestEntity(
+    string $entity_uri,
+    bool $silent = FALSE
+  ) : object {
     $uri = "$entity_uri?_format=json";
     $args = [];
     $method = 'get';
@@ -96,20 +100,37 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * General Guzzle request initiator.
+   * Provides a general Guzzle request initiator.
    *
-   * @param $uri
-   * @param $method
+   * @param string $uri
+   *   The URI to send the request to.
+   * @param string $method
+   *   The request method.
    * @param array $args
+   *   Any arguments to pass to the request.
    * @param bool $silent
+   *   TRUE if the query should not display any information.
    * @param bool $retry_on_error
+   *   TRUE if the query should retry if an error occurs.
    * @param int $retry_counter
+   *   The number of retries that have occurred so far.
    * @param int $max_retries
+   *   The maximum number of retries.
    *
    * @return mixed
+   *   The result from the request.
+   *
    * @throws \Exception
    */
-  protected function getGuzzleRequest($uri, $method, $args = [], $silent = FALSE, $retry_on_error = TRUE, $retry_counter = 0, $max_retries = 5) {
+  protected function getGuzzleRequest(
+    string $uri,
+    string $method,
+    array $args = [],
+    bool $silent = FALSE,
+    bool $retry_on_error = TRUE,
+    int $retry_counter = 0,
+    int $max_retries = 5
+  ) : mixed {
     $this->setUpDrupalRestClientToken();
     $endpoint_uri = $this->drupalRestUri . $uri;
     try {
@@ -123,8 +144,14 @@ trait DrupalInstanceRestTrait {
         $endpoint_uri,
         array_merge($auth_args, $args)
       );
-      return json_decode((string) $this->drupalRestResponse->getBody(), null, 512, JSON_THROW_ON_ERROR);
-    } catch (BadResponseException) {
+      return json_decode(
+        (string) $this->drupalRestResponse->getBody(),
+        NULL,
+        512,
+        JSON_THROW_ON_ERROR
+      );
+    }
+    catch (BadResponseException) {
       $retry_counter++;
       if ($retry_on_error && $retry_counter < $max_retries) {
         return $this->getGuzzleRequest($uri, $method, $args, $silent, $retry_on_error, $retry_counter);
@@ -134,9 +161,9 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Set the Drupal REST client token for a URI.
+   * Sets the Drupal REST client token for a URI.
    *
-   * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
    */
   protected function setUpDrupalRestClientToken() {
     $response = $this->guzzleClient->get($this->drupalRestUri . "/session/token");
@@ -144,7 +171,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Patch an entity via the Drupal REST client.
+   * Patches an entity via the Drupal REST client.
    *
    * @param string $patch_uri
    *   The patch URI.
@@ -156,13 +183,13 @@ trait DrupalInstanceRestTrait {
    * @return object
    *   The JSON object returned from the server.
    */
-  protected function patchDrupalRestEntity($patch_uri, $patch_content) {
+  protected function patchDrupalRestEntity(string $patch_uri, string $patch_content) : object {
     $uri = "$patch_uri?_format=json";
     $args = [
       'body' => $patch_content,
       'headers' => [
         'Content-Type' => 'application/json',
-        'X-CSRF-Token' => $this->drupalRestToken
+        'X-CSRF-Token' => $this->drupalRestToken,
       ],
     ];
     $method = 'patch';
@@ -170,7 +197,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Create an entity via the Drupal REST client.
+   * Creates an entity via the Drupal REST client.
    *
    * @param string $create_uri
    *   The patch URI.
@@ -182,13 +209,13 @@ trait DrupalInstanceRestTrait {
    * @return object
    *   The JSON object returned from the server.
    */
-  protected function createDrupalRestEntity($create_uri, $create_content) {
+  protected function createDrupalRestEntity(string $create_uri, string $create_content) : object {
     $uri = "$create_uri?_format=json";
     $args = [
       'body' => $create_content,
       'headers' => [
         'Content-Type' => 'application/json',
-        'X-CSRF-Token' => $this->drupalRestToken
+        'X-CSRF-Token' => $this->drupalRestToken,
       ],
     ];
     $method = 'post';
@@ -196,7 +223,7 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
-   * Upload a file for an entity field using the Drupal REST client.
+   * Uploads a file for an entity field using the Drupal REST client.
    *
    * @param string $entity_type_id
    *   The entity type ID.
@@ -214,14 +241,20 @@ trait DrupalInstanceRestTrait {
    * @return object
    *   The JSON object of the file returned from the server.
    */
-  protected function uploadDrupalRestFileToEntityField($entity_type_id, $entity_bundle, $field_name, $file_contents, $file_name) {
+  protected function uploadDrupalRestFileToEntityField(
+    string $entity_type_id,
+    string $entity_bundle,
+    string $field_name,
+    string $file_contents,
+    string $file_name
+  ) : object {
     $uri = "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
     $args = [
       'body' => $file_contents,
       'headers' => [
         'Content-Type' => 'application/octet-stream',
         'Content-Disposition' => "file; filename=\"$file_name\"",
-        'X-CSRF-Token' => $this->drupalRestToken
+        'X-CSRF-Token' => $this->drupalRestToken,
       ],
     ];
     $method = 'post';

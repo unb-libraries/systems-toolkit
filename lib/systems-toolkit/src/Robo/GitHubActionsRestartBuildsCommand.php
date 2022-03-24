@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use \UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
-use \UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for GitHubActionsRestartBuildsCommand Robo commands.
@@ -13,7 +13,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * Restart the latest builds for Github Actions deployed repositories.
+   * Restarts the latest builds for Github Actions deployed repositories.
    *
    * @param string $namespace
    *   The branch to operate on. Defaults to 'dev'.
@@ -24,6 +24,8 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    * @param string $tag
    *   The tag to match when selecting repositories. Defaults to all github
    *   actions tagged repositories.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option $yes
    *   Assume a 'yes' answer for all prompts.
@@ -33,9 +35,16 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    * @command github:actions:restart-latest
    * @usage github:actions:restart-latest 'dev' 'pmportal.org' 'drupal8' --yes
    */
-  public function getGitHubActionsRestartLatestBuild($namespace = 'dev', $match = '', $tag = 'github-actions', $options = ['yes' => FALSE, 'multi-repo-delay' => '300']) {
+  public function getGitHubActionsRestartLatestBuild(
+    string $namespace = 'dev',
+    string $match = '',
+    string $tag = 'github-actions',
+    array $options = [
+      'yes' => FALSE,
+      'multi-repo-delay' => '300',
+    ]
+  ) {
     $matches = explode(',', $match);
-    // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $matches,
       [$tag],

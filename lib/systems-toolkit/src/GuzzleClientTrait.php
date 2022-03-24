@@ -14,7 +14,7 @@ trait GuzzleClientTrait {
    *
    * @var \GuzzleHttp\Client
    */
-  protected $guzzleClient;
+  protected Client $guzzleClient;
 
   /**
    * Set the guzzle client.

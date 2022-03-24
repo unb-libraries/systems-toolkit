@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for DrupalUpdatesCommand Robo commands.
@@ -13,7 +13,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * Perform Drupal 7 updates.
+   * Performs Drupal 7 updates.
    *
    * @param array $updates
    *   Modules to update. Should be in the form of module,oldver,newver.
@@ -24,7 +24,8 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
    */
   public function doDrupal7Updates(array $updates) {
     if (empty($updates)) {
-      return $this->say('No updates requested!');
+      $this->say('No updates requested!');
+      return;
     }
 
     $this->say('Getting Drupal 7 repostories from GitHub');
@@ -41,9 +42,11 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
       $find = "projects[{$line[0]}][version] = \"{$line[1]}\"";
       $replace = "projects[{$line[0]}][version] = \"{$line[2]}\"";
       $commit = "{$line[0]} {$line[1]} -> {$line[2]}";
-      $parsedUpdates[preg_quote($find)] = ['replace' => $replace, 'commit' => $commit];
+      $parsedUpdates[preg_quote($find)] = [
+        'replace' => $replace,
+        'commit' => $commit,
+      ];
     }
-
 
     $branch = 'master';
     $committer = ['name' => $this->userName, 'email' => $this->userEmail];
@@ -74,4 +77,5 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
       }
     }
   }
+
 }

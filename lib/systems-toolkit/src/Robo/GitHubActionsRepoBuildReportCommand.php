@@ -2,11 +2,9 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use \UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
-use \UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Helper\TableCell;
+use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for GitHubActionsRepoBuildReportCommand Robo commands.
@@ -16,7 +14,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * Show the latest build results for GitHub Actions build repositories.
+   * Shows the latest build results for GitHub Actions build repositories.
    *
    * This command will list the latest github action runs in each branch of
    * the GitHub repository.
@@ -25,19 +23,19 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
    *   A comma separated list of strings to match. Only repositories whose names
    *   partially match at least one of the comma separated values will be
    *   processed. Optional.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option $only-failure
    *   Show only failed runs.
    *
-   * @throws \Exception
-   *
+   * @command github:actions:status
    * @usage unbherbarium,pmportal
    *
-   * @command github:actions:status
+   * @throws \Exception
    */
-  public function getGitHubActionsBuildReports($match = '', $options = ['only-failure' => FALSE]) {
+  public function getGitHubActionsBuildReports(string $match = '', array $options = ['only-failure' => FALSE]) {
     $matches = explode(',', $match);
-    // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $matches,
       ['github-actions'],
@@ -52,21 +50,21 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
       foreach ($this->githubRepositories as $repository_data) {
         $repo_owner = $repository_data['owner']['login'];
         $repo_name = $repository_data['name'];
-        $workflows = $this->client->api('repo')->workflows()->all($repo_owner,$repo_name);
+        $workflows = $this->client->api('repo')->workflows()->all($repo_owner, $repo_name);
         if (!empty($workflows['workflows'])) {
           foreach ($workflows['workflows'] as $workflow) {
             if ($workflow['name'] == $repo_name) {
               $workflow_data[] = [
                 'repository' => $repository_data,
                 'workflow' => $workflow,
-                'runs' => $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id'])
+                'runs' => $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']),
               ];
             }
           }
         }
       }
 
-      // Tabulate Data
+      // Tabulate the data.
       if (!empty($workflow_data)) {
         $table_rows = [];
         foreach ($workflow_data as $repository_data) {
@@ -107,15 +105,11 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
           $table = new Table($this->output());
           $table
             ->setHeaders(['Repository', 'Branch', 'ID', 'Status', 'URL'])
-            ->setRows($table_rows)
-          ;
+            ->setRows($table_rows);
           $table->render();
         }
       }
     }
-
-
-
   }
 
 }

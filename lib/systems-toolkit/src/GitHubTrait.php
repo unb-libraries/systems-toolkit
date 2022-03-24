@@ -16,38 +16,38 @@ trait GitHubTrait {
    *
    * @var string
    */
-  protected $authKey;
+  protected string $authKey;
 
   /**
    * The client to use.
    *
    * @var \Github\Client
    */
-  protected $client;
+  protected Client $client;
 
   /**
    * The commit username.
    *
    * @var string
    */
-  protected $userName;
+  protected string $userName;
 
   /**
    * The commit user email.
    *
    * @var string
    */
-  protected $userEmail;
+  protected string $userEmail;
 
   /**
    * The organizations to interact with.
    *
    * @var array
    */
-  protected $organizations;
+  protected array $organizations = [];
 
   /**
-   * Get the github authKey from config.
+   * Get the GitHub authKey from config.
    *
    * @throws \Exception
    *
@@ -61,7 +61,7 @@ trait GitHubTrait {
   }
 
   /**
-   * Get the github user email from config.
+   * Get the GitHub user email from config.
    *
    * @throws \Exception
    *
@@ -75,7 +75,7 @@ trait GitHubTrait {
   }
 
   /**
-   * Get the github organization list from config.
+   * Get the GitHub organization list from config.
    *
    * @throws \Exception
    *
@@ -89,7 +89,7 @@ trait GitHubTrait {
   }
 
   /**
-   * Get the github authKey from config.
+   * Get the GitHub authKey from config.
    *
    * @throws \Exception
    *
@@ -98,7 +98,11 @@ trait GitHubTrait {
   public function setGitHubClient() {
     try {
       $this->client = new Client();
-      $this->client->authenticate($this->authKey, NULL, AuthMethod::ACCESS_TOKEN);
+      $this->client->authenticate(
+        $this->authKey,
+        NULL,
+        AuthMethod::ACCESS_TOKEN
+      );
       $this->client->currentUser()->show();
     }
     catch (\Exception $e) {
@@ -112,7 +116,7 @@ trait GitHubTrait {
   }
 
   /**
-   * Get the github user name from config.
+   * Get the GitHub username from config.
    *
    * @throws \Exception
    *
@@ -131,10 +135,10 @@ trait GitHubTrait {
    * @param string $name
    *   The name of the repository to check.
    *
-   * @return bool
-   *   TRUE if the repository exists and the user has access. FALSE otherwise.
+   * @return mixed
+   *   The details of the repo if exists and user has access. FALSE otherwise.
    */
-  protected function getRepositoryExists($name) {
+  protected function getRepositoryExists(string $name) : mixed {
     foreach ($this->organizations as $organization) {
       $repo_details = $this->client->api('repo')->show($organization, $name);
       if (!empty($repo_details['ssh_url'])) {
@@ -157,7 +161,11 @@ trait GitHubTrait {
    * @return bool
    *   TRUE if the repository has the branch. FALSE otherwise.
    */
-  protected function getGitHubRepositoryHasBranch($owner, $name, $branch) {
+  protected function getGitHubRepositoryHasBranch(
+    string $owner,
+    string $name,
+    string $branch
+  ) : bool {
     foreach ($this->client->api('repo')->branches($owner, $name) as $cur_branch) {
       if ($cur_branch['name'] == $branch) {
         return TRUE;
@@ -177,7 +185,7 @@ trait GitHubTrait {
    *
    * @throws \Github\Exception\ErrorException
    */
-  protected function getGitHubRepositoryJiraSlug($repository) {
+  protected function getGitHubRepositoryJiraSlug(object $repository) : string {
     $dockworker_yml_path = '.dockworker/dockworker.yml';
     $dockworker_file_content = $this->client->api('repo')->contents()->download($repository['owner']['login'], $repository['name'], $dockworker_yml_path, $repository['default_branch']);
     $dockworker_yml = yaml_parse($dockworker_file_content);

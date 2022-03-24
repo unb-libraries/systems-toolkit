@@ -2,10 +2,11 @@
 
 namespace UnbLibraries\SystemsToolkit;
 
+use Robo\ResultData;
 use Robo\Robo;
 
 /**
- * Class for SystemsToolkitKubeCommand Robo commands.
+ * Class for SystemsToolkitKubeCommand commands.
  */
 trait KubeExecTrait {
 
@@ -31,7 +32,7 @@ trait KubeExecTrait {
   protected $kubeCurPods = [];
 
   /**
-   * Get kubectl binary path from config.
+   * Gets kubectl binary path from config.
    *
    * @throws \Exception
    *
@@ -45,7 +46,7 @@ trait KubeExecTrait {
   }
 
   /**
-   * Get if the kubectl binary defined in the config file can be executed.
+   * Gets if the kubectl binary defined in the config file can be executed.
    *
    * @throws \Exception
    *
@@ -58,7 +59,7 @@ trait KubeExecTrait {
   }
 
   /**
-   * Get kubectl config path from config.
+   * Gets kubectl config path from config.
    *
    * @throws \Exception
    *
@@ -72,7 +73,7 @@ trait KubeExecTrait {
   }
 
   /**
-   * Execute a command in all queued pods.
+   * Executes a command in all queued pods.
    *
    * @param string $exec
    *   The command to execute (i.e. ls)
@@ -83,17 +84,22 @@ trait KubeExecTrait {
    * @param bool $print_output
    *   TRUE if the command should output results. False otherwise.
    */
-  private function kubeExecAll($exec, $flags = '-it', $args = [], $print_output = TRUE) {
+  private function kubeExecAll(
+    string $exec,
+    string $flags = '-it',
+    array $args = [],
+    bool $print_output = TRUE
+  ) {
     foreach ($this->kubeCurPods as $pod) {
       $this->kubeExecPod($pod, $exec, $flags, $args, $print_output);
     }
   }
 
   /**
-   * Execute a command in a single pod.
+   * Executes a command in a single pod.
    *
    * @param object $pod
-   *   The command to execute (i.e. ls)
+   *   The pod to execute the command in.
    * @param string $exec
    *   The command to execute (i.e. ls)
    * @param string $flags
@@ -106,7 +112,13 @@ trait KubeExecTrait {
    * @return \Robo\ResultData
    *   The result of the execution.
    */
-  private function kubeExecPod($pod, $exec, $flags = '-it', $args = [], $print_output = TRUE) {
+  private function kubeExecPod(
+    object $pod,
+    string $exec,
+    string $flags = '-it',
+    array $args = [],
+    bool $print_output = TRUE
+  ) : ResultData {
     $kube = $this->taskExec($this->kubeBin)
       ->printOutput($print_output)
       ->arg("--kubeconfig={$this->kubeConfig}")
@@ -127,16 +139,22 @@ trait KubeExecTrait {
   }
 
   /**
-   * Set the current pods from a selector.
+   * Sets the current pods from a selector.
    *
    * @param string[] $selectors
    *   An array of selectors to filter pods against.
    * @param string[] $namespaces
    *   An array of namespaces to filter pods against.
+   * @param bool $quiet
+   *   TRUE if the output should be oppressed.
    *
    * @throws \Exception
    */
-  protected function setCurKubePodsFromSelector(array $selectors, array $namespaces = ['dev', 'prod'], $quiet = FALSE) {
+  protected function setCurKubePodsFromSelector(
+    array $selectors,
+    array $namespaces = ['dev', 'prod'],
+    bool $quiet = FALSE
+  ) {
     $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
@@ -149,15 +167,20 @@ trait KubeExecTrait {
   }
 
   /**
-   * Add pods to the current list from a JSON response string.
+   * Adds pods to the current list from a JSON response string.
    *
    * @param string $json
    *   The JSON string to parse and add pods from.
    *
    * @throws \Exception
    */
-  private function setAddCurPodsFromJson($json) {
-    $response = json_decode($json, null, 512, JSON_THROW_ON_ERROR);
+  private function setAddCurPodsFromJson(string $json) {
+    $response = json_decode(
+      $json,
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
+    );
     if (!empty($response->items)) {
       $this->kubeCurPods = array_merge($this->kubeCurPods, $response->items);
     }

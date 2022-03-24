@@ -3,8 +3,8 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for MultipleProjectBatchStepCommand Robo commands.
@@ -23,8 +23,8 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   public const MESSAGE_NO_CHANGES_TO_REPO = 'The script\'s execution did not result in any changes to the repository.';
   public const MESSAGE_NO_STAGED_CHANGES = 'No staged changes were found, skipping commit!';
   public const MESSAGE_PUSHING_CHANGES = 'Pushing repository changes to GitHub...';
-  public const MESSAGE_SLEEPING ='Sleeping for %s seconds to spread build times...';
-  public const MESSAGE_STAGING_CHANGES ='Staging changes in repository...';
+  public const MESSAGE_SLEEPING = 'Sleeping for %s seconds to spread build times...';
+  public const MESSAGE_STAGING_CHANGES = 'Staging changes in repository...';
   public const MESSAGE_STEP_DONE = 'Done!';
   public const QUESTION_COMMIT_PREFIX_TO_USE = 'Commit prefix to use (i.e. PMPOR-45, Blank for None)? :';
   public const QUESTION_SCRIPT_EXECUTION_OK = 'Script execution complete, commit and push changes?';
@@ -34,35 +34,35 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $commitMessage;
+  protected string $commitMessage;
 
   /**
    * The currently cloned repository the service is operating on.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $curCloneRepo;
+  protected GitRepo $curCloneRepo;
 
   /**
    * The current repository the service is operating on.
    *
    * @var array
    */
-  protected $curRepoMetadata;
+  protected array $curRepoMetadata;
 
   /**
    * The base name of the script to run in each repository.
    *
    * @var string
    */
-  protected $modifyingScriptName;
+  protected string $modifyingScriptName;
 
   /**
    * The full path to the script to run in each repository.
    *
    * @var string
    */
-  protected $modifyingScriptFilePath;
+  protected string $modifyingScriptFilePath;
 
   /**
    * Perform, commit changes on multiple repositories with a shell script.
@@ -100,10 +100,10 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @usage github:multiple-repo:script-modify '' 'drupal9' 'Config catch-up related to core update 8.x -> 9.x' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/updateRepoWithProdConfig.sh --yes --skip-commit-prefix --manual-file-stage
    */
   public function setModifyMultipleRepositoriesFromScript(
-    $match,
-    $topics,
-    $commit_message,
-    $script_path,
+    string $match,
+    string $topics,
+    string $commit_message,
+    string $script_path,
     array $options = [
       'yes' => FALSE,
       'manual-file-stage' => FALSE,
@@ -180,7 +180,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   /**
    * Clones the current repository to a temporary location.
    *
-   * @throws \Cz\Git\GitException
+   * @throws \CzProject\GitPhp\GitException
    * @throws \Exception
    */
   protected function cloneTempRepo() {

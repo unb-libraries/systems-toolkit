@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use JiraRestApi\Field\FieldService;
 use JiraRestApi\Field\Field;
+use JiraRestApi\Field\FieldService;
 use JiraRestApi\JiraException;
 use JiraRestApi\Project\ProjectService;
 use UnbLibraries\SystemsToolkit\JiraTrait;
@@ -17,7 +17,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
   use JiraTrait;
 
   /**
-   * Get project info from the JIRA ID.
+   * Gets project info from the JIRA ID.
    *
    * @param string $project_id
    *   The project ID string, i.e. NBNP.
@@ -25,8 +25,9 @@ class BasicJiraCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command jira:project:info
+   * @usage NBNP
    */
-  public function getProjectInfo($project_id) {
+  public function getProjectInfo(string $project_id) {
     try {
       $project = new ProjectService($this->jiraConfig);
       $project_info = $project->get($project_id);

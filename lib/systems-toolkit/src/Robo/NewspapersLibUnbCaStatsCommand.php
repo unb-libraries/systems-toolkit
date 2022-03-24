@@ -2,10 +2,10 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Robo;
+use DateTimeInterface;
+use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
-use UnbLibraries\SystemsToolkit\KubeExecTrait;
 
 /**
  * Class for NewspapersLibUnbCaStatsCommand Robo commands.
@@ -17,7 +17,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
 
   public const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
   public const NEWSPAPERS_NAMESPACE = 'prod';
-  public const TIME_STRING_FORMAT = \DateTime::ISO8601;
+  public const TIME_STRING_FORMAT = DateTimeInterface::ISO8601;
 
   /**
    * Displays stats regarding newspapers.lib.unb.ca's digital content.
@@ -53,14 +53,15 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
   /**
    * Gets the output from a DRUSH sql query.
    *
-   * @param $pod
-   *   The pod ID to query.
-   * @param $query
+   * @param object $pod
+   *   The pod to query.
+   * @param string $query
    *   The query to use.
    *
    * @return string
+   *   The output from the drush command.
    */
-  private function getDrushQueryOutput($pod, $query) {
+  private function getDrushQueryOutput(object $pod, string $query) {
     $command_string = trim(
       sprintf(
         "%s '--kubeconfig=%s' '--namespace=%s' exec %s -- drush sqlq '%s'",

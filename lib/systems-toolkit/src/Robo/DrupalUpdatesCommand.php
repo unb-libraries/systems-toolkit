@@ -5,9 +5,9 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Robo\Robo;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
-use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
+use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
@@ -20,11 +20,15 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
 
   /**
    * Should confirmations for this object be skipped?
+   *
+   * @var bool
    */
   private bool $noConfirm = FALSE;
 
   /**
    * Should only security updates be listed/applied?
+   *
+   * @var bool
    */
   private bool $securityOnly = FALSE;
 
@@ -43,7 +47,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   private array $updates = [];
 
   /**
-   * Rebuild all Drupal docker images and redeploy in their current state.
+   * Rebuilds all Drupal docker images and redeploy in their current state.
    *
    * @option $namespaces
    *   The namespaces to rebuild and deploy.
@@ -52,7 +56,14 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:rebuild-redeploy
    */
-  public function getRebuildDeployDrupalContainers($options = ['namespaces' => ['dev', 'prod']]) {
+  public function getRebuildDeployDrupalContainers(
+    $options = [
+      'namespaces' => [
+        'dev',
+        'prod',
+      ],
+    ]
+  ) {
     $pod_selector = [
       'app=drupal',
     ];
@@ -65,7 +76,10 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Perform needed Drupal updates automatically.
+   * Performs needed Drupal updates automatically.
+   *
+   * @param array $options
+   *   An array of CLI options to pass to the command.
    *
    * @option $namespaces
    *   The extensions to match when finding files. Defaults to dev only.
@@ -80,11 +94,22 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @option $multi-repo-delay
    *   The amount of time to delay between updating repositories.
    *
-   * @throws \Exception
+   * @throws \CzProject\GitPhp\GitException
+   * @throws \JsonException
+   * @throws \Psr\Cache\InvalidArgumentException
    *
    * @command drupal:doupdates
    */
-  public function setDoDrupalUpdates($options = ['namespaces' => ['dev'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE, 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function setDoDrupalUpdates(
+    array $options = [
+      'namespaces' => ['dev'],
+      'only-update' => [],
+      'exclude' => [],
+      'security-only' => FALSE,
+      'yes' => FALSE,
+      'multi-repo-delay' => '240',
+    ]
+  ) {
     $this->getDrupalUpdates($options);
     $this->noConfirm = $options['yes'];
 
@@ -109,7 +134,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the list of needed Drupal updates.
+   * Gets the list of needed Drupal updates.
    *
    * @option $namespaces
    *   The extensions to match when finding files.
@@ -122,7 +147,17 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:getupdates
    */
-  public function getDrupalUpdates($options = ['namespaces' => ['dev', 'prod'], 'only-update' => [], 'exclude' => [], 'security-only' => FALSE]) {
+  public function getDrupalUpdates(
+    $options = [
+      'namespaces' => [
+        'dev',
+        'prod',
+      ],
+      'only-update' => [],
+      'exclude' => [],
+      'security-only' => FALSE,
+    ]
+  ) {
     $this->securityOnly = $options['security-only'];
 
     $pod_selector = [
@@ -131,25 +166,41 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     $this->setAllNeededUpdates($options['only-update'], $options['exclude']);
     $this->tabulateNeededUpdates($options['namespaces']);
-    $this->printTabluatedUpdateTables();
+    $this->printTabulatedUpdateTables();
   }
 
   /**
-   * Set all needed updates for queued pods.
+   * Sets all needed updates for queued pods.
+   *
+   * @param string[] $module_whitelist
+   *   An array of module names to restrict the updates to.
+   * @param string[] $module_exclude
+   *   An array of module names to exclude from the list.
+   *
+   * @throws \JsonException
    */
-  private function setAllNeededUpdates($module_whitelist = [], $module_exclude = []) {
+  private function setAllNeededUpdates(
+    array $module_whitelist = [],
+    array $module_exclude = [],
+  ) {
     foreach ($this->kubeCurPods as $pod) {
       $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
     }
   }
 
   /**
-   * Set needed updates for a specific pod.
+   * Sets needed updates for a specific pod.
    *
    * @param object $pod
    *   The kubernetes pod object obtained from JSON.
+   * @param string[] $module_whitelist
+   *   An array of module names to restrict the updates to.
+   * @param string[] $module_exclude
+   *   An array of module names to exclude from the list.
+   *
+   * @throws \JsonException
    */
-  private function setNeededUpdates($pod, $module_whitelist = [], $module_exclude = []) {
+  private function setNeededUpdates($pod, array $module_whitelist = [], array $module_exclude = []) {
     $args = [];
     $command = '/scripts/listDrupalUpdates.sh';
     if ($this->securityOnly) {
@@ -165,7 +216,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     );
 
     $updates_needed = $result->getMessage();
-    $updates = json_decode($updates_needed, null, 512, JSON_THROW_ON_ERROR);
+    $updates = json_decode(
+      $updates_needed,
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
+    );
     $this->filterIgnoredUpdates($updates);
     if (!empty($module_whitelist)) {
       $this->filterWhitelistUpdates($updates, $module_whitelist);
@@ -187,12 +243,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Set needed updates for a specific pod.
+   * Sets needed updates for a specific pod.
    *
    * @param string[] $branches
    *   The branches to set the updates for.
    */
-  private function tabulateNeededUpdates($branches = ['dev', 'prod']) {
+  private function tabulateNeededUpdates(array $branches = ['dev', 'prod']) {
     foreach ($this->updates as $update) {
       if (in_array($update['pod']->metadata->namespace, $branches)) {
         if (!empty($update['updates'])) {
@@ -209,23 +265,25 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Print tabulated updates to the console.
+   * Prints tabulated updates to the console.
    */
-  private function printTabluatedUpdateTables() {
+  private function printTabulatedUpdateTables() {
     if (!empty($this->tabulatedUpdates)) {
       foreach ($this->tabulatedUpdates as $instance => $updates) {
-        $this->printTabluatedInstanceUpdateTable($instance);
+        $this->printTabulatedInstanceUpdateTable($instance);
       }
     }
   }
 
   /**
-   * Print the list of tabulated instance updates as a table.
+   * Prints the list of tabulated instance updates as a table.
    *
    * @param string $instance_name
    *   The name of the instance.
+   *
+   * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function printTabluatedInstanceUpdateTable($instance_name) {
+  private function printTabulatedInstanceUpdateTable(string $instance_name) {
     if (!empty($this->tabulatedUpdates[$instance_name])) {
       $this->say("Updates available:");
       $table = new Table($this->output());
@@ -246,7 +304,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the formatted message referencing a particular update.
+   * Gets the formatted message referencing a particular update.
    *
    * @param object $update
    *   The update object that was generated from the JSON source.
@@ -258,7 +316,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *
    * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function getFormattedUpdateMessage($update, $add_changelog = FALSE) {
+  private function getFormattedUpdateMessage(object $update, bool $add_changelog = FALSE) : string {
     $message = sprintf(
       '%s %s -> %s',
       $update->name,
@@ -280,7 +338,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Determine if an update should be ignored.
+   * Determines if an update should be ignored.
    *
    * @param object $update
    *   The update object that was generated from the JSON source.
@@ -288,7 +346,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
-  private function isIgnoredUpdate($update) {
+  private function isIgnoredUpdate(object $update) : bool {
     $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects') ?? [];
     if (in_array($update->name, $ignored_projects)) {
       return TRUE;
@@ -297,7 +355,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Determine if an update should be ignored due to version locks.
+   * Determines if an update should be ignored due to version locks.
    *
    * @param object $update
    *   The update object that was generated from the JSON source.
@@ -305,7 +363,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if the update should be ignored. FALSE otherwise.
    */
-  private function isLockedUpdate($update) {
+  private function isLockedUpdate(object $update) : bool {
     $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects') ?? [];
     if (array_key_exists($update->name, $locked_projects) && $locked_projects[$update->name] == $update->existing_version) {
       return TRUE;
@@ -314,12 +372,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Filter any ignored updates.
+   * Filters any ignored updates.
    *
    * @param object[] $updates
    *   An array of update objects.
    */
-  private function filterIgnoredUpdates(&$updates) {
+  private function filterIgnoredUpdates(array &$updates) {
     if (!empty($updates)) {
       foreach ($updates as $idx => $update) {
         if ($this->isIgnoredUpdate($update)) {
@@ -335,12 +393,14 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Filter any non-whitelist updates.
+   * Filters any non-whitelist updates.
    *
    * @param object[] $updates
    *   An array of update objects.
+   * @param string[] $module_whitelist
+   *   An array of module names to restrict the updates to.
    */
-  private function filterWhitelistUpdates(&$updates, $module_whitelist) {
+  private function filterWhitelistUpdates(array &$updates, array $module_whitelist) {
     foreach ($updates as $idx => $update) {
       if (!in_array($update->name, $module_whitelist)) {
         $this->say("Ignoring update for {$update->name}...");
@@ -350,12 +410,14 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Filter any excluded updates.
+   * Filters any excluded updates.
    *
    * @param object[] $updates
    *   An array of update objects.
+   * @param string[] $module_exclude
+   *   An array of module names to exclude from the list.
    */
-  private function filterExcludeUpdates(&$updates, $module_exclude) {
+  private function filterExcludeUpdates(array &$updates, array $module_exclude) {
     if (!empty($updates)) {
       foreach ($updates as $idx => $update) {
         if (in_array($update->name, $module_exclude)) {
@@ -367,9 +429,16 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Update all queued GitHub repositories.
+   * Updates all queued GitHub repositories.
+   *
+   * @param array $options
+   *   An array of CLI options to pass to the command.
+   *
+   * @throws \CzProject\GitPhp\GitException
+   * @throws \JsonException
+   * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function updateAllRepositories($options) {
+  private function updateAllRepositories(array $options) {
     foreach ($this->githubRepositories as $repository) {
       $updates_pushed = $this->updateRepository($repository);
       if ($updates_pushed) {
@@ -380,24 +449,24 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Update a specific GitHub repository with required updates.
+   * Updates a specific GitHub repository with required updates.
    *
    * @param array $repository
    *   The associative array describing the repository.
    *
+   * @throws \CzProject\GitPhp\GitException
+   * @throws \JsonException
+   * @throws \Psr\Cache\InvalidArgumentException
+   *
    * @return bool
    *   TRUE if an update was pushed to GitHub. FALSE otherwise.
-   *
-   * @throws \Github\Exception\ErrorException
-   * @throws \Github\Exception\MissingArgumentException
-   * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function updateRepository(array $repository) {
+  private function updateRepository(array $repository) : bool {
     return $this->updateComposerJson($repository);
   }
 
   /**
-   * Update and commit the build/composer.json file for a repository and branch.
+   * Updates and commits the build/composer.json for a repository and branch.
    *
    * @param array $repository
    *   The associative array describing the repository.
@@ -407,11 +476,11 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if an update was pushed to GitHub. FALSE otherwise.
    *
-   * @throws \Github\Exception\ErrorException
-   * @throws \Github\Exception\MissingArgumentException
+   * @throws \CzProject\GitPhp\GitException
+   * @throws \JsonException
    * @throws \Psr\Cache\InvalidArgumentException
    */
-  private function updateComposerJson($repository, $branch = 'dev') {
+  private function updateComposerJson(array $repository, string $branch = 'dev') : bool {
     $path = 'build/composer.json';
     $committer = ['name' => $this->userName, 'email' => $this->userEmail];
     $updates_pushed = FALSE;
@@ -426,10 +495,15 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $repo_path = $repo->getTmpDir();
       $repo_build_file_path = "$repo_path/build/composer.json";
       $old_file_content = file_get_contents($repo_build_file_path);
-      $composer_file = json_decode($old_file_content, null, 512, JSON_THROW_ON_ERROR);
+      $composer_file = json_decode(
+        $old_file_content,
+        NULL,
+        512,
+        JSON_THROW_ON_ERROR
+      );
 
       if ($composer_file !== NULL) {
-        $this->printTabluatedInstanceUpdateTable($repository['name']);
+        $this->printTabulatedInstanceUpdateTable($repository['name']);
         if (!$this->noConfirm) {
           $do_all = $this->confirm('Perform all updates without interaction?');
         }
@@ -480,7 +554,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Determine if a composer.json file needs updates.
+   * Determines if a composer.json file needs updates.
    *
    * @param object $composer_file
    *   The object obtained by parsing the composer file JSON.
@@ -490,7 +564,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if the composer file needs update, FALSE otherwise.
    */
-  private function composerFileNeedsUpdate($composer_file, $update) {
+  private function composerFileNeedsUpdate(object $composer_file, object $update) : bool {
     $project_name = $this->getFormattedProjectName($update);
     $old_version = $this->getFormattedProjectVersion($update->existing_version);
     if (!empty($composer_file->require->$project_name) && $composer_file->require->$project_name == $old_version) {
@@ -500,7 +574,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the formatted version of an update's project name.
+   * Gets the formatted version of an update's project name.
    *
    * @param object $update
    *   The update object that was generated from the JSON source.
@@ -508,7 +582,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return string
    *   The formatted project name.
    */
-  private function getFormattedProjectName($update) {
+  private function getFormattedProjectName(object $update) : string {
     if ($update->name == 'drupal') {
       return "drupal/core";
     }
@@ -518,7 +592,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the formatted version of an update's project version.
+   * Gets the formatted version of an update's project version.
    *
    * @param string $version_string
    *   The version string to parse for formatting.
@@ -526,20 +600,19 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @return string
    *   The formatted project version.
    */
-  private function getFormattedProjectVersion($version_string) {
-    $formatted_version = str_replace('8.x-', NULL, $version_string);
-    return $formatted_version;
+  private function getFormattedProjectVersion(string $version_string) : string {
+    return str_replace('8.x-', NULL, $version_string);
   }
 
   /**
-   * Update a composer file contents with a specific update.
+   * Updates a composer file contents with a specific update.
    *
    * @param object $composer_file
    *   The object obtained by parsing the composer file JSON.
    * @param object $update
    *   The update object that was generated from the JSON source.
    */
-  private function updateComposerFile(&$composer_file, $update) {
+  private function updateComposerFile(object &$composer_file, object $update) {
     $project_name = $this->getFormattedProjectName($update);
     $old_version = $this->getFormattedProjectVersion($update->existing_version);
     $new_version = $this->getFormattedProjectVersion($update->recommended);

@@ -38,7 +38,7 @@ class GitRepo {
   public $branches = [];
 
   /**
-   * Create and set the temporary directory location.
+   * Creates and sets the temporary directory location.
    *
    * @param string $tmp_root
    *   Optional, the root path for the temp dir. Optional, defaults to system.
@@ -56,7 +56,7 @@ class GitRepo {
   }
 
   /**
-   * Get the temporary directory location for the repository.
+   * Gets the temporary directory location for the repository.
    */
   public function getTmpDir() {
     return $this->tmpDir;
@@ -116,7 +116,7 @@ class GitRepo {
   }
 
   /**
-   * Set the list of branches in the object property.
+   * Sets the list of branches in the object property.
    */
   private function setBranches() {
     foreach ($this->repo->getBranches() as $repo_branch) {
@@ -136,7 +136,7 @@ class GitRepo {
   }
 
   /**
-   * Get the commit message for a specific commit.
+   * Gets the commit message for a specific commit.
    *
    * @param string $hash
    *   The hash of the commit to check for.
@@ -154,7 +154,7 @@ class GitRepo {
   }
 
   /**
-   * Set the list of commits in the object property.
+   * Sets the list of commits in the object property.
    */
   private function setCommits() {
     $commits = $this->repo->execute(

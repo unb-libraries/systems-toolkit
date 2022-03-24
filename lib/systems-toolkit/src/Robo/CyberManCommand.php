@@ -13,16 +13,16 @@ class CyberManCommand extends SystemsToolkitCommand {
 
   use AwsSnsMessageTrait;
 
-  public const ERROR_SNS_TOPIC_ID_UNSET = 'The Cyberman SNS topic ID is unset in %s.';
+  public const ERROR_SNS_TOPIC_ID_UNSET = 'The CyberMan SNS topic ID is unset in %s.';
 
   /**
-   * Set the Cyberman SNS Topic ID.
+   * Sets the CyberMan SNS Topic ID.
    *
    * @throws \Exception
    *
    * @hook post-init
    */
-  public function setCybermanSnsTopicId() {
+  public function setCyberManSnsTopicId() {
     $topic_id = Robo::Config()->get('syskit.cyberman.awsSnsTopicId');
     if (empty($topic_id)) {
       throw new \Exception(sprintf(self::ERROR_SNS_TOPIC_ID_UNSET, $this->configFile));
@@ -33,22 +33,21 @@ class CyberManCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Send a message via the CyberMan Slack bot.
+   * Sends a message via the CyberMan Slack bot.
    *
-   * This command will send a message to the systems slack bot 'Cyberman'.
+   * This command will send a message to the systems slack bot 'CyberMan'.
    *
    * @param string $message
    *   The message to send. Quote it!
    *
    * @throws \Exception
    *
-   * @usage "Hello, cyberman here!"
-   *
    * @command cyberman:sendmessage
+   * @usage "Hello, cyberman here!"
    */
-  public function sendCybermanMessage($message) {
+  public function sendCyberManMessage(string $message) {
     $this->say(
-      $this->setSendMessage($message)
+      $this->setSendSnsMessage($message)
     );
   }
 

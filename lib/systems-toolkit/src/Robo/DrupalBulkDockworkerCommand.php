@@ -63,8 +63,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    *   The amount of time to delay between updating repositories.
    *
    * @command drupal:actions-bulk-update
-   *
-   * @usage drupal:actions-bulk-update 'IN-244 Update Readme Files' --yes
+   * @usage 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */

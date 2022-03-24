@@ -21,38 +21,31 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $commandString;
+  protected string $commandString;
 
   /**
    * The commit message to use.
    *
    * @var string
    */
-  protected $commitMessage;
+  protected string $commitMessage;
 
   /**
    * The name filter to match repositories against.
    *
    * @var string[]
    */
-  protected $nameFilter = [];
-
-  /**
-   * Command options passed.
-   *
-   * @var string[]
-   */
-  protected $options = [];
+  protected array $nameFilter = [];
 
   /**
    * The tag filter to match repositories against.
    *
    * @var string[]
    */
-  protected $tagFilter = [];
+  protected array $tagFilter = [];
 
   /**
-   * Run a dockworker command across several repositories and commit the result.
+   * Runs a dockworker command across several repositories, commits the result.
    *
    * @param string $command_string
    *   The entire dockworker command to run. Quote it!
@@ -73,14 +66,13 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *   The amount of time to delay between updating repositories.
    *
    * @command github:dockworker:bulk-command
-   *
-   * @usage github:dockworker:bulk-command 'readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
+   * @usage 'readme:update' '' 'drupal8' 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */
   public function setDoBulkDockworkerCommands(
-    $command_string,
-    $commit_message,
+    string $command_string,
+    string $commit_message,
     array $options = [
       'namespaces' => ['dev'],
       'repo-name' => [],
@@ -98,7 +90,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Run dockworker command against repositories.
+   * Runs a dockworker command against repositories.
    *
    * @throws \Exception
    */
@@ -118,7 +110,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Update all queued GitHub repositories.
+   * Updates all queued GitHub repositories.
    *
    * @throws \Exception
    */
@@ -143,7 +135,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Update a specific GitHub repository with required updates.
+   * Updates a specific GitHub repository with required updates.
    *
    * @param array $repository
    *   The associative array describing the repository.

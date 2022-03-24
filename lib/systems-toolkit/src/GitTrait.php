@@ -11,13 +11,14 @@ use UnbLibraries\SystemsToolkit\Git\GitRepo;
 trait GitTrait {
 
   /**
-   * Render a list of commits from the repository in table format.
+   * Renders a list of commits from the repository in table format.
    *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param int $number
-   *   The hash of the commit to check for.
+   *   The hash of the commit to check for. Defaults to 10.
    */
-  protected function getCommitListTable(GitRepo $repo, $number = 10) {
+  protected function getCommitListTable(GitRepo $repo, int $number = 10) {
     $wrapped_rows = [];
 
     foreach ($repo->commits as $commit) {
@@ -34,22 +35,25 @@ trait GitTrait {
   }
 
   /**
-   * Verify a commit exists in a repository, otherwise throw an exception.
+   * Verifies a commit exists in a repository, otherwise throw an exception.
    *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param string $hash
    *   The hash of the commit to check for.
+   *
    * @throws \Exception
    */
-  protected function getRepoHasCommit(GitRepo $repo, $hash) {
+  protected function getRepoHasCommit(GitRepo $repo, string $hash) {
     if (!$this->getCommitInRepo($repo, $hash)) {
       throw new \Exception(sprintf('The hash [%s] was not found in any branch of the repository.', $hash));
     }
   }
 
   /**
-   * Check if a commit exists in a repository.
+   * Checks if a commit exists in a repository.
    *
+   * @param \UnbLibraries\SystemsToolkit\Git\GitRepo $repo
    *   The repository to check for the commit.
    * @param string $hash
    *   The hash of the commit to check for.
@@ -57,7 +61,7 @@ trait GitTrait {
    * @return bool
    *   TRUE if the commit exists in the repository. False otherwise.
    */
-  private function getCommitInRepo(GitRepo $repo, $hash) {
+  private function getCommitInRepo(GitRepo $repo, string $hash) : bool {
     if (empty(trim($hash))) {
       $this->say('An empty hash was specified!');
       return FALSE;

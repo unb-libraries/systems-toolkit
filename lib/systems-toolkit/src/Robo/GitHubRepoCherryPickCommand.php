@@ -34,10 +34,10 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    *
    * @var array
    */
-  protected $sourceRepo;
+  protected array $sourceRepo;
 
   /**
-   * Cherry pick a commit from a repo onto multiple others. Robo Command.
+   * Cherry-picks a commit from a repo onto multiple others.
    *
    * @param string $source_repository
    *   The name of the repository to source the commit from.
@@ -52,11 +52,14 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    *
-   * @usage pmportal.org drupal8 unbherb
-   *
    * @command github:repo:cherry-pick-multiple
+   * @usage pmportal.org drupal8 unbherb
    */
-  public function cherryPickMultiple($source_repository, $target_topics = '', $target_name_match = '') {
+  public function cherryPickMultiple(
+    string $source_repository,
+    string $target_topics = '',
+    string $target_name_match = ''
+  ) {
     $match_array = explode(",", $target_name_match);
     $topics_array = explode(",", $target_topics);
 
@@ -73,7 +76,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Cherry pick a commit from a repo onto multiple others.
+   * Cherry-picks a commit from a repo onto multiple others.
    *
    * @param string $source_repository
    *   The name of the repository to source the commit from.
@@ -87,7 +90,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function cherryPickOneToMultiple($source_repository, array $target_topics = [], array $target_name_match = []) {
+  protected function cherryPickOneToMultiple(string $source_repository, array $target_topics = [], array $target_name_match = []) {
     $this->say(
       sprintf(
         self::MESSAGE_BEGINNING_CHERRY_PICK,

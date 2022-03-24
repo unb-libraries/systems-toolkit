@@ -13,7 +13,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
   use KubeExecTrait;
 
   /**
-   * Get a kubernetes service logs from the URI and namespace.
+   * Gets a kubernetes service logs from the URI and namespace.
    *
    * @param string $uri
    *   The URI to the desired service. (pmportal.org)
@@ -23,8 +23,9 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command k8s:logs
+   * @usage pmportal.org dev
    */
-  public function getKubeServiceLogsFromUri($uri, $namespace) {
+  public function getKubeServiceLogsFromUri(string $uri, string $namespace) {
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
 
     foreach ($this->kubeCurPods as $pod) {
@@ -39,7 +40,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get a kubernetes service shell from a URI and namespace.
+   * Gets a kubernetes service shell from a URI and namespace.
    *
    * @param string $uri
    *   The URI to the desired service. (pmportal.org)
@@ -52,7 +53,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    *
    * @command k8s:shell
    */
-  public function getKubeShellFromUri($uri, $namespace, $shell = 'sh') {
+  public function getKubeShellFromUri(string $uri, string $namespace, string $shell = 'sh') {
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
     $this->kubeExecAll($shell);
   }

@@ -8,7 +8,7 @@ use RegexIterator;
 use Symfony\Component\Console\Helper\Table;
 
 /**
- *  Trait for running commands recursively on a file tree.
+ * Trait for running commands recursively on a file tree.
  */
 trait RecursiveFileTreeTrait {
 
@@ -17,24 +17,24 @@ trait RecursiveFileTreeTrait {
    *
    * @var string
    */
-  protected $recursiveFileRegex;
+  protected string $recursiveFileRegex;
 
   /**
    * The files to operate on.
    *
    * @var array
    */
-  protected $recursiveFiles = [];
+  protected array $recursiveFiles = [];
 
   /**
    * The tree root to parse recursively.
    *
    * @var string
    */
-  protected $recursiveFileTreeRoot;
+  protected string $recursiveFileTreeRoot;
 
   /**
-   * Set up the files to iterate over.
+   * Sets up the files to iterate over.
    *
    * @throws \Exception
    */
@@ -64,30 +64,35 @@ trait RecursiveFileTreeTrait {
   }
 
   /**
-   * Get and confirm operation on files.
+   * Gets and confirm operation on files.
    *
    * @param string $operation_name
    *   The name of the operation to print.
+   * @param bool $skip_confirm
+   *   TRUE if the confirmations should be skipped. Defaults to FALSE.
    *
    * @throws \Exception
    */
-  public function getConfirmFiles($operation_name = 'Operation', $skip_confirm = FALSE) {
+  public function getConfirmFiles(
+    string $operation_name = 'Operation',
+    bool $skip_confirm = FALSE
+  ) {
     if (!$skip_confirm) {
       $table = new Table($this->output());
       $table_rows = array_map([$this, 'arrayWrap'], $this->recursiveFiles);
-      $table->setHeaders(array('Filename'))->setRows($table_rows);
+      $table->setHeaders(['Filename'])->setRows($table_rows);
       $table->setStyle('borderless');
       $table->render();
 
       $continue = $this->confirm(sprintf('The %s will be applied to ALL of the above files. Are you sure you want to continue?', $operation_name));
       if (!$continue) {
-        throw new \Exception(sprintf('Operation cancelled.'));
+        throw new \Exception('Operation cancelled.');
       }
     }
   }
 
   /**
-   * Map items in an array element.
+   * Maps items in an array element.
    *
    * @param string $item
    *   The item to wrap in array.
@@ -95,7 +100,7 @@ trait RecursiveFileTreeTrait {
    * @return array
    *   An array with the item as a single element.
    */
-  private function arrayWrap($item) {
+  private function arrayWrap(string $item) : array {
     return [$item];
   }
 

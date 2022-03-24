@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use UnbLibraries\SystemsToolkit\DockerCommandTrait;
@@ -20,11 +21,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
 
   /**
    * The docker image to use for Imagemagick commands.
+   *
+   * @var string
    */
   private string $imagemagickImage;
 
   /**
-   * Get the tesseract docker image from config.
+   * Gets the tesseract docker image from config.
    *
    * @throws \Exception
    *
@@ -38,7 +41,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate DZI tiles for an entire tree.
+   * Generates DZI tiles for an entire tree.
    *
    * @param string $root
    *   The tree root to parse.
@@ -67,7 +70,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @command dzi:generate-tiles:tree
    */
   public function dziFilesTree(
-    $root,
+    string $root,
     array $options = [
       'extension' => '.tif',
       'no-pull' => FALSE,
@@ -122,7 +125,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate DZI tiles for a specific NBNP issue.
+   * Generates DZI tiles for a specific NBNP issue.
    *
    * @param string $root
    *   The NBNP webtree root file location.
@@ -138,13 +141,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @option $no-pull
    *   Do not pull docker images prior to running.
    *
-   * @throws \Exception
-   *
    * @command newspapers.lib.unb.ca:issue:generate-dzi
+   *
+   * @throws \Exception
    */
   public function nbnpDziIssue(
-    $root,
-    $issue_id,
+    string $root,
+    string $issue_id,
     array $options = [
       'no-pull' => FALSE,
       'skip-existing' => FALSE,
@@ -167,7 +170,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate the Robo command used to generate the DZI tiles.
+   * Generates the Robo command used to generate the DZI tiles.
    *
    * @param string $file
    *   The file to parse.
@@ -184,16 +187,17 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The gid to assign the target files.
    *
    * @return \Robo\Contract\CommandInterface
+   *   The Robo command, ready to execute.
    */
   private function getDziTileCommand(
-    $file,
+    string $file,
     array $options = [
       'step' => '200',
       'target-gid' => '102',
       'target-uid' => '100',
       'tile-size' => '256',
     ]
-  ) {
+  ) : CommandInterface {
     $dzi_file_path_info = pathinfo($file);
     $tmp_dir = "$this->tmpDir/dzi/{$dzi_file_path_info['filename']}";
 
@@ -211,7 +215,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate DZI tiles for a file.
+   * Generates the DZI tiles for a file.
    *
    * @param string $file
    *   The file to parse.
@@ -234,7 +238,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @command dzi:generate-tiles
    */
   public function generateDziFiles(
-    $file,
+    string $file,
     array $options = [
       'no-pull' => FALSE,
       'skip-existing' => FALSE,
@@ -261,7 +265,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Pull the docker image required to generate DZI tiles.
+   * Pulls the docker image required to generate DZI tiles.
    *
    * @command dzi:pull-image
    */

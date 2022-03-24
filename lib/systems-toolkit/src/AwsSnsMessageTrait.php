@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit;
 
 use Aws\Credentials\Credentials;
+use Aws\Result;
 use Aws\Sns\SnsClient;
 use UnbLibraries\SystemsToolkit\AwsCommandTrait;
 
@@ -18,14 +19,14 @@ trait AwsSnsMessageTrait {
    *
    * @var \Aws\Sns\SnsClient
    */
-  protected $snsClient;
+  protected SnsClient $snsClient;
 
   /**
    * The SNS Topic ID for the Cyberman Queue.
    *
    * @var string
    */
-  protected $snsTopicId;
+  protected string $snsTopicId;
 
   /**
    * Set the SNS Client.
@@ -61,10 +62,12 @@ trait AwsSnsMessageTrait {
    * @param string $message
    *   The message to send. Quote it!
    *
-   *
    * @throws \Exception
+   *
+   * @return \Aws\Result
+   *   The result of the message send.
    */
-  protected function setSendSnsMessage(string $message): \Aws\Result {
+  protected function setSendSnsMessage(string $message): Result {
     return $this->snsClient->publish(
       [
         'Message' => $message,

@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
  * Class for RepositoryListCommand Robo commands.
@@ -13,7 +13,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * List all dockworker repositories.
+   * Lists all dockworker repositories.
    *
    * @throws \Exception
    *
@@ -30,7 +30,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * List all Drupal repositories.
+   * Lists all Drupal repositories.
    *
    * @throws \Exception
    *
@@ -52,7 +52,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    * @param string $title
    *   The string to use as the title.
    */
-  protected function repositoryListDisplay($title) {
+  protected function repositoryListDisplay(string $title) {
     if (empty($this->githubRepositories)) {
       $this->say('No repositories found!');
       return;
@@ -64,7 +64,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * List all repositories that contain a specific file.
+   * Lists all repositories that contain a specific file.
    *
    * @param string $file_path
    *   The path to the file to query.
@@ -76,10 +76,14 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *   The repository branch to query. Defaults to 'dev'.
    *
    * @command repository-list:contains-file
-   *
-   * @usage repository-list:contains-file config-yml/samlauth.authentication.yml '' drupal8
+   * @usage config-yml/samlauth.authentication.yml '' drupal8
    */
-  public function listContainsFileRepositories($file_path, $name_filter, $tag_filter, $branch = 'dev') {
+  public function listContainsFileRepositories(
+    string $file_path,
+    string $name_filter,
+    string $tag_filter,
+    string $branch = 'dev'
+  ) {
     $this->setRepositoryList(
       [$name_filter],
       [$tag_filter],

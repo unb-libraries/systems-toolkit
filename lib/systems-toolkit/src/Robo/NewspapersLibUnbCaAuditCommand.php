@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use JetBrains\PhpStorm\Pure;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
@@ -25,126 +26,119 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @var int
    */
-  protected $auditIssueCount = 0;
+  protected int $auditIssueCount = 0;
 
   /**
    * Issues identified as duplicates.
    *
    * @var string[]
    */
-  protected $duplicateIssues = [];
+  protected array $duplicateIssues = [];
 
   /**
    * Issues that are suspected to be empty - no remote pages attached to them.
    *
    * @var string[]
    */
-  protected $emptyRemoteIssues = [];
+  protected array $emptyRemoteIssues = [];
 
   /**
    * The number of issues that have validated properly.
    *
-   * @var string[]
+   * @var int
    */
-  protected $goodIssueCount = 0;
+  protected int $goodIssueCount = 0;
 
   /**
    * Current issue remote images that are suspected to be duplicates.
    *
    * @var string[]
    */
-  protected $imagesDuplicateOnRemote = [];
+  protected array $imagesDuplicateOnRemote = [];
 
   /**
    * Current issue remote images that are suspected to be missing.
    *
    * @var string[]
    */
-  protected $imagesMissingOnRemote = [];
+  protected array $imagesMissingOnRemote = [];
 
   /**
    * Current issue configuration as read from the metadata file.
    *
    * @var object
    */
-  protected $issueConfig;
+  protected object $issueConfig;
 
   /**
    * Local files that are part of the current issue.
    *
    * @var string[]
    */
-  protected $issueLocalFiles = [];
+  protected array $issueLocalFiles = [];
 
   /**
    * Path to the current issue metadata file.
    *
    * @var string
    */
-  protected $issueMetadataFile;
+  protected string $issueMetadataFile;
 
   /**
    * The current issue parent title entity ID.
    *
    * @var string
    */
-  protected $issueParentTitle;
+  protected string $issueParentTitle;
 
   /**
    * The path to the current issue.
    *
    * @var string
    */
-  protected $issuePath;
+  protected string $issuePath;
 
   /**
    * Remote entity IDs that are possible matches for the current issue.
    *
    * @var string[]
    */
-  protected $issuePossibleEntityIds = [];
+  protected array $issuePossibleEntityIds = [];
 
   /**
    * Files attached to remote version of the current issue.
    *
    * @var string[]
    */
-  protected $issueRemoteFiles = [];
+  protected array $issueRemoteFiles = [];
 
   /**
    * Issues that have been identified as missing remotely.
    *
    * @var string[]
    */
-  protected $missingRemoteIssues = [];
-
-  /**
-   * The current options passed to the CLI.
-   *
-   * @var string[]
-   */
-  protected $options = [];
+  protected array $missingRemoteIssues = [];
 
   /**
    * The current progress bar object for the CLI.
    *
    * @var \Symfony\Component\Console\Helper\ProgressBar
    */
-  protected $progressBar;
+  protected ProgressBar $progressBar;
 
   /**
    * The path to the remote Drupal instance filestore, typically mounted.
    *
    * @var string
    */
-  protected $webStorageBasePath;
+  protected string $webStorageBasePath;
 
   /**
    * Files that have been identified as zero length - both remote and local.
    *
    * @var string[]
    */
-  protected $zeroLengthFiles = [];
+  protected array $zeroLengthFiles = [];
 
   /**
    * Verifies that a page image file contains the same content as a local file.
@@ -164,9 +158,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @throws \Exception
    */
   public static function verifyPageFromIds(
-    $issue_id,
-    $page_no,
-    $local_file_path,
+    int $issue_id,
+    string $page_no,
+    string $local_file_path,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
     ]
@@ -192,7 +186,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return bool
    *   TRUE if the files are the same. FALSE otherwise.
    */
-  public static function remoteHashIsSame($uri, $file) {
+  public static function remoteHashIsSame(string $uri, string $file) : bool {
     $contents = file_get_contents($uri);
     $md5_remote = md5($contents);
     $md5_local = self::md5Sum($file);
@@ -211,11 +205,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string
    *   The MD5 hash.
    */
-  public static function md5Sum($path) {
+  public static function md5Sum(string $path) : string {
     if (file_exists($path)) {
       return trim(md5_file($path));
     }
-    return NULL;
+    return '';
   }
 
   /**
@@ -237,14 +231,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    *
-   * @usage "1 /mnt/issues/archive"
-   *
    * @command newspapers.lib.unb.ca:audit-tree
+   * @usage 1 /mnt/issues/archive
    */
   public function auditTree(
-    $title_id,
-    $file_path,
-    $web_storage_path,
+    string $title_id,
+    string $file_path,
+    string $web_storage_path,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'issue-page-extension' => 'jpg',
@@ -267,7 +260,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setIssuesQueue($file_path) {
+  private function setIssuesQueue(string $file_path) {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -311,7 +304,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function verifyIssueFromDir($path) {
+  private function verifyIssueFromDir(string $path) {
     $this->setIssueInit();
     $this->issuePath = $path;
     $this->issueMetadataFile = "$path/metadata.php";
@@ -352,7 +345,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * Initializes the current issue metadata values.
    */
   private function setIssueInit() {
-    $this->issueConfig = '';
+    $this->issueConfig = NULL;
     $this->issueLocalFiles = [];
     $this->issueMetadataFile = '';
     $this->issuePath = '';
@@ -362,12 +355,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
   /**
    * Sets the current issue configuration values.
+   *
+   * @throws \JsonException
    */
   private function setIssueConfig() {
     $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php {$this->issuePath}/metadata.php";
     exec($rewrite_command);
     $this->issueConfig = json_decode(
-      file_get_contents("$this->issueMetadataFile.json"), null, 512, JSON_THROW_ON_ERROR
+      file_get_contents("$this->issueMetadataFile.json"),
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
     );
   }
 
@@ -416,7 +414,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
       $data = curl_exec($ch);
       curl_close($ch);
-      $raw_response = json_decode($data, null, 512, JSON_THROW_ON_ERROR);
+      $raw_response = json_decode($data, NULL, 512, JSON_THROW_ON_ERROR);
       if (!empty($raw_response->data)) {
         foreach ($raw_response->data as $entity_id) {
           $this->issuePossibleEntityIds[] = $entity_id;
@@ -429,7 +427,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         ];
       }
     }
-    catch (Exception) {
+    catch (\Exception) {
       // pass.
     }
   }
@@ -443,7 +441,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string
    *   The created non-empty string.
    */
-  private function getNullifiedString($string) {
+  private function getNullifiedString(string $string) : string {
     if (empty($string)) {
       return self::NULL_STRING_PLACEHOLDER;
     }
@@ -472,12 +470,12 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * Determines the MD5 hash of a file.
    *
    * @param string $path
-   *   The path the the file.
+   *   The path to the file.
    *
    * @return string
    *   The MD5 hash.
    */
-  private function getMd5Sum($path) {
+  private function getMd5Sum(string $path) : string {
     $this->printMessage(LogLevel::INFO, "Running MD5 Sum on $path....");
     return self::md5Sum($path);
   }
@@ -492,7 +490,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param array $context
    *   The context for the message.
    */
-  protected function printMessage($level, $message, array $context = []) {
+  protected function printMessage(string $level, string $message, array $context = []) {
     $this->logger->log($level, $message, $context);
   }
 
@@ -505,7 +503,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string
    *   The constructed page number.
    */
-  private static function getPageNumberFromMikeFileName($filename) {
+  private static function getPageNumberFromMikeFileName(string $filename) : string {
     $path_info = pathinfo($filename);
     $filename_components = explode('_', $path_info['filename']);
     return ltrim($filename_components[5], '0');
@@ -588,7 +586,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string[]
    *   The difference between the two values.
    */
-  private static function arrayKeyDiff(array $arr1, array $arr2, $key) {
+  private static function arrayKeyDiff(array $arr1, array $arr2, string $key) : array {
     foreach ($arr1 as $idx1 => $val1) {
       $found = FALSE;
       foreach ($arr2 as $val2) {
@@ -615,7 +613,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string[]
    *   The values that are duplicates in the array.
    */
-  private static function arrayKeyDupes(array $arr1, $key) {
+  private static function arrayKeyDupes(array $arr1, string $key) : array {
     $dupes = [];
     $arr2 = $arr1;
     foreach ($arr1 as $idx1 => $val1) {
@@ -638,7 +636,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param string $path
    *   The path to the local issue.
    */
-  protected function setIssueFlagFiles($path) {
+  protected function setIssueFlagFiles(string $path) {
     // Also set the 'processed' flag as well. Old imports did not set this.
     shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_processed"));
     shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_verified"));
@@ -650,7 +648,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected function displayAuditFailures() {
     if ($this->issueIsFullyValid()) {
       $this->io()->newLine();
-      $this->say("{$this->auditIssueCount} issues auditied and no discrepancies found!");
+      $this->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
       return;
     }
 
@@ -669,7 +667,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return bool
    *   TRUE if the issue is valid remotely, FALSE otherwise.
    */
-  protected function issueIsFullyValid() {
+  protected function issueIsFullyValid() : bool {
     return empty($this->missingRemoteIssues) &&
       empty($this->zeroLengthFiles) &&
       empty($this->duplicateIssues) &&
@@ -694,8 +692,15 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
   /**
    * Outputs a table to the console IO.
+   *
+   * @param string $title
+   *   The title of the table.
+   * @param string[] $column_names
+   *   The column names.
+   * @param array $rows
+   *   The row data.
    */
-  protected function outputTable($title, $column_names, $rows) {
+  protected function outputTable(string $title, array $column_names, array $rows) {
     $this->io()->title($title);
     $table = new Table($this->output());
     $table
@@ -738,9 +743,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
 
       foreach ($this->duplicateIssues as $issues) {
         $first_row = TRUE;
-        sort($issues['remote_entities']);
-
-        foreach ($issues['remote_entities'] as $entity) {
+        $remote_entities = $issues['remote_entities'];
+        sort($remote_entities);
+        foreach ($remote_entities as $entity) {
           if ($first_row) {
             $duplicate_issues[] = [
               $issues['local_path'],

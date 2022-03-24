@@ -21,31 +21,31 @@ trait GitHubMultipleInstanceTrait {
    *
    * @var array
    */
-  protected $failedRepos = [];
+  protected array $failedRepos = [];
 
   /**
    * The repositories to operate on.
    *
    * @var array
    */
-  protected $githubRepositories;
+  protected array $githubRepositories;
 
   /**
    * Sets whether changes to the current repo are pushed.
    *
    * @var bool
    */
-  protected $repoChangesPushed = FALSE;
+  protected bool $repoChangesPushed = FALSE;
 
   /**
    * The repository commits.
    *
    * @var array
    */
-  protected $successfulRepos = [];
+  protected array $successfulRepos = [];
 
   /**
-   * Store the list of repositories to operate on and confirm list with user.
+   * Stores the list of repositories to operate on and confirms list with user.
    *
    * @param array $name_filters
    *   Only repositories whose names contain one of $name_filters values will be
@@ -67,7 +67,14 @@ trait GitHubMultipleInstanceTrait {
    * @return bool
    *   TRUE if user agreed, FALSE otherwise.
    */
-  protected function setConfirmRepositoryList(array $name_filters = [], array $topic_filters = [], array $callback_filters = [], array $omit = [], $operation = 'operation', $no_confirm = FALSE) {
+  protected function setConfirmRepositoryList(
+    array $name_filters = [],
+    array $topic_filters = [],
+    array $callback_filters = [],
+    array $omit = [],
+    string $operation = 'operation',
+    bool $no_confirm = FALSE
+  ) : bool {
     $this->setRepositoryList($name_filters, $topic_filters, $callback_filters, $omit);
 
     // Optionally filter them.
@@ -103,7 +110,7 @@ trait GitHubMultipleInstanceTrait {
   }
 
   /**
-   * Get the list of repositories to operate on from GitHub and filter them.
+   * Gets the list of repositories to operate on from GitHub and filter them.
    *
    * @param array $name_filters
    *   Only repositories whose names contain one of $name_filters values will be
@@ -117,7 +124,12 @@ trait GitHubMultipleInstanceTrait {
    * @param array $omit
    *   An array of repository names to omit from the list.
    */
-  private function setRepositoryList(array $name_filters = [], array $topic_filters = [], array $callback_filters = [], array $omit = []) {
+  private function setRepositoryList(
+    array $name_filters = [],
+    array $topic_filters = [],
+    array $callback_filters = [],
+    array $omit = []
+  ) {
     $this->populateGitHubRepositoryList();
 
     // Remove omissions.
@@ -223,17 +235,17 @@ trait GitHubMultipleInstanceTrait {
   }
 
   /**
-   * Determine if a repository name partially matches multiple terms.
+   * Determines if a repository name partially matches multiple terms.
    *
    * @param array $terms
-   *   An array of terms to match in a case insensitive manner against the name.
+   *   An array of terms to match in a case-insensitive manner against the name.
    * @param string $name
    *   The name to match against.
    *
    * @return bool
    *   TRUE if the name matches one of the terms. FALSE otherwise.
    */
-  public static function instanceNameMatchesSearchTerms(array $terms, $name) {
+  public static function instanceNameMatchesSearchTerms(array $terms, string $name) : bool {
     foreach ($terms as $match) {
       if (stristr($name, (string) $match)) {
         return TRUE;
@@ -243,7 +255,7 @@ trait GitHubMultipleInstanceTrait {
   }
 
   /**
-   * Output a formatted list of repositories set to operate on to the console.
+   * Outputs a formatted list of repositories set to operate on to the console.
    */
   protected function listRepositoryNames() {
     $wrapped_rows = array_map(

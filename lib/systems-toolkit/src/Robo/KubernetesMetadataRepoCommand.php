@@ -67,133 +67,126 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @var string
    */
-  protected $curCentralMetadataFile;
+  protected string $curCentralMetadataFile;
 
   /**
    * Does the current central metadata file exist?
    *
    * @var bool
    */
-  protected $curCentralMetadataFileExists = FALSE;
+  protected bool $curCentralMetadataFileExists = FALSE;
 
   /**
    * The contents of the current central metadata file.
    *
    * @var string
    */
-  protected $curCentralMetadataFileContents;
+  protected string $curCentralMetadataFileContents;
 
   /**
    * The current docker image.
    *
    * @var string
    */
-  protected $curDockerImage;
+  protected string $curDockerImage;
 
   /**
    * The current deployment env.
    *
    * @var string
    */
-  protected $curDeployEnv;
+  protected string $curDeployEnv;
 
   /**
    * The current metadata file slug to output.
    *
    * @var string
    */
-  protected $curFileSlug;
+  protected string $curFileSlug;
 
   /**
    * The current lean metadata file being audited.
    *
    * @var string
    */
-  protected $curLeanMetadataFile;
+  protected string $curLeanMetadataFile;
 
   /**
    * Does the current lean metadata file exist?
    *
    * @var bool
    */
-  protected $curLeanMetadataFileExists = FALSE;
+  protected bool $curLeanMetadataFileExists = FALSE;
 
   /**
    * The contents of the current lean metadata file.
    *
    * @var string
    */
-  protected $curLeanMetadataFileContents;
+  protected string $curLeanMetadataFileContents;
 
   /**
    * The current lean repo being audited.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $curLeanRepo;
+  protected GitRepo $curLeanRepo;
 
   /**
    * The current lean repo being audited.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $curLeanRepoClone;
+  protected GitRepo $curLeanRepoClone;
 
   /**
    * Flag if the current lean repo needs push.
    *
    * @var bool
    */
-  protected $curLeanRepoNeedsPush;
+  protected bool $curLeanRepoNeedsPush;
 
   /**
    * The current lean repo being audited.
    *
    * @var string
    */
-  protected $curLeanRepoSlug;
+  protected string $curLeanRepoSlug;
 
   /**
    * The current metadata type.
    *
    * @var string
    */
-  protected $curMetadataType;
+  protected string $curMetadataType;
 
   /**
    * The kubernetes metadata repo.
    *
    * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
    */
-  protected $centralMetadataRepo;
+  protected GitRepo $centralMetadataRepo;
 
   /**
    * Flag if the central metadata repo needs push.
    *
    * @var bool
    */
-  protected $centralMetadataRepoNeedsPush = FALSE;
+  protected bool $centralMetadataRepoNeedsPush = FALSE;
 
   /**
    * The name filter to match repositories against.
    *
    * @var string
    */
-  protected $nameFilter;
-
-  /**
-   * Command options passed.
-   *
-   * @var string[]
-   */
-  protected $options = [];
+  protected string $nameFilter;
 
   /**
    * The tag filter to match repositories against.
    *
    * @var string
    */
-  protected $tagFilter;
+  protected string $tagFilter;
 
   /**
    * Audits the kubernetes-metadata repo against lean repos.
@@ -202,8 +195,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *   The tag filter to apply when choosing the repositories to operate on.
    * @param string $name_filter
    *   The name filter to apply when choosing the repositories to operate on.
-   * @param array $options
-   *   Provides an option to skip yes/no prompts.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option $central-repo-branch
    *   The central repository branch to audit against.
@@ -211,13 +204,19 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *   Assume a 'yes' answer for all prompts.
    *
    * @command k8s:metadata:audit-repos
-   *
    * @usage k8s:metadata:audit-repos 'drupal8' '' --yes
    * @usage k8s:metadata:audit-repos '' 'pmportal.org' --yes
    *
    * @throws \Exception
    */
-  public function setKubernetesMetadataServiceAudit(string $tag_filter, string $name_filter, array $options = ['central-repo-branch' => '1.23', 'yes' => FALSE]) {
+  public function setKubernetesMetadataServiceAudit(
+    string $tag_filter,
+    string $name_filter,
+    array $options = [
+      'central-repo-branch' => '1.23',
+      'yes' => FALSE,
+    ]
+  ) {
     $this->io = new SymfonyStyle($this->input, $this->output);
     $this->options = $options;
     $this->nameFilter = $name_filter;
@@ -282,7 +281,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Audits the lean github repository against the central metadata repo.
+   * Audits the lean GitHub repository against the central metadata repo.
    *
    * @throws \Exception
    */
@@ -352,11 +351,15 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Gets the repo name, slugified.
+   * Gets the repository name, slugified.
    *
-   *   The value of the choice.
+   * @param string $name
+   *   The repository name to slugify.
+   *
+   * @return string
+   *   The name, slugified.
    */
-  private static function slugifyName($name) : string {
+  private static function slugifyName(string $name) : string {
     return str_replace(['.'], ['-'], $name);
   }
 
@@ -422,6 +425,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Determines the difference between lean and central repositories for a file.
    *
+   * @return string
    *   A unified diff of the contents, including a header.
    */
   protected function diffRepositoryFiles() : string {
@@ -432,8 +436,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
 
   /**
    * Chooses and commits the canonical metadata file.
-   *
-   * @throws \Cz\Git\GitException
    */
   protected function setCanonicalMetadataFile() {
     if ($this->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
@@ -457,6 +459,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Gets the user's choice regarding which repository to treat as canonical.
    *
+   * @return string
    *   The value of the choice.
    */
   protected function getRepoCorrectionChoiceValue() : string {
@@ -476,6 +479,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @param string $value
    *   The value to audit.
    *
+   * @return bool
    *   TRUE if the value is valid, FALSE otherwise.
    */
   private static function isValidCorrectionChoice(string $value) : bool {
@@ -485,10 +489,14 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Writes and commits to the lean repo the central version of the file.
    *
-   * @throws \Cz\Git\GitException
+   * @throws \CzProject\GitPhp\GitException
    */
   protected function setCentralRepoVersionAsCanonical() {
-    $output_contents = str_replace($this->curDockerImage . ':' . $this->curDeployEnv, self::LEAN_REPO_IMAGE_PLACEHOLDER, $this->curCentralMetadataFileContents);
+    $output_contents = str_replace(
+      $this->curDockerImage . ':' . $this->curDeployEnv,
+      self::LEAN_REPO_IMAGE_PLACEHOLDER,
+      $this->curCentralMetadataFileContents
+    );
     file_put_contents($this->curLeanMetadataFile, $output_contents);
     $commit_message = "Update $this->curDeployEnv $this->curMetadataType from central repository";
     $this->curLeanRepoClone->repo->execute(
@@ -512,7 +520,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Writes and commits to the central repo the lean version of the file.
    *
-   * @throws \Cz\Git\GitException
+   * @throws \CzProject\GitPhp\GitException
    */
   protected function setLeanRepoVersionAsCanonical() {
     $output_contents = str_replace(self::LEAN_REPO_IMAGE_PLACEHOLDER, $this->curDockerImage . ':' . $this->curDeployEnv, $this->curLeanMetadataFileContents);
@@ -538,7 +546,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Pushes the current lean metadata repository to GitHub.
    *
-   * @throws \Cz\Git\GitException
+   * @throws \CzProject\GitPhp\GitException
    */
   protected function pushCurLeanRepo() {
     $this->curLeanRepoClone->repo->execute(
@@ -553,7 +561,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Pushes the central metadata repo to GitHub.
    *
-   * @throws \Cz\Git\GitException
+   * @throws \CzProject\GitPhp\GitException
    */
   protected function pushCentralRepo() {
     $this->centralMetadataRepo->repo->execute(

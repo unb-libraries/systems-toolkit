@@ -10,7 +10,7 @@ use UnbLibraries\SystemsToolkit\Robo\GitHubRepoRebaseDevToProdCommand;
 class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdCommand {
 
   /**
-   * Rebase dev onto prod for multiple Drupal Repositories. Robo Command.
+   * Rebases dev onto prod for multiple Drupal Repositories. Robo Command.
    *
    * This command will rebase all commits that exist in the dev branch of a
    * GitHub Drupal lean repository onto the prod branch.
@@ -19,6 +19,8 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    *   A comma separated list of names to match. Only repositories whose names
    *   partially match at least one of the comma separated values will be
    *   processed. Optional.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
    * @option $repo-exclude
    *   A repository to exclude from the rebase. Defaults to none.
@@ -29,11 +31,17 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    *
    * @throws \Exception
    *
-   * @usage unbherbarium,pmportal
-   *
    * @command drupal:rebasedevprod
+   * @usage unbherbarium,pmportal
    */
-  public function upmergeDrupalDevToProd($match = '', $options = ['repo-exclude' => [], 'yes' => FALSE, 'multi-repo-delay' => '240']) {
+  public function upmergeDrupalDevToProd(
+    string $match = '',
+    array $options = [
+      'repo-exclude' => [],
+      'yes' => FALSE,
+      'multi-repo-delay' => '240',
+    ]
+  ) {
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,

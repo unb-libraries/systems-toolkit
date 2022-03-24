@@ -16,38 +16,38 @@ trait JiraTrait {
    *
    * @var \JiraRestApi\Configuration\ArrayConfiguration
    */
-  protected $jiraConfig;
+  protected ArrayConfiguration $jiraConfig;
 
   /**
-   * The jira server hostname.
+   * The JIRA server hostname.
    *
    * @var string
    */
-  protected $jiraHostName;
+  protected string $jiraHostName;
 
   /**
-   * The jira server user name to authenticate with.
+   * The JIRA server username to authenticate with.
    *
    * @var string
    */
-  protected $jiraUserName;
+  protected string $jiraUserName;
 
   /**
-   * The jira server user password to authenticate with.
+   * The JIRA server user password to authenticate with.
    *
    * @var string
    */
-  protected $jiraUserPassword;
+  protected string $jiraUserPassword;
 
   /**
-   * The jira server user password to authenticate with.
+   * The JIRA server user password to authenticate with.
    *
    * @var object
    */
-  protected $jiraService;
+  protected object $jiraService;
 
   /**
-   * Set the JIRA host from config.
+   * Sets the JIRA host from config.
    *
    * @throws \Exception
    *
@@ -56,12 +56,12 @@ trait JiraTrait {
   public function setJiraHost() {
     $this->jiraHostName = Robo::Config()->get('syskit.jira.hostName');
     if (empty($this->jiraHostName)) {
-      throw new \Exception(sprintf('The Jira hostname has not been set in the configuration file. (jiraHostName)'));
+      throw new \Exception('The Jira hostname has not been set in the configuration file. (jiraHostName)');
     }
   }
 
   /**
-   * Set the JIRA service.
+   * Sets the JIRA service.
    *
    * @throws \Exception
    *
@@ -72,7 +72,7 @@ trait JiraTrait {
   }
 
   /**
-   * Set the JIRA user from config.
+   * Sets the JIRA user from config.
    *
    * @throws \Exception
    *
@@ -81,14 +81,15 @@ trait JiraTrait {
   public function setJiraUser() {
     $this->jiraUserName = Robo::Config()->get('syskit.jira.userName');
     if (empty($this->jiraUserName)) {
-      throw new \Exception(sprintf('The Jira username has not been set in the configuration file. (jiraUserName)'));
+      throw new \Exception('The Jira username has not been set in the configuration file. (jiraUserName)');
     }
   }
 
   /**
-   * Set the JIRA pass.
+   * Sets the JIRA pass.
    *
-   * JIRA on-premises doesn't allow API keys to generate, so we need to password at run-time.
+   * @description JIRA on-premises doesn't allow API keys to generate,
+   * so we need to password at run-time.
    *
    * @throws \Exception
    *
@@ -101,7 +102,7 @@ trait JiraTrait {
   }
 
   /**
-   * Set config array.
+   * Sets the config array.
    *
    * @throws \Exception
    *

@@ -14,24 +14,24 @@ trait AwsCommandTrait {
    *
    * @var string
    */
-  protected $accessKeyId;
+  protected string $accessKeyId;
 
   /**
    * The AWS secret access key for the API.
    *
    * @var string
    */
-  protected $secretAccessKey;
+  protected string $secretAccessKey;
 
   /**
    * The AWS region for the API.
    *
    * @var string
    */
-  protected $awsDefaultRegion;
+  protected string $awsDefaultRegion;
 
   /**
-   * Get the AWS key ID from config.
+   * Gets the AWS key ID from config.
    *
    * @throws \Exception
    *
@@ -45,7 +45,7 @@ trait AwsCommandTrait {
   }
 
   /**
-   * Get the AWS default region from config.
+   * Gets the AWS default region from config.
    *
    * @throws \Exception
    *
@@ -59,7 +59,7 @@ trait AwsCommandTrait {
   }
 
   /**
-   * Get the AWS secret access key from config.
+   * Gets the AWS secret access key from config.
    *
    * @throws \Exception
    *

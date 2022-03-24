@@ -4,6 +4,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use League\Csv\Reader;
 use League\Csv\Statement;
+use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
@@ -23,16 +24,20 @@ class OcrCommand extends SystemsToolkitCommand {
 
   /**
    * Tesseract metrics stored for current eval.
+   *
+   * @var array
    */
   private array $metrics = [];
 
   /**
    * The docker image to use for Tesseract commands.
+   *
+   * @var string
    */
   private string $tesseractImage;
 
   /**
-   * Get the tesseract docker image from config.
+   * Gets the tesseract docker image from config.
    *
    * @throws \Exception
    *
@@ -46,7 +51,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate metrics for OCR confidence and word count for a tree.
+   * Generates metrics for OCR confidence and word count for a tree.
    *
    * @param string $root
    *   The tree root to parse.
@@ -69,7 +74,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:tree:metrics
    */
   public function ocrTesseractMetrics(
-    $root,
+    string $root,
     array $options = [
       'args' => NULL,
       'extension' => 'tif',
@@ -138,7 +143,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate OCR for an entire tree.
+   * Generates OCR for an entire tree.
    *
    * @param string $root
    *   The tree root to parse.
@@ -169,7 +174,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:tree
    */
   public function ocrTesseractTree(
-    $root,
+    string $root,
     array $options = [
       'args' => NULL,
       'extension' => 'tif',
@@ -208,7 +213,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Determine if OCR has previously been generated for this file.
+   * Determines if OCR has previously been generated for this file.
    *
    * @param string $filepath
    *   The file to parse.
@@ -216,7 +221,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if OCR has been previously generated for the file.
    */
-  private function fileHasOcrGenerated($filepath) {
+  private function fileHasOcrGenerated(string $filepath) : bool {
     $hocr_filename = "$filepath.hocr";
     if (file_exists($hocr_filename) && filesize($hocr_filename)) {
       return TRUE;
@@ -225,7 +230,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate the Robo command used to generate the OCR.
+   * Generates the Robo command used to generate the OCR.
    *
    * @param string $file
    *   The file to parse.
@@ -243,13 +248,13 @@ class OcrCommand extends SystemsToolkitCommand {
    *   The command to generate OCR for the file.
    */
   private function getOcrFileCommand(
-    $file,
+    string $file,
     array $options = [
       'args' => NULL,
       'lang' => 'eng',
       'oem' => 1,
     ]
-  ) {
+  ) : CommandInterface {
     $ocr_file_path_info = pathinfo($file);
     return $this->taskDockerRun($this->tesseractImage)
       ->volume($ocr_file_path_info['dirname'], '/data')
@@ -259,7 +264,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Generate OCR for a file.
+   * Generates OCR for a file.
    *
    * @param string $file
    *   The file to parse.
@@ -278,7 +283,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:file
    */
   public function ocrTesseractFile(
-    $file,
+    string $file,
     array $options = [
       'oem' => 1,
       'lang' => 'eng',
@@ -293,7 +298,7 @@ class OcrCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Pull the docker image required to generate OCR.
+   * Pulls the docker image required to generate OCR.
    *
    * @command ocr:pull-image
    */

@@ -19,7 +19,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
   public const CHANGELOG_URI = 'https://www.drupal.org/project/%s/releases/8.x-%s';
 
   /**
-   * Display the changelog from a drupal module release.
+   * Displays the changelog from a drupal module release.
    *
    * @param string $module
    *   Modules to query.
@@ -30,11 +30,12 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    * @throws \Psr\Cache\InvalidArgumentException
    *
    * @command drupal:module:changelog
+   * @usage views 3.14
    *
    * @return string
    *   The changelog for the module.
    */
-  public function getModuleChangelog($module, $version) {
+  public function getModuleChangelog(string $module, string $version) : string {
     $commit_text = '';
     $cache = new FilesystemAdapter();
     $cache_tag = "$module$version";
@@ -70,7 +71,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
         try {
           return $converter->convert($changelog_node->outerHtml());
         }
-        catch (Exception) {
+        catch (\Exception) {
           return NULL;
         }
       }
@@ -101,7 +102,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Get the changelog from a drupal module release.
+   * Gets the changelog from a drupal module release.
    *
    * @param string $module
    *   Modules to query.
@@ -114,7 +115,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    * @return string
    *   The changelog for the module.
    */
-  public static function moduleChangeLog($module, $version) {
+  public static function moduleChangeLog(string $module, string $version) : string {
     $obj = new static();
     return $obj->getModuleChangelog($module, $version);
   }

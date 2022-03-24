@@ -2,8 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit;
 
-use Robo\Robo;
-
 /**
  * Trait for interacting with Docker.
  */

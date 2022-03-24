@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Robo\Common\ConfigAwareTrait;
@@ -25,35 +24,35 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *
    * @var string
    */
-  protected $commandStartTime;
+  protected string $commandStartTime;
 
   /**
    * The path to the configuration file.
    *
    * @var string
    */
-  protected $configFile;
+  protected string $configFile;
 
   /**
    * The current command options.
    *
    * @var array
    */
-  protected $options;
+  protected array $options;
 
   /**
    * The path to the Syskit repo.
    *
    * @var string
    */
-  protected $repoRoot;
+  protected string $repoRoot;
 
   /**
    * The temporary directory to use, if necessary.
    *
    * @var string
    */
-  protected $tmpDir;
+  protected string $tmpDir;
 
   /**
    * Constructor.
@@ -69,7 +68,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   }
 
   /**
-   * Check if the configuration file exists.
+   * Checks if the configuration file exists.
    *
    * @throws \Exception
    *
@@ -118,17 +117,17 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *
    * @throws \Exception
    *
-   * @return int
+   * @return string
    *   The return code of the command.
    */
-  public function setRunOtherCommand($command_string, $exception_message = NULL) {
+  public function setRunOtherCommand(string $command_string, string $exception_message = '') : string {
     $this->io()->note("Spawning new command thread: $command_string");
     $bin = $_SERVER['argv'][0];
     $command = "$bin --ansi $command_string";
     passthru($command, $return);
 
     if ($return > 0) {
-      throw new Exception($exception_message);
+      throw new \Exception($exception_message);
     }
     return $return;
   }
