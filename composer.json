@@ -1,6 +1,7 @@
 {
   "license": "MIT",
   "minimum-stability": "dev",
+  "prefer-stable": true,
   "name": "unb-libraries/systems-toolkit-app",
   "config": {
     "preferred-install": {
