@@ -190,6 +190,9 @@ trait GitHubTrait {
     $dockworker_file_content = $this->client->api('repo')->contents()->download($repository['owner']['login'], $repository['name'], $dockworker_yml_path, $repository['default_branch']);
     $dockworker_yml = yaml_parse($dockworker_file_content);
     if (!empty($dockworker_yml['dockworker']['application']['project_prefix'])) {
+      if (is_array($dockworker_yml['dockworker']['application']['project_prefix'])) {
+        return reset($dockworker_yml['dockworker']['application']['project_prefix']);
+      }
       return $dockworker_yml['dockworker']['application']['project_prefix'];
     }
     return '';
