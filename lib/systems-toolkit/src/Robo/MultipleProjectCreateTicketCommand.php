@@ -89,12 +89,14 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           if (empty($verified_projects)) {
             // Repo with an incorrect Jira project. Add to the default.
             $verified_projects[self::DEFAULT_PROJECT_ID] = self::DEFAULT_PROJECT_KEY;
-            $issue_summary = "{$repository['name']} : $summary";
           }
           else {
             $issue_summary = $summary;
           }
           foreach ($verified_projects as $project_id => $project_key) {
+            if ($project_key == self::DEFAULT_PROJECT_KEY) {
+              $issue_summary = "{$repository['name']} : $summary";
+            }
             $issueField = new IssueField();
             $issueField->setProjectId($project_id)
               ->setAssigneeName($assignee)
