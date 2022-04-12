@@ -177,7 +177,7 @@ trait GitHubTrait {
   /**
    * Gets a GitHub repository's dockworker defined JIRA project slug.
    *
-   * @param object $repository
+   * @param array $repository
    *   The owner of the repository.
    *
    * @return string
@@ -185,7 +185,7 @@ trait GitHubTrait {
    *
    * @throws \Github\Exception\ErrorException
    */
-  protected function getGitHubRepositoryJiraSlug(object $repository) : string {
+  protected function getGitHubRepositoryJiraSlug(array $repository) : string {
     $dockworker_yml_path = '.dockworker/dockworker.yml';
     $dockworker_file_content = $this->client->api('repo')->contents()->download($repository['owner']['login'], $repository['name'], $dockworker_yml_path, $repository['default_branch']);
     $dockworker_yml = yaml_parse($dockworker_file_content);

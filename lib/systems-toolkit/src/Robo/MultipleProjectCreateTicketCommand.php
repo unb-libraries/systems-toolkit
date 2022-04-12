@@ -38,6 +38,8 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    *   The type of issue. Optional, defaults to 'task'.
    * @param string $epic
    *   The parent issue epic. Optional, defaults to none.
+   * @param string $assignee
+   *   The name of the assignee. Optional, defaults to the automatic asssignee.
    * @param string[] $options
    *   The array of available CLI options.
    *
@@ -58,6 +60,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
     string $description,
     string $type = 'Task',
     string $epic = '',
+    string $assignee = '-1',
     array $options = [
       'yes' => FALSE,
       'multi-repo-delay' => '120',
@@ -94,6 +97,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           foreach ($verified_projects as $project_id => $project_key) {
             $issueField = new IssueField();
             $issueField->setProjectId($project_id)
+              ->setAssigneeName($assignee)
               ->setSummary($issue_summary)
               ->setIssueType($type)
               ->setDescription($description);
@@ -103,6 +107,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
             $issueService = new IssueService($this->jiraConfig);
             $this->say("Creating issue for {$repository['name']}..");
             $issueService->create($issueField);
+
             $this->say("Sleeping to avoid overloading API...");
             sleep(5);
           }
