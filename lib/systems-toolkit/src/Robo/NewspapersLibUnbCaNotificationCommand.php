@@ -49,10 +49,11 @@ class NewspapersLibUnbCaNotificationCommand extends BasicKubeCommand {
    */
   public function getNewspaperIngestStatusNotification($title_id, $year, $result = 'complete') {
     $message = sprintf(
-      "newspapers.lib.unb.ca - %s\n[%s:%s] import $result",
+      "newspapers.lib.unb.ca - %s\n[%s:%s] import (%s)",
       date(self::TIME_STRING_FORMAT),
-      number_format($title_id),
-      number_format($year)
+      number_format((float) $title_id),
+      number_format((float) $year),
+      $result
     );
     $this->setSendSnsMessage($message);
   }

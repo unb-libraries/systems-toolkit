@@ -334,6 +334,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->syskitIo->title('Operation Complete!');
     $output_summary = $this->getNbhpNotificationString($file_path);
     $this->syskitIo->block($output_summary);
+    $this->setSendSnsMessage($output_summary);
     $this->setRunOtherCommand("newspapers.lib.unb.ca:import:notify $this->curTitleId $this->curIssuePath complete");
     $this->writeImportLedger();
   }
