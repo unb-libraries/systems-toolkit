@@ -131,7 +131,7 @@ trait DrupalInstanceRestTrait {
     int $retry_counter = 0,
     int $max_retries = 5
   ) : mixed {
-    $this->setUpDrupalRestClientToken();
+    $this->checkSetUpDrupalRestClientToken();
     $endpoint_uri = $this->drupalRestUri . $uri;
     try {
       if (!$silent) {
@@ -171,6 +171,17 @@ trait DrupalInstanceRestTrait {
   }
 
   /**
+   * Sets the Drupal REST client token for a URI if it is unset.
+   *
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   */
+  protected function checkSetUpDrupalRestClientToken() {
+    if (empty($this->drupalRestToken)) {
+      $this->setUpDrupalRestClientToken();
+    }
+  }
+
+  /**
    * Patches an entity via the Drupal REST client.
    *
    * @param string $patch_uri
@@ -184,6 +195,7 @@ trait DrupalInstanceRestTrait {
    *   The JSON object returned from the server.
    */
   protected function patchDrupalRestEntity(string $patch_uri, string $patch_content) : object {
+    $this->checkSetUpDrupalRestClientToken();
     $uri = "$patch_uri?_format=json";
     $args = [
       'body' => $patch_content,
@@ -210,6 +222,7 @@ trait DrupalInstanceRestTrait {
    *   The JSON object returned from the server.
    */
   protected function createDrupalRestEntity(string $create_uri, string $create_content) : object {
+    $this->checkSetUpDrupalRestClientToken();
     $uri = "$create_uri?_format=json";
     $args = [
       'body' => $create_content,
@@ -248,6 +261,7 @@ trait DrupalInstanceRestTrait {
     string $file_contents,
     string $file_name
   ) : object {
+    $this->checkSetUpDrupalRestClientToken();
     $uri = "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
     $args = [
       'body' => $file_contents,
