@@ -304,6 +304,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
         if (!file_exists($processed_flag_file)) {
           $this->syskitIo->newLine();
           $this->syskitIo->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
+          $this->curIssueId = 0;
           $this->createIssueFromDir($title_id, $directory_to_process, $options);
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
