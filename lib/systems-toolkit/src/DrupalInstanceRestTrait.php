@@ -36,14 +36,14 @@ trait DrupalInstanceRestTrait {
   protected string $drupalRestUser;
 
   /**
-   * The drupal user to leverage for the REST API.
+   * The token to use when interacting with the REST API.
    *
    * @var string
    */
   protected string $drupalRestToken;
 
   /**
-   * The response from the Drupal REST request..
+   * The response from the current Drupal REST API request.
    *
    * @var \GuzzleHttp\Psr7\Response
    */
@@ -56,7 +56,7 @@ trait DrupalInstanceRestTrait {
    *
    * @hook post-init
    */
-  public function setDrupalRestPassword() {
+  public function setDrupalRestPassword(): void {
     $this->drupalRestPassword = Robo::Config()->get('syskit.drupal.rest.password');
     if (empty($this->drupalRestPassword)) {
       throw new \Exception(sprintf('The Drupal password is unset in %s.', $this->configFile));
@@ -70,7 +70,7 @@ trait DrupalInstanceRestTrait {
    *
    * @hook post-init
    */
-  public function setDrupalRestUser() {
+  public function setDrupalRestUser(): void {
     $this->drupalRestUser = Robo::Config()->get('syskit.drupal.rest.user');
     if (empty($this->drupalRestUser)) {
       throw new \Exception(sprintf('The Drupal user is unset in %s.', $this->configFile));
@@ -86,6 +86,8 @@ trait DrupalInstanceRestTrait {
    *   TRUE if the query should not display any information.
    *
    * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    *
    * @return object
    *   The JSON object returned from the server.
@@ -122,6 +124,8 @@ trait DrupalInstanceRestTrait {
    *   The result from the request.
    *
    * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    */
   protected function getGuzzleRequest(
     string $uri,
@@ -166,7 +170,7 @@ trait DrupalInstanceRestTrait {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  protected function setUpDrupalRestClientToken() {
+  protected function setUpDrupalRestClientToken(): void {
     $response = $this->guzzleClient->get($this->drupalRestUri . "/session/token");
     $this->drupalRestToken = (string) ($response->getBody());
   }
@@ -176,7 +180,7 @@ trait DrupalInstanceRestTrait {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
-  protected function checkSetUpDrupalRestClientToken() {
+  protected function checkSetUpDrupalRestClientToken(): void {
     if (empty($this->drupalRestToken)) {
       $this->setUpDrupalRestClientToken();
     }
@@ -190,7 +194,8 @@ trait DrupalInstanceRestTrait {
    * @param string $patch_content
    *   The patch content.
    *
-   * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    *
    * @return object
    *   The JSON object returned from the server.
@@ -217,7 +222,8 @@ trait DrupalInstanceRestTrait {
    * @param string $create_content
    *   The patch content.
    *
-   * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    *
    * @return object
    *   The JSON object returned from the server.
@@ -250,7 +256,8 @@ trait DrupalInstanceRestTrait {
    * @param string $file_name
    *   The name to use for the file when attaching.
    *
-   * @throws \Exception
+   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \JsonException
    *
    * @return object
    *   The JSON object of the file returned from the server.
@@ -263,7 +270,7 @@ trait DrupalInstanceRestTrait {
     string $file_name
   ) : object {
     $this->checkSetUpDrupalRestClientToken();
-    $uri = "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
+    $uri = "/file/upload/$entity_type_id/$entity_bundle/$field_name?_format=json";
     $args = [
       'body' => $file_contents,
       'headers' => [
