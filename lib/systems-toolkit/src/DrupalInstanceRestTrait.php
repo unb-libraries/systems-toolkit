@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit;
 
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response;
 use Robo\Robo;
 use UnbLibraries\SystemsToolkit\GuzzleClientTrait;
 
@@ -42,11 +43,11 @@ trait DrupalInstanceRestTrait {
   protected string $drupalRestToken;
 
   /**
-   * The drupal user to leverage for the REST API.
+   * The response from the Drupal REST request..
    *
-   * @var string
+   * @var \GuzzleHttp\Psr7\Response
    */
-  protected string $drupalRestResponse;
+  protected Response $drupalRestResponse;
 
   /**
    * Sets the drupal password from config.
