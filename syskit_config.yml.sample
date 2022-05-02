@@ -16,6 +16,7 @@ syskit:
         bootstrap_barrio: 5.1.6
         drupal: 8.9.20
         geolocation: 3.8 # 3.9 Required 9.x core, breaks pmportal
+        paragraphs: 1.13 # 1.14 Required 9.x core, breaks pmportal
         search_api: 8.x-1.23
         search_api_solr: 4.2.1
   github:
