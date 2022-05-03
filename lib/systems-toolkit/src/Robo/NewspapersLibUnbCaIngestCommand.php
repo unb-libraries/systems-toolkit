@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
@@ -87,12 +88,14 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function setOcrForPage(
+    ConsoleIO $io,
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => '',
     ]
   ) {
+    $this->setIo($io);
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
@@ -138,12 +141,14 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function getPageImage(
+    ConsoleIO $io,
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => '',
     ]
   ) : string {
+    $this->setIo($io);
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
@@ -247,6 +252,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @nbhp
    */
   public function createIssuesFromTree(
+    ConsoleIO $io,
     string $title_id,
     string $file_path,
     array $options = [
@@ -259,6 +265,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'yes' => FALSE,
     ]
   ) {
+    $this->setIo($io);
     $this->options = $options;
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
@@ -405,6 +412,7 @@ EOT;
    * @command newspapers.lib.unb.ca:create-issue
    */
   public function createIssueFromDir(
+    ConsoleIO $io,
     string $title_id,
     string $path,
     array $options = [
@@ -418,6 +426,7 @@ EOT;
       'webtree-path' => NULL,
     ]
   ) {
+    $this->setIo($io);
     $this->drupalRestUri = $options['instance-uri'];
 
     // Pull upstream docker images, if permitted.
@@ -607,6 +616,7 @@ EOT;
    * @throws \Exception
    */
   public function createSerialPageFromFile(
+    ConsoleIO $io,
     string $issue_id,
     string $page_no,
     string $page_sort,
@@ -616,6 +626,7 @@ EOT;
       'no-verify' => FALSE,
     ]
   ) {
+    $this->setIo($io);
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.

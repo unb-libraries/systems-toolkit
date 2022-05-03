@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -34,7 +35,12 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  public function getGitHubActionsBuildReports(string $match = '', array $options = ['only-failure' => FALSE]) {
+  public function getGitHubActionsBuildReports(
+    ConsoleIO $io,
+    string $match = '',
+    array $options = ['only-failure' => FALSE]
+  ) {
+    $this->setIo($io);
     $matches = explode(',', $match);
     $continue = $this->setConfirmRepositoryList(
       $matches,

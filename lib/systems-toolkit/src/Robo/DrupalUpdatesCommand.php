@@ -3,9 +3,10 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
-use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\DrupalModuleCommand;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -57,6 +58,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @command drupal:rebuild-redeploy
    */
   public function getRebuildDeployDrupalContainers(
+    ConsoleIO $io,
     $options = [
       'namespaces' => [
         'dev',
@@ -64,6 +66,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       ],
     ]
   ) {
+    $this->setIo($io);
     $pod_selector = [
       'app=drupal',
     ];

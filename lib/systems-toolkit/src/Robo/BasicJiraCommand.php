@@ -6,6 +6,7 @@ use JiraRestApi\Field\Field;
 use JiraRestApi\Field\FieldService;
 use JiraRestApi\JiraException;
 use JiraRestApi\Project\ProjectService;
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\JiraTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -27,7 +28,11 @@ class BasicJiraCommand extends SystemsToolkitCommand {
    * @command jira:project:info
    * @usage NBNP
    */
-  public function getProjectInfo(string $project_id) {
+  public function getProjectInfo(
+    ConsoleIO $io,
+    string $project_id
+  ) {
+    $this->setIo($io);
     try {
       $project = new ProjectService($this->jiraConfig);
       $project_info = $project->get($project_id);

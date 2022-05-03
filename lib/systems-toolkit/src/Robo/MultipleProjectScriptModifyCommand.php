@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -100,6 +101,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @usage github:multiple-repo:script-modify '' 'drupal9' 'Config catch-up related to core update 8.x -> 9.x' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/updateRepoWithProdConfig.sh --yes --skip-commit-prefix --manual-file-stage
    */
   public function setModifyMultipleRepositoriesFromScript(
+    ConsoleIO $io,
     string $match,
     string $topics,
     string $commit_message,
@@ -112,6 +114,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
       'target-branch' => '',
     ]
   ) {
+    $this->setIo($io);
     $this->modifyingScriptFilePath = $script_path;
     $this->modifyingScriptName = basename($this->modifyingScriptFilePath);
     $this->commitMessage = $commit_message;

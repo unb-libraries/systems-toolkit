@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -47,7 +48,8 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    *
    * @command jira:boilerplate:multi-instance-worklist
    */
-  public function generateMultiInstanceWorklistTable() {
+  public function generateMultiInstanceWorklistTable(ConsoleIO $io) {
+    $this->setIo($io);
     $this->syskitIo->title('Generating multi-instance JIRA worklist boilerplate');
     $this->getWorklistTasks();
     $this->syskitIo->newLine();

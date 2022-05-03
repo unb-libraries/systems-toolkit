@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Github\HttpClient\Message\ResponseMediator;
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -39,7 +40,11 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    *
    * @throws \Http\Client\Exception
    */
-  public function getActivity(string $email) {
+  public function getActivity(
+    ConsoleIO $io,
+    string $email
+  ) {
+    $this->setIo($io);
     $commits = [];
     $this->email = $email;
 

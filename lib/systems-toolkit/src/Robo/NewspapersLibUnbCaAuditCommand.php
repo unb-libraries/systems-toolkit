@@ -2,8 +2,8 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use JetBrains\PhpStorm\Pure;
 use Psr\Log\LogLevel;
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
@@ -235,6 +235,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @usage 1 /mnt/issues/archive
    */
   public function auditTree(
+    ConsoleIO $io,
     string $title_id,
     string $file_path,
     string $web_storage_path,
@@ -243,6 +244,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'issue-page-extension' => 'jpg',
     ]
   ) {
+    $this->setIo($io);
     $this->options = $options;
     $this->drupalRestUri = $this->options['instance-uri'];
     $this->webStorageBasePath = $web_storage_path;

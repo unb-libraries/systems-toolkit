@@ -6,6 +6,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Robo\Common\ConfigAwareTrait;
 use Robo\Robo;
+use Robo\Symfony\ConsoleIO;
 use Robo\Tasks;
 
 /**
@@ -50,9 +51,9 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   /**
    * The active output object.
    *
-   * @var object
+   * @var \Robo\Symfony\ConsoleIO
    */
-  protected object $syskitIo;
+  protected ConsoleIO $syskitIo;
 
   /**
    * The temporary directory to use, if necessary.
@@ -69,7 +70,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
     $this->commandStartTime = microtime(TRUE);
     $this->repoRoot = realpath(__DIR__ . "/../../../../");
     $this->configFile = self::CONFIG_FILENAME;
-    $this->syskitIo = $this->io();
+
     Robo::loadConfiguration(
       [$this->repoRoot . '/' . $this->configFile]
     );
@@ -138,6 +139,17 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
       throw new \Exception($exception_message);
     }
     return $return;
+  }
+
+  /**
+   * Sets the IO.
+   *
+   * @param \Robo\Symfony\ConsoleIO $io
+   *
+   * @return void
+   */
+  protected function setIo(ConsoleIO $io) {
+    $this->syskitIo = $io;
   }
 
 }

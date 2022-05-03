@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -22,7 +23,11 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
    *
    * @command drupal:7:doupdates
    */
-  public function doDrupal7Updates(array $updates) {
+  public function doDrupal7Updates(
+    ConsoleIO $io,
+    array $updates
+  ) {
+    $this->setIo($io);
     if (empty($updates)) {
       $this->say('No updates requested!');
       return;

@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Finder\Finder;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
@@ -35,12 +36,14 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @usage 1 /mnt/issues/archive
    */
   public function deleteTitleIssuesByYear(
+    ConsoleIO $io,
     string $title_id,
     string $year,
     array $options = [
       'yes' => FALSE,
     ]
   ) {
+    $this->setIo($io);
     $this->options = $options;
     $issues = $this->getTitleYearIssues($title_id, $year);
     if (!empty($issues)) {
@@ -116,11 +119,13 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @command newspapers.lib.unb.ca:delete:issue-markers
    */
   public function setDeleteNewspapersImportedMarkers(
+    ConsoleIO $io,
     string $path,
     array $options = [
       'yes' => FALSE,
     ]
   ) {
+    $this->setIo($io);
     $this->options = $options;
     $this->setDeleteFilesInTree($path, '.nbnp_processed');
     $this->setDeleteFilesInTree($path, '.nbnp_verified');
@@ -169,7 +174,11 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @command newspapers.lib.unb.ca:delete:issue
    */
-  public function setDeleteNewspapersIssue(string $issue_id) {
+  public function setDeleteNewspapersIssue(
+    ConsoleIO $io,
+    string $issue_id
+  ) {
+    $this->setIo($io);
     if (empty($this->kubeCurPods)) {
       $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
     }

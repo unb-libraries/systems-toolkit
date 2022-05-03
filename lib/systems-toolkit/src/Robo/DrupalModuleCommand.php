@@ -5,6 +5,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use League\HTMLToMarkdown\HtmlConverter;
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -35,7 +36,12 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    * @return string
    *   The changelog for the module.
    */
-  public function getModuleChangelog(string $module, string $version) : string {
+  public function getModuleChangelog(
+    ConsoleIO $io,
+    string $module,
+    string $version
+  ) : string {
+    $this->setIo($io);
     $commit_text = '';
     $cache = new FilesystemAdapter();
     $cache_tag = "$module$version";

@@ -2,11 +2,11 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
@@ -210,6 +210,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function setKubernetesMetadataServiceAudit(
+    ConsoleIO $io,
     string $tag_filter,
     string $name_filter,
     array $options = [
@@ -217,7 +218,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       'yes' => FALSE,
     ]
   ) {
-    $this->io = new SymfonyStyle($this->input, $this->output);
+    $this->setIo($io);
     $this->options = $options;
     $this->nameFilter = $name_filter;
     $this->tagFilter = $tag_filter;
@@ -269,7 +270,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       else {
         $this->say('No differences found!');
       }
-      $this->io->newLine();
+      $this->syskitIo->newLine();
     }
 
     if ($this->centralMetadataRepoNeedsPush) {
@@ -277,7 +278,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->pushCentralRepo();
       $this->say('Done!');
     }
-    $this->io->newLine();
+    $this->syskitIo->newLine();
   }
 
   /**
@@ -290,7 +291,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->initRepositoryAudit();
     }
     catch (\Exception $e) {
-      $this->io->warning("Error initializing lean repo {$this->curLeanRepo['name']} default branch [$e]");
+      $this->syskitIo->warning("Error initializing lean repo {$this->curLeanRepo['name']} default branch [$e]");
       return;
     }
 
@@ -307,8 +308,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
           $this->say("Comparing Files: $this->curFileSlug...");
           $diff_contents = $this->diffRepositoryFiles();
           if ($diff_contents != self::DIFF_HEADER) {
-            $this->io->warning("$this->curFileSlug Files Differ!");
-            $this->io->block($diff_contents);
+            $this->syskitIo->warning("$this->curFileSlug Files Differ!");
+            $this->syskitIo->block($diff_contents);
             $this->setCanonicalMetadataFile();
           }
         }
@@ -325,7 +326,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    */
   protected function initRepositoryAudit() {
     $this->curLeanRepoNeedsPush = FALSE;
-    $this->io->title($this->curLeanRepo['name']);
+    $this->syskitIo->title($this->curLeanRepo['name']);
     $this->say('Cloning lean repo...');
     $this->curLeanRepoClone = GitRepo::setCreateFromClone($this->curLeanRepo['ssh_url'], $this->tmpDir);
     $this->curLeanRepoClone->repo->checkout(self::LEAN_REPO_BRANCH);
@@ -467,7 +468,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
     while (!self::isValidCorrectionChoice($choice)) {
       $choice = strtolower($this->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
       if (!self::isValidCorrectionChoice($choice)) {
-        $this->io->warning("Please choose either 'c' or 'l'");
+        $this->syskitIo->warning("Please choose either 'c' or 'l'");
       }
     }
     return $choice;

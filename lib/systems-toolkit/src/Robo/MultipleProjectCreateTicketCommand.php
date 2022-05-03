@@ -5,10 +5,11 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use JiraRestApi\Issue\IssueField;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
+use Robo\Symfony\ConsoleIO;
+use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\JiraTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
-use Symfony\Component\Console\Helper\Table;
 
 
 /**
@@ -56,6 +57,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @usage jira:multiple-repo:create '' 'drupal8' 'Drupal 9.x Upgrade' 'Update Drupal to Drupal 9.x. See https://stackoverflow.com/c/unblibsystems/articles/131 .' 'Task' 'IN-243' --yes
    */
   public function createMultipleJiraTicket(
+    ConsoleIO $io,
     string $match,
     string $topics,
     string $summary,
@@ -68,6 +70,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => '120',
     ]
   ) {
+    $this->setIo($io);
     $continue = $this->setConfirmRepositoryList(
       [$match],
       [$topics],

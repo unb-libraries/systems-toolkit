@@ -2,8 +2,9 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Git\GitRepo;
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
@@ -56,10 +57,12 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    * @usage pmportal.org drupal8 unbherb
    */
   public function cherryPickMultiple(
+    ConsoleIO $io,
     string $source_repository,
     string $target_topics = '',
     string $target_name_match = ''
   ) {
+    $this->setIo($io);
     $match_array = explode(",", $target_name_match);
     $topics_array = explode(",", $target_topics);
 

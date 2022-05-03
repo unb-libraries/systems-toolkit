@@ -6,6 +6,7 @@ use League\Csv\Reader;
 use League\Csv\Statement;
 use Robo\Contract\CommandInterface;
 use Robo\Robo;
+use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use UnbLibraries\SystemsToolkit\DockerCommandTrait;
@@ -74,6 +75,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:tree:metrics
    */
   public function ocrTesseractMetrics(
+    ConsoleIO $io,
     string $root,
     array $options = [
       'args' => NULL,
@@ -83,6 +85,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'threads' => NULL,
     ]
   ) {
+    $this->setIo($io);
     $options['args'] = 'tsv';
     $options['skip-existing'] = FALSE;
     $options['skip-confirm'] = TRUE;
@@ -174,6 +177,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:tree
    */
   public function ocrTesseractTree(
+    ConsoleIO $io,
     string $root,
     array $options = [
       'args' => NULL,
@@ -187,6 +191,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'threads' => NULL,
     ]
   ) {
+    $this->setIo($io);
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -283,6 +288,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @command ocr:tesseract:file
    */
   public function ocrTesseractFile(
+    ConsoleIO $io,
     string $file,
     array $options = [
       'oem' => 1,
@@ -290,6 +296,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'args' => NULL,
     ]
   ) {
+    $this->setIo($io);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
     }

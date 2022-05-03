@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -36,6 +37,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    * @usage github:actions:restart-latest 'dev' 'pmportal.org' 'drupal8' --yes
    */
   public function getGitHubActionsRestartLatestBuild(
+    ConsoleIO $io,
     string $namespace = 'dev',
     string $match = '',
     string $tag = 'github-actions',
@@ -44,6 +46,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => '300',
     ]
   ) {
+    $this->setIo($io);
     $matches = explode(',', $match);
     $continue = $this->setConfirmRepositoryList(
       $matches,

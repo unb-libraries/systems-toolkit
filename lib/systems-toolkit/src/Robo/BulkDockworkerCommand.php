@@ -2,8 +2,9 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use UnbLibraries\SystemsToolkit\Git\GitRepo;
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
+use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
@@ -71,6 +72,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function setDoBulkDockworkerCommands(
+    ConsoleIO $io,
     string $command_string,
     string $commit_message,
     array $options = [
@@ -81,6 +83,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => '240',
     ]
   ) {
+    $this->setIo($io);
     $this->options = $options;
     $this->commandString = $command_string;
     $this->nameFilter = $options['repo-name'];

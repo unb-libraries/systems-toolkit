@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use DateTimeInterface;
+use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
@@ -28,7 +29,8 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    *
    * @nbhp
    */
-  public function getNewspapersStats() {
+  public function getNewspapersStats(ConsoleIO $io) {
+    $this->setIo($io);
     $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
 
     foreach ($this->kubeCurPods as $pod) {
