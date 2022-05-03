@@ -83,7 +83,7 @@ trait RecursiveDirectoryTreeTrait {
       $table->setStyle('borderless');
       $table->render();
 
-      $continue = $this->confirm(sprintf('The %s will be applied to ALL of the above directories. Are you sure you want to continue?', $operation_name));
+      $continue = $this->syskitIo->confirm(sprintf('The %s will be applied to ALL of the above directories. Are you sure you want to continue?', $operation_name));
       if (!$continue) {
         throw new \Exception('Operation cancelled.');
       }

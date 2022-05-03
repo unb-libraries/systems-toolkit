@@ -64,12 +64,12 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
     }
 
     if ((is_countable($commits) ? count($commits) : 0) < 1) {
-      $this->say("No commits found for user $email");
+      $this->syskitIo->say("No commits found for user $email");
       return;
     }
 
     foreach ($commits as $push_date => $day_commits) {
-      $this->say("Commits pushed on $push_date:");
+      $this->syskitIo->say("Commits pushed on $push_date:");
       $this->setPrintDayCommits($day_commits);
     }
   }

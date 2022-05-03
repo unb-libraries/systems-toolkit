@@ -65,7 +65,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
     $topics_array = explode(",", $topics);
 
     if (empty($match_array[0]) && empty($topics_array[0])) {
-      $this->say(self::MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES);
+      $this->syskitIo->say(self::MESSAGE_REFUSING_REBASE_ALL_REPOSITORIES);
       return;
     }
 
@@ -125,14 +125,14 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
       foreach ($this->githubRepositories as $repository_data) {
         // Pull down.
         $this->syskitIo->title($repository_data['name']);
-        $this->say(
+        $this->syskitIo->say(
           self::MESSAGE_CHECKING_OUT_REPO
         );
         $repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
         if (!self::repoBranchesAreSynchronized($repo, self::UPMERGE_SOURCE_BRANCH, self::UPMERGE_TARGET_BRANCH)) {
           // Rebase.
           $repo->repo->checkout('prod');
-          $this->say(
+          $this->syskitIo->say(
             sprintf(self::MESSAGE_REBASING,
               self::UPMERGE_SOURCE_BRANCH,
               self::UPMERGE_TARGET_BRANCH
@@ -144,12 +144,12 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
               self::UPMERGE_SOURCE_BRANCH,
             ]
           );
-          $this->say(self::MESSAGE_REBASE_RESULTS_TITLE);
-          $this->say(implode("\n", $rebase_output));
+          $this->syskitIo->say(self::MESSAGE_REBASE_RESULTS_TITLE);
+          $this->syskitIo->say(implode("\n", $rebase_output));
 
           // Push.
           if (!$options['yes']) {
-            $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
+            $continue = $this->syskitIo->confirm(self::MESSAGE_CONFIRM_PUSH);
           }
           else {
             $continue = TRUE;
@@ -162,15 +162,15 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
                 self::UPMERGE_TARGET_BRANCH,
               ]
             );
-            $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
-            $this->say(implode("\n", $push_output));
+            $this->syskitIo->say(self::MESSAGE_PUSH_RESULTS_TITLE);
+            $this->syskitIo->say(implode("\n", $push_output));
           }
           $this->syskitIo->newLine();
-          $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+          $this->syskitIo->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
           sleep($options['multi-repo-delay']);
         }
         else {
-          $this->say(
+          $this->syskitIo->say(
             sprintf(
               "Branches %s and %s are synchronized, skipping...",
               self::UPMERGE_SOURCE_BRANCH,

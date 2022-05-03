@@ -140,7 +140,7 @@ trait DrupalInstanceRestTrait {
     $endpoint_uri = $this->drupalRestUri . $uri;
     try {
       if (!$silent) {
-        $this->say($endpoint_uri);
+        $this->syskitIo->say($endpoint_uri);
       }
       $auth_args = [
         'auth' => [$this->drupalRestUser, $this->drupalRestPassword],

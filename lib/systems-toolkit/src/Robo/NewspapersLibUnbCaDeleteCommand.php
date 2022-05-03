@@ -48,10 +48,10 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     $issues = $this->getTitleYearIssues($title_id, $year);
     if (!empty($issues)) {
       print_r($issues);
-      if ($this->options['yes'] == 'TRUE' || $this->confirm('OK to delete all the above issues?')) {
+      if ($this->options['yes'] == 'TRUE' || $this->syskitIo->confirm('OK to delete all the above issues?')) {
         foreach ($issues as $issue_id) {
           $this->setDeleteNewspapersIssue($issue_id);
-          $this->say('Sleeping to inject sanity...');
+          $this->syskitIo->say('Sleeping to inject sanity...');
           sleep(1);
         }
       }
@@ -155,9 +155,9 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
 
     if (!empty($files_to_delete)) {
       print_r($files_to_delete);
-      if ($this->options['yes'] == 'TRUE' || $this->confirm('OK to delete all the above files?')) {
+      if ($this->options['yes'] == 'TRUE' || $this->syskitIo->confirm('OK to delete all the above files?')) {
         foreach ($files_to_delete as $file_to_delete) {
-          $this->say("Deleting $file_to_delete...");
+          $this->syskitIo->say("Deleting $file_to_delete...");
           shell_exec("sudo rm -f $file_to_delete");
         }
       }
@@ -184,7 +184,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     }
 
     foreach ($this->kubeCurPods as $pod) {
-      $this->say(
+      $this->syskitIo->say(
         sprintf(
           'Deleting Issue #%s from %s',
           $issue_id,

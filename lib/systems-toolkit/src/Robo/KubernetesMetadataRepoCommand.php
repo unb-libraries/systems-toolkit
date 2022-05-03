@@ -253,7 +253,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function auditAllRepositories() {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
-      $this->say("Cloning central repo/{$this->options['central-repo-branch']}...");
+      $this->syskitIo->say("Cloning central repo/{$this->options['central-repo-branch']}...");
       $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO, $this->tmpDir);
       $this->centralMetadataRepo->repo->checkout($this->options['central-repo-branch']);
     }
@@ -263,20 +263,20 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->auditRepository();
 
       if ($this->curLeanRepoNeedsPush) {
-        $this->say('Pushing lean repo changes to GitHub...');
+        $this->syskitIo->say('Pushing lean repo changes to GitHub...');
         $this->pushCurLeanRepo();
-        $this->say('Done!');
+        $this->syskitIo->say('Done!');
       }
       else {
-        $this->say('No differences found!');
+        $this->syskitIo->say('No differences found!');
       }
       $this->syskitIo->newLine();
     }
 
     if ($this->centralMetadataRepoNeedsPush) {
-      $this->say('Pushing central repo changes to GitHub...');
+      $this->syskitIo->say('Pushing central repo changes to GitHub...');
       $this->pushCentralRepo();
-      $this->say('Done!');
+      $this->syskitIo->say('Done!');
     }
     $this->syskitIo->newLine();
   }
@@ -305,7 +305,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
 
         // Case : both central and lean repo have the file.
         if ($this->curLeanMetadataFileExists && $this->curCentralMetadataFileExists) {
-          $this->say("Comparing Files: $this->curFileSlug...");
+          $this->syskitIo->say("Comparing Files: $this->curFileSlug...");
           $diff_contents = $this->diffRepositoryFiles();
           if ($diff_contents != self::DIFF_HEADER) {
             $this->syskitIo->warning("$this->curFileSlug Files Differ!");
@@ -327,7 +327,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function initRepositoryAudit() {
     $this->curLeanRepoNeedsPush = FALSE;
     $this->syskitIo->title($this->curLeanRepo['name']);
-    $this->say('Cloning lean repo...');
+    $this->syskitIo->say('Cloning lean repo...');
     $this->curLeanRepoClone = GitRepo::setCreateFromClone($this->curLeanRepo['ssh_url'], $this->tmpDir);
     $this->curLeanRepoClone->repo->checkout(self::LEAN_REPO_BRANCH);
     $this->setCurDockerImage();
@@ -439,20 +439,20 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * Chooses and commits the canonical metadata file.
    */
   protected function setCanonicalMetadataFile() {
-    if ($this->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
+    if ($this->syskitIo->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
       switch ($this->getRepoCorrectionChoiceValue()) {
         case 'c':
           $this->setCentralRepoVersionAsCanonical();
-          $this->say('Deferring remote push until all of this repository\'s files have been processed.');
+          $this->syskitIo->say('Deferring remote push until all of this repository\'s files have been processed.');
           break;
 
         case 'l':
           $this->setLeanRepoVersionAsCanonical();
-          $this->say('Deferring remote push until all repositories have been processed.');
+          $this->syskitIo->say('Deferring remote push until all repositories have been processed.');
           break;
 
         default:
-          $this->say('Skipping correction...');
+          $this->syskitIo->say('Skipping correction...');
       }
     }
   }
@@ -466,7 +466,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function getRepoCorrectionChoiceValue() : string {
     $choice = '';
     while (!self::isValidCorrectionChoice($choice)) {
-      $choice = strtolower($this->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
+      $choice = strtolower($this->syskitIo->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
       if (!self::isValidCorrectionChoice($choice)) {
         $this->syskitIo->warning("Please choose either 'c' or 'l'");
       }

@@ -68,7 +68,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
               $run = $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']);
               foreach ($run['workflow_runs'] as $cur_run) {
                 if ($cur_run['head_branch'] == $namespace) {
-                  $this->say("Restarting $repo_name Run #{$cur_run['id']}");
+                  $this->syskitIo->say("Restarting $repo_name Run #{$cur_run['id']}");
                   $this->client->api('repo')->workflowRuns()->rerun($repo_owner, $repo_name, $cur_run['id']);
                   break;
                 }
@@ -76,7 +76,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
             }
           }
         }
-        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+        $this->syskitIo->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
         sleep($options['multi-repo-delay']);
       }
     }

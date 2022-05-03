@@ -138,13 +138,13 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
         $this->copyModifyingScript();
         $this->executeModifyingScript();
         if ($this->curCloneRepo->repo->hasChanges()) {
-          if ($options['yes'] || $this->confirm(self::QUESTION_SCRIPT_EXECUTION_OK)) {
+          if ($options['yes'] || $this->syskitIo->confirm(self::QUESTION_SCRIPT_EXECUTION_OK)) {
             $this->stageChangesInRepo();
             // Check for staged changes - may simply be ignoring all changes.
             if (!empty($this->curCloneRepo->repo->execute(['diff', '--cached']))) {
               $this->commitChangesInRepo();
               $this->pushRepositoryChangesToGitHub();
-              $this->say(
+              $this->syskitIo->say(
                 sprintf(
                   self::MESSAGE_SLEEPING,
                   $options['multi-repo-delay']
@@ -153,12 +153,12 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
               sleep($options['multi-repo-delay']);
             }
             else {
-              $this->say(self::MESSAGE_NO_STAGED_CHANGES);
+              $this->syskitIo->say(self::MESSAGE_NO_STAGED_CHANGES);
             }
           }
         }
         else {
-          $this->say(self::MESSAGE_NO_CHANGES_TO_REPO);
+          $this->syskitIo->say(self::MESSAGE_NO_CHANGES_TO_REPO);
         }
       }
     }
@@ -187,7 +187,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function cloneTempRepo() {
-    $this->say(self::MESSAGE_CLONING_REPO);
+    $this->syskitIo->say(self::MESSAGE_CLONING_REPO);
     $this->curCloneRepo = GitRepo::setCreateFromClone($this->curRepoMetadata['ssh_url'], $this->tmpDir);
     if (!empty($this->options['target-branch'])) {
       $this->curCloneRepo->repo->checkout($this->options['target-branch']);
@@ -200,7 +200,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function copyModifyingScript() {
-    $this->say(self::MESSAGE_COPYING_SCRIPT);
+    $this->syskitIo->say(self::MESSAGE_COPYING_SCRIPT);
     $git_path = $this->curCloneRepo->getTmpDir();
     $git_script = "$git_path/$this->modifyingScriptName";
     copy($this->modifyingScriptFilePath, $git_script);
@@ -213,9 +213,9 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function executeModifyingScript() {
-    $this->say(self::MESSAGE_EXECUTING_SCRIPT);
+    $this->syskitIo->say(self::MESSAGE_EXECUTING_SCRIPT);
     passthru("cd {$this->curCloneRepo->getTmpDir()} && ./$this->modifyingScriptName {$this->curRepoMetadata['name']} ; rm -f {$this->modifyingScriptName}");
-    $this->say(self::MESSAGE_STEP_DONE);
+    $this->syskitIo->say(self::MESSAGE_STEP_DONE);
   }
 
   /**
@@ -224,15 +224,15 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function stageChangesInRepo() {
-    $this->say(self::MESSAGE_STAGING_CHANGES);
+    $this->syskitIo->say(self::MESSAGE_STAGING_CHANGES);
     if ($this->options['manual-file-stage']) {
-      $this->say(
+      $this->syskitIo->say(
         sprintf(
           self::MESSAGE_MANUAL_STAGE_REPO_LOCATION,
           $this->curCloneRepo->getTmpDir()
         )
       );
-      $this->ask(self::MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY);
+      $this->syskitIo->ask(self::MESSAGE_MANUAL_STAGE_ENTER_WHEN_READY);
     }
     else {
       $this->curCloneRepo->repo->addAllChanges();
@@ -245,7 +245,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function commitChangesInRepo() {
-    $this->say(
+    $this->syskitIo->say(
       sprintf(
         self::MESSAGE_COMMITTING_CHANGES,
         $this->curRepoMetadata['name']
@@ -253,7 +253,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     );
     $commit_prefix = '';
     if (!$this->options['skip-commit-prefix']) {
-      $commit_prefix = trim($this->ask(self::QUESTION_COMMIT_PREFIX_TO_USE)) . ' ';
+      $commit_prefix = trim($this->syskitIo->ask(self::QUESTION_COMMIT_PREFIX_TO_USE)) . ' ';
     }
     $this->curCloneRepo->repo->commit("$commit_prefix{$this->commitMessage}", ['--no-verify']);
   }
@@ -264,7 +264,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   protected function pushRepositoryChangesToGitHub() {
-    $this->say(self::MESSAGE_PUSHING_CHANGES);
+    $this->syskitIo->say(self::MESSAGE_PUSHING_CHANGES);
     if (!empty($this->options['target-branch'])) {
       $this->curCloneRepo->repo->push('origin', [$this->options['target-branch']]);
     }

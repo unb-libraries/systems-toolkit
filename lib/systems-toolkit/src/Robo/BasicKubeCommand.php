@@ -35,7 +35,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
 
     foreach ($this->kubeCurPods as $pod) {
-      $this->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
+      $this->syskitIo->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
       $this->taskExec($this->kubeBin)
         ->arg("--kubeconfig=$this->kubeConfig")
         ->arg("--namespace={$pod->metadata->namespace}")

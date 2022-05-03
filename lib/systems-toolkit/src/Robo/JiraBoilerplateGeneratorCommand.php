@@ -68,10 +68,10 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
     $action_no = 1;
 
     while ($need_action == TRUE) {
-      $action = $this->ask("Enter a short description of task #$action_no (16 Char Max, Enter to Stop)");
+      $action = $this->syskitIo->ask("Enter a short description of task #$action_no (16 Char Max, Enter to Stop)");
       if (!empty($action)) {
         $this->jiraInstanceTableHeaders[] = $action;
-        $this->jiraInstanceDefaultValues[] = $this->ask("Enter a default value for task #$action_no (Enter for None)");
+        $this->jiraInstanceDefaultValues[] = $this->syskitIo->ask("Enter a default value for task #$action_no (Enter for None)");
         $action_no++;
       }
       else {
@@ -79,7 +79,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
           $need_action = FALSE;
         }
         else {
-          $this->say('You must specify at least one action!');
+          $this->syskitIo->say('You must specify at least one action!');
         }
       }
     }
@@ -89,7 +89,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * Gets a list of repositories to add to the multi-instance worklist.
    */
   private function getWorklistRepositories() {
-    $topic = $this->askDefault('GitHub topic to include?', 'drupal8');
+    $topic = $this->syskitIo->askDefault('GitHub topic to include?', 'drupal8');
     $this->setRepositoryList(
       [],
       [$topic],

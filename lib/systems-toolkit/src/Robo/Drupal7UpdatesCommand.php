@@ -29,11 +29,11 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
   ) {
     $this->setIo($io);
     if (empty($updates)) {
-      $this->say('No updates requested!');
+      $this->syskitIo->say('No updates requested!');
       return;
     }
 
-    $this->say('Getting Drupal 7 repostories from GitHub');
+    $this->syskitIo->say('Getting Drupal 7 repostories from GitHub');
     $this->setRepositoryList(
       [],
       ['drupal7'],
@@ -60,14 +60,14 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
       $owner = $repository['owner']['login'];
       $repo = $repository['name'];
 
-      $this->say("Scanning {$repo}...");
+      $this->syskitIo->say("Scanning {$repo}...");
       $file = 'make/' . preg_replace(['/build-profile-/', '/\./'], ['', '_'], $repo) . '.makefile';
       $oldContent = $this->client->api('repo')->contents()->download($owner, $repo, $file, $branch);
 
       foreach ($parsedUpdates as $find => $info) {
         if (preg_match("/$find/", $oldContent)) {
           $newContent = preg_replace("/$find/", $info['replace'], $oldContent);
-          $this->say($info['commit']);
+          $this->syskitIo->say($info['commit']);
           $oldHashes = $this->client->api('repo')->contents()->show($owner, $repo, $file, $branch);
 
           $this->client->api('repo')

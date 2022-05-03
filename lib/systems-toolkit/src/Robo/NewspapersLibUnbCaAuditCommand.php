@@ -291,7 +291,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   private function setUpProgressBar() {
     $issue_count = count($this->recursiveDirectories);
-    $this->say("Verifying $issue_count issues...");
+    $this->syskitIo->say("Verifying $issue_count issues...");
     $this->progressBar = new ProgressBar($this->output, $issue_count);
     $this->progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s% [%message%]');
     $this->progressBar->setMessage('Starting...');
@@ -650,7 +650,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected function displayAuditFailures() {
     if ($this->issueIsFullyValid()) {
       $this->syskitIo->newLine();
-      $this->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
+      $this->syskitIo->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
       return;
     }
 
@@ -688,7 +688,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       ];
       $this->outputTable('Missing Remote Issues Found!', $column_names, array_values($this->missingRemoteIssues));
       $missing_issue_count = count($this->missingRemoteIssues);
-      $this->say("$missing_issue_count missing issues found.");
+      $this->syskitIo->say("$missing_issue_count missing issues found.");
     }
   }
 
@@ -722,7 +722,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       ];
       $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
       $zero_length_count = count($this->zeroLengthFiles);
-      $this->say("$zero_length_count zero length files found.");
+      $this->syskitIo->say("$zero_length_count zero length files found.");
     }
   }
 
@@ -773,7 +773,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
         }
       }
       $this->outputTable('Ingested Issues with Duplicate Metadata Found!', $column_names, $duplicate_issues);
-      $this->say("$issue_counter (possible) multiply ingested issues found.");
+      $this->syskitIo->say("$issue_counter (possible) multiply ingested issues found.");
     }
   }
 
@@ -817,7 +817,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       }
       $this->outputTable('Some Local Pages are Missing From Remote Issues!', $column_names, $missing_pages);
       $missing_page_count = count($missing_pages);
-      $this->say("$missing_page_count missing remote pages found.");
+      $this->syskitIo->say("$missing_page_count missing remote pages found.");
     }
   }
 
@@ -862,7 +862,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       }
       $this->outputTable('Remote Issues Have Duplicate Pages!', $column_names, $missing_pages);
       $duplicate_page_count = count($duplicate_pages);
-      $this->say("$duplicate_page_count duplicate remote pages found.");
+      $this->syskitIo->say("$duplicate_page_count duplicate remote pages found.");
     }
   }
 
@@ -871,13 +871,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function reportIssueFailures() {
     $this->syskitIo->newLine();
-    $this->say(
+    $this->syskitIo->say(
       sprintf(
         "%s total issues audited",
         $this->auditIssueCount
       )
     );
-    $this->say(
+    $this->syskitIo->say(
       sprintf(
         "%s passed, %s failures",
         $this->goodIssueCount,

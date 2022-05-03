@@ -51,7 +51,7 @@ class CyberManCommand extends SystemsToolkitCommand {
     string $message
   ) {
     $this->setIo($io);
-    $this->say(
+    $this->syskitIo->say(
       $this->setSendSnsMessage($message)
     );
   }

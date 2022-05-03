@@ -51,7 +51,7 @@ trait QueuedParallelExecTrait {
     }
 
     $items_to_run = count($this->queue);
-    $this->say("Running $operation_name on $items_to_run files in batches of {$this->threads} parallel threads.");
+    $this->syskitIo->say("Running $operation_name on $items_to_run files in batches of {$this->threads} parallel threads.");
     $item_counter = 0;
 
     while (!empty($this->queue)) {
@@ -64,7 +64,7 @@ trait QueuedParallelExecTrait {
       }
       $parallel_stack->run();
       $queue_size = count($this->queue);
-      $this->say("$item_counter items processed, $queue_size remain.");
+      $this->syskitIo->say("$item_counter items processed, $queue_size remain.");
     }
   }
 

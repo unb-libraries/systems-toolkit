@@ -63,11 +63,11 @@ trait GitTrait {
    */
   private function getCommitInRepo(GitRepo $repo, string $hash) : bool {
     if (empty(trim($hash))) {
-      $this->say('An empty hash was specified!');
+      $this->syskitIo->say('An empty hash was specified!');
       return FALSE;
     }
     if (empty($repo->commits)) {
-      $this->say('The provided repository was either empty or had no commits.');
+      $this->syskitIo->say('The provided repository was either empty or had no commits.');
       return FALSE;
     }
     foreach ($repo->commits as $commit) {
@@ -75,7 +75,7 @@ trait GitTrait {
         return TRUE;
       }
     }
-    $this->say(
+    $this->syskitIo->say(
       sprintf('The hash [%s] was not found in any branch of the repository.', $hash)
     );
     return FALSE;

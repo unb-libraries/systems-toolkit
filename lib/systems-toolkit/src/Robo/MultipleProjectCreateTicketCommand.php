@@ -141,9 +141,9 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
         if ($this->printConfirmIssuesToCreate($issues_to_create)) {
           foreach ($issuefields_to_create as $issuefield_key => $issuefield_to_create) {
             // $issueService = new IssueService($this->jiraConfig);
-            $this->say("Creating issue for {$issues_to_create[$issuefield_key][0]}..");
+            $this->syskitIo->say("Creating issue for {$issues_to_create[$issuefield_key][0]}..");
             // $issueService->create($issuefield_to_create);
-            $this->say("Sleeping to avoid overloading API...");
+            $this->syskitIo->say("Sleeping to avoid overloading API...");
             sleep(5);
           }
         }
@@ -172,7 +172,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       )
       ->setRows($issues_to_create);
     $table->render();
-    return $this->confirm('The following issues will be created. Continue?');
+    return $this->syskitIo->confirm('The following issues will be created. Continue?');
   }
 
 }

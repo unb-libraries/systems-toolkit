@@ -118,7 +118,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     $this->noConfirm = $options['yes'];
 
     if (!empty($this->updates)) {
-      $this->say('Updates needed, querying corresponding repositories in GitHub');
+      $this->syskitIo->say('Updates needed, querying corresponding repositories in GitHub');
       $continue = $this->setConfirmRepositoryList(
         array_keys($this->tabulatedUpdates),
         ['drupal8', 'drupal9'],
@@ -133,7 +133,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       }
     }
     else {
-      $this->say('No updates needed to dev branches!');
+      $this->syskitIo->say('No updates needed to dev branches!');
     }
   }
 
@@ -144,7 +144,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     $ignored_projects = Robo::Config()->get('syskit.drupal.updates.ignoredProjects') ?? [];
     $locked_projects = Robo::Config()->get('syskit.drupal.updates.lockedProjects') ?? [];
     if (empty($ignored_projects) && empty($locked_projects)) {
-      if (!$this->confirm("No module ignores/locks have been defined in configuration (syskit.drupal.updates.ignoredProjects/syskit.drupal.updates.lockedProjects). This is atypical and likely will cause issues. Continue?")) {
+      if (!$this->syskitIo->confirm("No module ignores/locks have been defined in configuration (syskit.drupal.updates.ignoredProjects/syskit.drupal.updates.lockedProjects). This is atypical and likely will cause issues. Continue?")) {
         exit(0);
       }
     }
@@ -302,7 +302,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    */
   private function printTabulatedInstanceUpdateTable(string $instance_name) {
     if (!empty($this->tabulatedUpdates[$instance_name])) {
-      $this->say("Updates available:");
+      $this->syskitIo->say("Updates available:");
       $table = new Table($this->output());
       $table->setHeaders([$instance_name]);
       $rows = [];
@@ -398,11 +398,11 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     if (!empty($updates)) {
       foreach ($updates as $idx => $update) {
         if ($this->isIgnoredUpdate($update)) {
-          $this->say("Ignoring (any) update for {$update->name}...");
+          $this->syskitIo->say("Ignoring (any) update for {$update->name}...");
           unset($updates[$idx]);
         }
         if ($this->isLockedUpdate($update)) {
-          $this->say("Ignoring update for {$update->name} - locked at {$update->existing_version}...");
+          $this->syskitIo->say("Ignoring update for {$update->name} - locked at {$update->existing_version}...");
           unset($updates[$idx]);
         }
       }
@@ -420,7 +420,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   private function filterWhitelistUpdates(array &$updates, array $module_whitelist) {
     foreach ($updates as $idx => $update) {
       if (!in_array($update->name, $module_whitelist)) {
-        $this->say("Ignoring update for {$update->name}...");
+        $this->syskitIo->say("Ignoring update for {$update->name}...");
         unset($updates[$idx]);
       }
     }
@@ -438,7 +438,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     if (!empty($updates)) {
       foreach ($updates as $idx => $update) {
         if (in_array($update->name, $module_exclude)) {
-          $this->say("Ignoring update for {$update->name} (excluded)...");
+          $this->syskitIo->say("Ignoring update for {$update->name} (excluded)...");
           unset($updates[$idx]);
         }
       }
@@ -459,7 +459,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     foreach ($this->githubRepositories as $repository) {
       $updates_pushed = $this->updateRepository($repository);
       if ($updates_pushed) {
-        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+        $this->syskitIo->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
         sleep($options['multi-repo-delay']);
       }
     }
@@ -506,7 +506,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $update_data = $this->tabulatedUpdates[$repository['name']][$branch];
 
       $repo_uri = "git@github.com:{$update_data['vcsOwner']}/{$update_data['vcsRepository']}.git";
-      $this->say("Cloning $repo_uri...");
+      $this->syskitIo->say("Cloning $repo_uri...");
       $repo = GitRepo::setCreateFromClone($repo_uri, $this->tmpDir);
       $repo->repo->checkout($branch);
       $repo_path = $repo->getTmpDir();
@@ -522,7 +522,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       if ($composer_file !== NULL) {
         $this->printTabulatedInstanceUpdateTable($repository['name']);
         if (!$this->noConfirm) {
-          $do_all = $this->confirm('Perform all updates without interaction?');
+          $do_all = $this->syskitIo->confirm('Perform all updates without interaction?');
         }
         else {
           $do_all = TRUE;
@@ -531,12 +531,12 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
         foreach ($update_data['updates'] as $cur_update) {
           if ($this->composerFileNeedsUpdate($composer_file, $cur_update)) {
             $commit_message = $this->getFormattedUpdateMessage($cur_update, TRUE);
-            if ($do_all || $this->confirm("Apply [{$cur_update->name}] to $branch?")) {
-              $this->say('Getting old file hash...');
+            if ($do_all || $this->syskitIo->confirm("Apply [{$cur_update->name}] to $branch?")) {
+              $this->syskitIo->say('Getting old file hash...');
               $old_file_hashes = $this->client->api('repo')
                 ->contents()
                 ->show($update_data['vcsOwner'], $update_data['vcsRepository'], $path, $branch);
-              $this->say('Making changes...');
+              $this->syskitIo->say('Making changes...');
               $this->updateComposerFile(
                 $composer_file,
                 $cur_update
@@ -547,14 +547,14 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
               $sort_command = "jq --indent 2 --sort-keys . $repo_build_file_path > $this->tmpDir/composer-syskit-sort.json && mv $this->tmpDir/composer-syskit-sort.json $repo_build_file_path";
               shell_exec($sort_command);
 
-              $this->say($commit_message);
+              $this->syskitIo->say($commit_message);
               $repo->repo->addFile('build/composer.json');
               $repo->repo->commit($commit_message);
               $updates_committed = TRUE;
             }
           }
           else {
-            $this->say('Skipping already-applied update..');
+            $this->syskitIo->say('Skipping already-applied update..');
           }
         }
         if ($updates_committed) {
@@ -563,7 +563,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
         }
       }
       else {
-        $this->say('Failure to decode composer.json from GitHub!');
+        $this->syskitIo->say('Failure to decode composer.json from GitHub!');
       }
     }
 

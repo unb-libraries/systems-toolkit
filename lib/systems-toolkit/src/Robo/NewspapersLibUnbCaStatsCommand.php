@@ -34,7 +34,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
     $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
 
     foreach ($this->kubeCurPods as $pod) {
-      $this->say(sprintf('Querying statistics from %s', $pod->metadata->name));
+      $this->syskitIo->say(sprintf('Querying statistics from %s', $pod->metadata->name));
       $pages = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_page');
       $issues = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_issue');
       $titles = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_title');

@@ -178,7 +178,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       $page_uri = $page_details->page_image[0]->url;
       $path_parts = pathinfo($page_uri);
       $output_path = "$output_dir/{$path_parts['basename']}";
-      $this->say("Downloading $page_uri to $output_path...");
+      $this->syskitIo->say("Downloading $page_uri to $output_path...");
       $this->guzzleClient->request(
         'GET',
         $page_uri,
@@ -189,7 +189,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       return $output_path;
     }
 
-    $this->say("An image file was not found for the entity.");
+    $this->syskitIo->say("An image file was not found for the entity.");
     return '';
   }
 
@@ -206,7 +206,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \Exception
    */
   private function setPageOcr(string $id, string $field_name, string $content) {
-    $this->say("Updating page #$id [$field_name]");
+    $this->syskitIo->say("Updating page #$id [$field_name]");
     $patch_content = json_encode(
       [
         $field_name => [
@@ -321,7 +321,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         }
         else {
-          $this->say("Skipping already-imported issue - {$this->curIssuePath}");
+          $this->syskitIo->say("Skipping already-imported issue - {$this->curIssuePath}");
           $this->resultsLedger['skipped'][] = [
             'path' => $this->curIssuePath,
           ];
@@ -509,7 +509,7 @@ EOT;
       $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
       $issue_id = $issue_object->id[0]->value;
       $this->curIssueId = $issue_id;
-      $this->say("Importing pages to Issue #$issue_id");
+      $this->syskitIo->say("Importing pages to Issue #$issue_id");
 
       if ($options['generate-ocr']) {
         $this->ocrTesseractTree(
@@ -562,11 +562,11 @@ EOT;
       }
 
       $this->recursiveFiles = [];
-      $this->say("New issue created at:");
-      $this->say($options['instance-uri'] . "/serials/$title_id/issues/$issue_id/pages");
+      $this->syskitIo->say("New issue created at:");
+      $this->syskitIo->say($options['instance-uri'] . "/serials/$title_id/issues/$issue_id/pages");
     }
     else {
-      $this->say("The path $path does not contain a metadata.php file.");
+      $this->syskitIo->say("The path $path does not contain a metadata.php file.");
     }
   }
 
@@ -656,7 +656,7 @@ EOT;
     $additional_pad_chars = strlen(substr(strrchr($page_no, "_"), 0));
     $page_no_padded = str_pad($page_no, 4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
-    $this->say("Creating Page [$page_no_padded] From: $file_path");
+    $this->syskitIo->say("Creating Page [$page_no_padded] From: $file_path");
     $file_entity = $this->uploadDrupalRestFileToEntityField(
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     );
@@ -735,7 +735,7 @@ EOT;
   ) : object {
     $this->setUpDrupalRestClientToken();
     $post_uri = $this->drupalRestUri . "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
-    $this->say($post_uri);
+    $this->syskitIo->say($post_uri);
     $this->drupalRestResponse = $this->guzzleClient->post(
       $post_uri,
       [

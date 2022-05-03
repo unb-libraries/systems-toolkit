@@ -80,29 +80,29 @@ trait GitHubMultipleInstanceTrait {
     // Optionally filter them.
     if (!$no_confirm) {
       $this->listRepositoryNames();
-      $need_remove = $this->confirm('Would you like to remove any instances?');
+      $need_remove = $this->syskitIo->confirm('Would you like to remove any instances?');
     }
     else {
       $need_remove = FALSE;
     }
 
     while ($need_remove == TRUE) {
-      $to_remove = $this->ask('Which ones? (Specify Name, Comma separated list)');
+      $to_remove = $this->syskitIo->ask('Which ones? (Specify Name, Comma separated list)');
       if (!empty($to_remove)) {
         $removes = explode(',', $to_remove);
         foreach ($this->githubRepositories as $repo_index => $repository) {
           if (in_array($repository['name'], $removes)) {
-            $this->say("Removing {$repository['name']} from list");
+            $this->syskitIo->say("Removing {$repository['name']} from list");
             unset($this->githubRepositories[$repo_index]);
           }
         }
       }
       $this->listRepositoryNames();
-      $need_remove = $this->confirm('Would you like to remove any more instances?');
+      $need_remove = $this->syskitIo->confirm('Would you like to remove any more instances?');
     }
 
     if (!$no_confirm) {
-      return $this->confirm(sprintf('The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?', $operation));
+      return $this->syskitIo->confirm(sprintf('The %s operation(s) will be applied to ALL of the above repositories. Are you sure you want to continue?', $operation));
     }
     else {
       return TRUE;
@@ -159,18 +159,18 @@ trait GitHubMultipleInstanceTrait {
   private function populateGitHubRepositoryList() {
     // Check for config based insanity.
     if (empty($this->organizations)) {
-      $this->say('No organizations specified in syskit_config.yml. Please provide them as a list!');
+      $this->syskitIo->say('No organizations specified in syskit_config.yml. Please provide them as a list!');
       exit;
     }
 
     $org_list = implode(',', $this->organizations);
-    $this->say(sprintf('Getting repository list for %s...', $org_list));
+    $this->syskitIo->say(sprintf('Getting repository list for %s...', $org_list));
     $paginator = new ResultPager($this->client);
     $organizationApi = $this->client->api('organization');
     $parameters = $this->organizations;
     $this->githubRepositories = $paginator->fetchAll($organizationApi, 'repositories', $parameters);
     usort($this->githubRepositories, fn($a, $b) => strcmp($a['name'], $b['name']));
-    $this->say('Repository List retrieved!');
+    $this->syskitIo->say('Repository List retrieved!');
   }
 
   /**
@@ -182,7 +182,7 @@ trait GitHubMultipleInstanceTrait {
    */
   private function filterRepositoriesByCallback(array $callback_filters) {
     if (!empty($callback_filters[0])) {
-      $this->say('Callback filtering repositories...');
+      $this->syskitIo->say('Callback filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
         foreach ($callback_filters as $callback_filter) {
           if (!call_user_func($callback_filter, $repository)) {
@@ -191,7 +191,7 @@ trait GitHubMultipleInstanceTrait {
           }
         }
       }
-      $this->say('Callback filtering complete!');
+      $this->syskitIo->say('Callback filtering complete!');
     }
   }
 
@@ -204,13 +204,13 @@ trait GitHubMultipleInstanceTrait {
    */
   private function filterRepositoriesByName(array $name_filters) {
     if (!empty($name_filters[0])) {
-      $this->say('Name filtering repositories...');
+      $this->syskitIo->say('Name filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
         if (!static::instanceNameMatchesSearchTerms($name_filters, $repository['name'])) {
           unset($this->githubRepositories[$repository_index]);
         }
       }
-      $this->say('Name filtering complete!');
+      $this->syskitIo->say('Name filtering complete!');
     }
   }
 
@@ -223,14 +223,14 @@ trait GitHubMultipleInstanceTrait {
    */
   private function filterRepositoriesByTopic(array $topic_filters) {
     if (!empty($topic_filters[0])) {
-      $this->say('Topic filtering repositories...');
+      $this->syskitIo->say('Topic filtering repositories...');
       foreach ($this->githubRepositories as $repo_idx => $repo) {
         // This assumes an AND filter for multiple repo topics.
         if (!count(array_intersect($repo['topics'], $topic_filters)) == count($topic_filters)) {
           unset($this->githubRepositories[$repo_idx]);
         }
       }
-      $this->say('Topic filtering complete!');
+      $this->syskitIo->say('Topic filtering complete!');
     }
   }
 

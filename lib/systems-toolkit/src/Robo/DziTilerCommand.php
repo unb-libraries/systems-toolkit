@@ -115,7 +115,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
       ) {
-        $this->say("Skipping file with existing tiles [$file_to_process]");
+        $this->syskitIo->say("Skipping file with existing tiles [$file_to_process]");
       }
       else {
         $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
