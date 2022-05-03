@@ -89,13 +89,13 @@ trait DrupalInstanceRestTrait {
    * @throws \GuzzleHttp\Exception\GuzzleException
    * @throws \JsonException
    *
-   * @return object
+   * @return array
    *   The JSON object returned from the server.
    */
   protected function getDrupalRestEntity(
     string $entity_uri,
     bool $silent = FALSE
-  ) : object {
+  ) : array {
     $uri = "$entity_uri?_format=json";
     $args = [];
     $method = 'get';

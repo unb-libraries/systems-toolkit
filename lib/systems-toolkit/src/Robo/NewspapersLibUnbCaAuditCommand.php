@@ -345,7 +345,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * Initializes the current issue metadata values.
    */
   private function setIssueInit() {
-    $this->issueConfig = NULL;
+    unset($this->issueConfig);
     $this->issueLocalFiles = [];
     $this->issueMetadataFile = '';
     $this->issuePath = '';
