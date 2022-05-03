@@ -50,7 +50,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
       print_r($issues);
       if ($this->options['yes'] == 'TRUE' || $this->syskitIo->confirm('OK to delete all the above issues?')) {
         foreach ($issues as $issue_id) {
-          $this->setDeleteNewspapersIssue($issue_id);
+          $this->setDeleteNewspapersIssue($io, $issue_id);
           $this->syskitIo->say('Sleeping to inject sanity...');
           sleep(1);
         }

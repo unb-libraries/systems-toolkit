@@ -5,7 +5,6 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use League\HTMLToMarkdown\HtmlConverter;
-use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -20,7 +19,7 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
   public const CHANGELOG_URI = 'https://www.drupal.org/project/%s/releases/8.x-%s';
 
   /**
-   * Displays the changelog from a drupal module release.
+   * Retrieves the changelog from a drupal module release.
    *
    * @param string $module
    *   Modules to query.
@@ -30,18 +29,13 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    * @throws \Exception
    * @throws \Psr\Cache\InvalidArgumentException
    *
-   * @command drupal:module:changelog
-   * @usage views 3.14
-   *
    * @return string
    *   The changelog for the module.
    */
-  public function getModuleChangelog(
-    ConsoleIO $io,
+  protected function getModuleChangelog(
     string $module,
     string $version
   ) : string {
-    $this->setIo($io);
     $commit_text = '';
     $cache = new FilesystemAdapter();
     $cache_tag = "$module$version";
@@ -121,9 +115,15 @@ class DrupalModuleCommand extends SystemsToolkitCommand {
    * @return string
    *   The changelog for the module.
    */
-  public static function moduleChangeLog(string $module, string $version) : string {
+  public static function moduleChangeLog(
+    string $module,
+    string $version
+  ) : string {
     $obj = new static();
-    return $obj->getModuleChangelog($module, $version);
+    return $obj->getModuleChangelog(
+      $module,
+      $version
+    );
   }
 
 }

@@ -44,6 +44,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
+      $io,
       'readme:update',
       $commit_message,
       $options
@@ -83,6 +84,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
+      $io,
       'ci:update-workflow-file',
       $commit_message,
       $options

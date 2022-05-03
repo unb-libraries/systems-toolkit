@@ -92,7 +92,11 @@ class OcrCommand extends SystemsToolkitCommand {
     $options['no-unset-files'] = TRUE;
     $options['no-pull'] = FALSE;
 
-    $this->ocrTesseractTree($root, $options);
+    $this->ocrTesseractTree(
+      $io,
+      $root,
+      $options
+    );
 
     $running_conf_total = 0;
     $running_word_total = 0;

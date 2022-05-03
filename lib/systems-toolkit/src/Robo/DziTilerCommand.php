@@ -171,7 +171,11 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'threads' => $options['threads'],
       'tile-size' => '256',
     ];
-    $this->dziFilesTree($root . '/files/serials/pages', $cmd_options);
+    $this->dziFilesTree(
+      $io,
+      $root . '/files/serials/pages',
+      $cmd_options
+    );
   }
 
   /**

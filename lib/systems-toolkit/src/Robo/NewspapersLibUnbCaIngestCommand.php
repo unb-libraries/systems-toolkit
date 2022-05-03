@@ -99,8 +99,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
-    $local_file = $this->getPageImage($id, $options);
+    $local_file = $this->getPageImage(
+      $io,
+      $id,
+      $options
+    );
     $this->ocrTesseractFile(
+      $io,
       $local_file,
       $options = [
         'oem' => 1,
@@ -281,6 +286,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
     // Queue up every file in the tree and run tesseract now.
     $this->ocrTesseractTree(
+      $io,
       $file_path,
       [
         'args' => 'hocr',
@@ -312,7 +318,12 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
           $this->syskitIo->newLine();
           $this->syskitIo->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
           $this->curIssueId = 0;
-          $this->createIssueFromDir($title_id, $directory_to_process, $options);
+          $this->createIssueFromDir(
+            $io,
+            $title_id,
+            $directory_to_process,
+            $options
+          );
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
             'issue' => $this->curIssueId,
@@ -513,6 +524,7 @@ EOT;
 
       if ($options['generate-ocr']) {
         $this->ocrTesseractTree(
+          $io,
           $path,
           [
             'args' => 'hocr',
@@ -543,6 +555,7 @@ EOT;
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
 
           $this->createSerialPageFromFile(
+            $io,
             $issue_id,
             $page_no,
             str_pad(
@@ -638,6 +651,7 @@ EOT;
       ];
 
       $this->ocrTesseractFile(
+        $io,
         $file_path,
         $ocr_options
       );
