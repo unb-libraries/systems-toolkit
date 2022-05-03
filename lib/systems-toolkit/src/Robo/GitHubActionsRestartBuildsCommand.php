@@ -16,45 +16,43 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
   /**
    * Restarts the latest builds for Github Actions deployed repositories.
    *
-   * @param string $namespace
-   *   The branch to operate on. Defaults to 'dev'.
-   * @param string $match
-   *   A comma separated list of strings to match. Only repositories whose names
-   *   partially match at least one of the comma separated values will be
-   *   processed. Optional.
-   * @param string $tag
-   *   The tag to match when selecting repositories. Defaults to all github
-   *   actions tagged repositories.
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option $yes
-   *   Assume a 'yes' answer for all prompts.
-   * @option $multi-repo-delay
+   * @option match
+   *   Adds a string to match in the repository name when selecting
+   *   repositories. Defaults to all names.
+   * @option multi-repo-delay
    *   The amount of time to delay between restarting builds.
+   * @option namespace
+   *   Adds a namespace to restart the builds in. Defaults to 'dev'.
+   * @option tag
+   *   Adds a tag to match when selecting repositories. Defaults to all
+   *   dockworker repositories.
+   * @option yes
+   *   Assume a 'yes' answer for all prompts.
    *
    * @command github:actions:restart-latest
-   * @usage github:actions:restart-latest 'dev' 'pmportal.org' 'drupal8' --yes
+   * @usage github:actions:restart-latest --namespace=dev --namespace=prod --tag=drupal8 --match=pmportal.org --yes
    */
   public function getGitHubActionsRestartLatestBuild(
     ConsoleIO $io,
-    string $namespace = 'dev',
-    string $match = '',
-    string $tag = 'github-actions',
     array $options = [
-      'yes' => FALSE,
+      'match' => [],
       'multi-repo-delay' => '300',
+      'namespace' => ['dev'],
+      'tag' => ['dockworker'],
+      'yes' => FALSE,
     ]
   ) {
     $this->setIo($io);
-    $matches = explode(',', $match);
     $continue = $this->setConfirmRepositoryList(
-      $matches,
-      [$tag],
+      $options['match'],
+      $options['tag'],
       [],
       [],
       'Restart Latest ',
-      TRUE
+      $options['yes']
     );
 
     if ($continue) {
@@ -66,11 +64,13 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
           foreach ($workflows['workflows'] as $workflow) {
             if ($workflow['name'] == $repo_name) {
               $run = $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']);
-              foreach ($run['workflow_runs'] as $cur_run) {
-                if ($cur_run['head_branch'] == $namespace) {
-                  $this->syskitIo->say("Restarting $repo_name Run #{$cur_run['id']}");
-                  $this->client->api('repo')->workflowRuns()->rerun($repo_owner, $repo_name, $cur_run['id']);
-                  break;
+              foreach ($options['namespace'] as $cur_namespace) {
+                foreach ($run['workflow_runs'] as $cur_run) {
+                  if ($cur_run['head_branch'] == $cur_namespace) {
+                    $this->syskitIo->say("Restarting $repo_name/$cur_namespace Run #{$cur_run['id']}");
+                    $this->client->api('repo')->workflowRuns()->rerun($repo_owner, $repo_name, $cur_run['id']);
+                    break;
+                  }
                 }
               }
             }
