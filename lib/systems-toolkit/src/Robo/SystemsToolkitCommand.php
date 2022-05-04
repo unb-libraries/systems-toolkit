@@ -148,10 +148,9 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    * Sets the IO.
    *
    * @param \Robo\Symfony\ConsoleIO $io
-   *
-   * @return void
+   *   The IO to use.
    */
-  protected function setIo(ConsoleIO $io) {
+  protected function setIo(ConsoleIO $io) : void {
     $this->syskitIo = $io;
   }
 
