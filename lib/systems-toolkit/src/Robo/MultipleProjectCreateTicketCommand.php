@@ -67,7 +67,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
     string $assignee = '-1',
     array $options = [
       'yes' => FALSE,
-      'multi-repo-delay' => '120',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
     $this->setIo($io);

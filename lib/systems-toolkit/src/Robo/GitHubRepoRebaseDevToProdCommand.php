@@ -56,7 +56,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
     string $match = '',
     string $topics = '',
     array $options = [
-      'multi-repo-delay' => '120',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
       'yes' => FALSE,
     ]
   ) {

@@ -109,7 +109,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     array $options = [
       'yes' => FALSE,
       'manual-file-stage' => FALSE,
-      'multi-repo-delay' => '240',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
       'skip-commit-prefix' => FALSE,
       'target-branch' => '',
     ]

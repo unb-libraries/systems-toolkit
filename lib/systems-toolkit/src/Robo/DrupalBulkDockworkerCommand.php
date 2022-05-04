@@ -37,7 +37,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     array $options = [
       'namespaces' => ['dev'],
       'yes' => FALSE,
-      'multi-repo-delay' => '240',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
     $this->setIo($io);
@@ -77,7 +77,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
     array $options = [
       'namespaces' => ['dev'],
       'yes' => FALSE,
-      'multi-repo-delay' => '240',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
     $this->setIo($io);

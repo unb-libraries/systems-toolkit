@@ -39,7 +39,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
     ConsoleIO $io,
     array $options = [
       'match' => [],
-      'multi-repo-delay' => '300',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
       'namespace' => ['dev'],
       'tag' => ['dockworker'],
       'yes' => FALSE,

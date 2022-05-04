@@ -110,7 +110,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       'exclude' => [],
       'security-only' => FALSE,
       'yes' => FALSE,
-      'multi-repo-delay' => '240',
+      'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
     $this->setCheckEmptyUpdateDef();
