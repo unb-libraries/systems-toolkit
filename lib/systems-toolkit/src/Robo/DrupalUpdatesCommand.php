@@ -558,7 +558,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
           }
         }
         if ($updates_committed) {
-          $repo->repo->push('origin', [$branch]);
+          $repo->repo->push(['origin', $branch]);
           $updates_pushed = TRUE;
         }
       }

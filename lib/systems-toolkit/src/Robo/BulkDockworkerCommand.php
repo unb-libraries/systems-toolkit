@@ -167,7 +167,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
         $repo->repo->addAllChanges();
         $repo->repo->commit($this->commitMessage, ['--no-verify']);
         $this->syskitIo->note('Pushing Changes to GitHub...');
-        $repo->repo->push('origin', [$namespace]);
+        $repo->repo->push(['origin', $namespace]);
         $this->repoChangesPushed = TRUE;
       }
     }

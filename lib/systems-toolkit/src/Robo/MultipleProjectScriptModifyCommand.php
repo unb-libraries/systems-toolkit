@@ -266,7 +266,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   protected function pushRepositoryChangesToGitHub() {
     $this->syskitIo->say(self::MESSAGE_PUSHING_CHANGES);
     if (!empty($this->options['target-branch'])) {
-      $this->curCloneRepo->repo->push('origin', [$this->options['target-branch']]);
+      $this->curCloneRepo->repo->push(['origin', $this->options['target-branch']]);
     }
     else {
       $this->curCloneRepo->repo->push('origin');
