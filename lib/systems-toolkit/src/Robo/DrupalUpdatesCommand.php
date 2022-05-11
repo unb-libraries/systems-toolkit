@@ -618,7 +618,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    *   The formatted project version.
    */
   private function getFormattedProjectVersion(string $version_string) : string {
-    return str_replace('8.x-', NULL, $version_string);
+    return str_replace('8.x-', '', $version_string);
   }
 
   /**
