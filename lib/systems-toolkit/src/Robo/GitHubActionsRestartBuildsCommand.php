@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Common\IO;
 use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -11,6 +12,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
  */
 class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
 
+  use IO;
   use GitHubMultipleInstanceTrait;
 
   /**

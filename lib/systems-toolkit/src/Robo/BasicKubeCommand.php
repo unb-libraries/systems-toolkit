@@ -14,12 +14,12 @@ class BasicKubeCommand extends SystemsToolkitCommand {
   use KubeExecTrait;
 
   /**
-   * Gets a kubernetes service logs from the URI and namespace.
+   * Retrieves a k8s service's logs from the current running container.
    *
    * @param string $uri
-   *   The URI to the desired service. (pmportal.org)
+   *   The URI of the desired service. (pmportal.org)
    * @param string $namespace
-   *   The namespace of the desired service. (dev)
+   *   The namespace to retrieve the logs from. (dev)
    *
    * @throws \Exception
    *
@@ -46,14 +46,14 @@ class BasicKubeCommand extends SystemsToolkitCommand {
   }
 
   /**
-   * Gets a kubernetes service shell from a URI and namespace.
+   * Opens a shell within a k8s service's currently running container.
    *
    * @param string $uri
-   *   The URI to the desired service. (pmportal.org)
+   *   The URI of the desired service. (pmportal.org)
    * @param string $namespace
-   *   The namespace of the desired service. (dev)
+   *   The namespace to open the shell into. (dev)
    * @param string $shell
-   *   The shell to use.
+   *   The shell to use within the container.
    *
    * @throws \Exception
    *

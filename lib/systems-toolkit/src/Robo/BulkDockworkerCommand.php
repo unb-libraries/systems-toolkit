@@ -46,21 +46,21 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
   protected array $tagFilter = [];
 
   /**
-   * Runs a dockworker command across several repositories, commits the result.
+   * Executes a command in dockworker repos and pushes any changes to GitHub.
    *
    * @param string $command_string
-   *   The entire dockworker command to run. Quote it!
+   *   The dockworker command to run within each repo. Quote it!
    * @param string $commit_message
-   *   The commit message to use.
+   *   The commit message to use if file changes occur.
    * @param array $options
    *   An array of CLI options to pass to the command.
    *
-   * @option $namespaces
-   *   The namespaces to apply the commit in. Defaults to dev.
+   * @option $branch
+   *   Sets the git branch to operate on.
    * @option $repo-name
-   *   Only perform operations to repository names matching the provided string.
+   *   Filter: Only operate on repos with names matching the provided string.
    * @option $repo-tag
-   *   Only perform operations to repository tags matching the provided string.
+   *   Only perform operations to repository tags the provided string.
    * @option $yes
    *   Assume a 'yes' answer for all prompts.
    * @option $multi-repo-delay
@@ -76,7 +76,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
     string $command_string,
     string $commit_message,
     array $options = [
-      'namespaces' => ['dev'],
+      'branch' => ['dev'],
       'repo-name' => [],
       'repo-tag' => [],
       'yes' => FALSE,

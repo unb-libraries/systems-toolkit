@@ -18,7 +18,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
   use JiraTrait;
 
   /**
-   * Gets project info from the JIRA ID.
+   * Retrieves a project's critical information from the JIRA instance.
    *
    * @param string $project_id
    *   The project ID string, i.e. NBNP.

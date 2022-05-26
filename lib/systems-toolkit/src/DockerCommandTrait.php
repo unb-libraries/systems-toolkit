@@ -8,7 +8,7 @@ namespace UnbLibraries\SystemsToolkit;
 trait DockerCommandTrait {
 
   /**
-   * Clean up any leftover docker assets not being used.
+   * Cleans up any docker assets not being used.
    *
    * @command docker:cleanup
    *

@@ -17,7 +17,7 @@ class UpdaterCommand extends SystemsToolkitCommand {
    *
    * @command updater:composer-apps
    */
-  public function composerApps() {
+  public function composerApps() : void {
     $servers = Robo::Config()->get('syskit.updater.composer-apps');
     foreach ($servers as $server => $apps) {
       foreach ($apps as $app) {
