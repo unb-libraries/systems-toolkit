@@ -104,6 +104,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @command drupal:doupdates
    */
   public function setDoDrupalUpdates(
+    ConsoleIO $io,
     array $options = [
       'namespaces' => ['dev'],
       'only-update' => [],
@@ -113,12 +114,13 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
+    $this->setIo($io);
     $this->setCheckEmptyUpdateDef();
     $this->getDrupalUpdates($options);
     $this->noConfirm = $options['yes'];
 
     if (!empty($this->updates)) {
-      $this->syskitIo->say('Updates needed, querying corresponding repositories in GitHub');
+      $this->syskitIo->title("Matching Pods to GitHub Repositories");
       $continue = $this->setConfirmRepositoryList(
         array_keys($this->tabulatedUpdates),
         ['drupal8', 'drupal9'],
@@ -129,6 +131,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       );
 
       if ($continue) {
+        $this->syskitIo->title("Applying Updates");
         $this->updateAllRepositories($options);
       }
     }
@@ -180,6 +183,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     $pod_selector = [
       'app=drupal',
     ];
+    $this->syskitIo->title('Querying Drupal Pods For Needed Updates');
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     $this->setAllNeededUpdates($options['only-update'], $options['exclude']);
     $this->tabulateNeededUpdates($options['namespaces']);
@@ -201,7 +205,17 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     array $module_exclude = [],
   ) {
     foreach ($this->kubeCurPods as $pod) {
-      $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
+      try {
+        $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
+      }
+      catch (\Exception $e) {
+        $this->syskitIo->warning(
+          sprintf(
+            'Unable to query %s pod for updates',
+            $pod->metadata->labels->instance
+          )
+        );
+      }
     }
   }
 
@@ -286,6 +300,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    */
   private function printTabulatedUpdateTables() {
     if (!empty($this->tabulatedUpdates)) {
+      $this->syskitIo->title("Updates available:");
       foreach ($this->tabulatedUpdates as $instance => $updates) {
         $this->printTabulatedInstanceUpdateTable($instance);
       }
@@ -302,7 +317,6 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    */
   private function printTabulatedInstanceUpdateTable(string $instance_name) {
     if (!empty($this->tabulatedUpdates[$instance_name])) {
-      $this->syskitIo->say("Updates available:");
       $table = new Table($this->output());
       $table->setHeaders([$instance_name]);
       $rows = [];
@@ -510,6 +524,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $repo = GitRepo::setCreateFromClone($repo_uri, $this->tmpDir);
       $repo->repo->checkout($branch);
       $repo_path = $repo->getTmpDir();
+      $this->say($repo_path);
       $repo_build_file_path = "$repo_path/build/composer.json";
       $old_file_content = file_get_contents($repo_build_file_path);
       $composer_file = json_decode(
