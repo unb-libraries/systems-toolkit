@@ -128,9 +128,9 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * The current lean repo being audited.
    *
-   * @var \UnbLibraries\SystemsToolkit\Git\GitRepo
+   * @var array
    */
-  protected GitRepo $curLeanRepo;
+  protected array $curLeanRepo;
 
   /**
    * The current lean repo being audited.
