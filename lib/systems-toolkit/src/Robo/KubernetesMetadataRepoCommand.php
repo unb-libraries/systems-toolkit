@@ -375,7 +375,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
           $this->curLeanRepoClone->getTmpDir(),
           self::LEAN_REPO_METADATA_PATH,
           $this->curDeployEnv,
-          $this->curMetadataType,
+              $this->curMetadataType,
         ]
       ) .
       '.yaml';
@@ -395,32 +395,59 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * Sets the current audit file from the central metadata repo.
    */
   protected function setCentralMetadataFile() {
-    $file_path = implode(
-      '/',
-      [
-        $this->centralMetadataRepo->getTmpDir(),
-        'services',
-        $this->curLeanRepoSlug,
-        $this->curDeployEnv,
-        implode(
-          '.',
-          [
-            $this->curLeanRepoSlug,
-            self::LEAN_CENTRAL_FILENAME_TRANSLATION[$this->curMetadataType],
-            $this->curDeployEnv,
-          ]
-        ),
-      ]
-    ) .
-    '.yaml';
-    $this->curCentralMetadataFile = $file_path;
-    $this->curCentralMetadataFileExists = file_exists($this->curCentralMetadataFile);
-
-    if ($this->curCentralMetadataFileExists) {
-      $this->curCentralMetadataFileContents = file_get_contents($this->curCentralMetadataFile);
+    if ($this->curMetadataType == 'backup') {
+      if ($this->curDeployEnv == 'prod') {
+        $file_path = implode(
+            '/',
+            [
+              $this->centralMetadataRepo->getTmpDir(),
+              'services',
+              $this->curLeanRepoSlug,
+              'backup',
+              implode(
+                '.',
+                [
+                  'backup-' . $this->curLeanRepoSlug,
+                  'CronJob',
+                  'prod',
+                ]
+              ),
+            ]
+          ) .
+          '.yaml';
+      }
     }
     else {
-      $this->curCentralMetadataFileContents = '';
+      $file_path = implode(
+          '/',
+          [
+            $this->centralMetadataRepo->getTmpDir(),
+            'services',
+            $this->curLeanRepoSlug,
+            $this->curDeployEnv,
+            implode(
+              '.',
+              [
+                $this->curLeanRepoSlug,
+                self::LEAN_CENTRAL_FILENAME_TRANSLATION[$this->curMetadataType],
+                $this->curDeployEnv,
+              ]
+            ),
+          ]
+        ) .
+        '.yaml';
+    }
+
+    if (!empty($file_path)) {
+      $this->curCentralMetadataFile = $file_path;
+      $this->curCentralMetadataFileExists = file_exists($this->curCentralMetadataFile);
+
+      if ($this->curCentralMetadataFileExists) {
+        $this->curCentralMetadataFileContents = file_get_contents($this->curCentralMetadataFile);
+      }
+      else {
+        $this->curCentralMetadataFileContents = '';
+      }
     }
   }
 
