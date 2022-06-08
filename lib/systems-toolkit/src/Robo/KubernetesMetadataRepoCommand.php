@@ -58,7 +58,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * Translates between filenames in lean repositories and the central one.
    */
   public const LEAN_CENTRAL_FILENAME_TRANSLATION = [
-    'cron' => 'CronJob',
+    'backup' => 'Backup',
+    'cronjob' => 'CronJob',
     'deployment' => 'Deployment',
   ];
 
