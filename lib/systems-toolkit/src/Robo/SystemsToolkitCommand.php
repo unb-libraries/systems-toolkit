@@ -18,7 +18,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
   use LoggerAwareTrait;
 
   public const CONFIG_FILENAME = 'syskit_config.yml';
-  public const DEFAULT_MULTI_REPO_DELAY = '120';
+  public const DEFAULT_MULTI_REPO_DELAY = '300';
   public const ERROR_CONFIG_MISSING = 'The config file was not found. Please copy %s.sample to %s and add your values.';
 
   /**
