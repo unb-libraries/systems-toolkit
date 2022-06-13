@@ -6,6 +6,7 @@ use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * Class for GitHubActionsRepoBuildReportCommand Robo commands.
@@ -42,6 +43,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
   ) {
     $this->setIo($io);
     $matches = explode(',', $match);
+    $io->title('Retrieving Repositories');
     $continue = $this->setConfirmRepositoryList(
       $matches,
       ['github-actions'],
@@ -51,8 +53,12 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
       TRUE
     );
 
-    if ($continue) {
+    if ($continue && !empty($this->githubRepositories)) {
       $workflow_data = [];
+      $io->title('Retrieving Workflow Data');
+      $progress_bar = new ProgressBar($io, count($this->githubRepositories));
+      $progress_bar->setFormat('verbose');
+      $progress_bar->start();
       foreach ($this->githubRepositories as $repository_data) {
         $repo_owner = $repository_data['owner']['login'];
         $repo_name = $repository_data['name'];
@@ -60,25 +66,31 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
         if (!empty($workflows['workflows'])) {
           foreach ($workflows['workflows'] as $workflow) {
             if ($workflow['name'] == $repo_name) {
+              $runs = $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']);
               $workflow_data[] = [
                 'repository' => $repository_data,
                 'workflow' => $workflow,
-                'runs' => $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']),
+                'runs' => $runs,
               ];
+              break;
             }
           }
         }
+        $progress_bar->advance();
       }
+      $progress_bar->finish();
 
       // Tabulate the data.
       if (!empty($workflow_data)) {
+        $io->title('Latest Workflows By Branch');
         $table_rows = [];
+        $progress_bar = new ProgressBar($io, count($workflow_data));
+        $progress_bar->start();
         foreach ($workflow_data as $repository_data) {
           if (!empty($repository_data['runs'])) {
             $first_row_of_repo = TRUE;
             $branches_found = [];
             foreach ($repository_data['runs']['workflow_runs'] as $run) {
-              $job_errors = [];
               if (!in_array($run['head_branch'], $branches_found)) {
                 if (!$options['only-failure'] || $run['conclusion'] == 'failure') {
                   if ($run['conclusion'] == 'success') {
@@ -108,7 +120,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
         }
 
         if (!empty($table_rows)) {
-          $table = new Table($this->output());
+          $table = new Table($io);
           $table
             ->setHeaders(['Repository', 'Branch', 'ID', 'Status', 'URL'])
             ->setRows($table_rows);

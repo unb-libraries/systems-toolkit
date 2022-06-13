@@ -147,13 +147,16 @@ trait KubeExecTrait {
    *   An array of namespaces to filter pods against.
    * @param bool $quiet
    *   TRUE if the output should be oppressed.
+   * @param bool $only_running
+   *   TRUE if the selector should only return running pods.
    *
    * @throws \Exception
    */
   protected function setCurKubePodsFromSelector(
     array $selectors,
     array $namespaces = ['dev', 'prod'],
-    bool $quiet = FALSE
+    bool $quiet = FALSE,
+    bool $only_running = TRUE
   ) {
     $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
@@ -162,7 +165,7 @@ trait KubeExecTrait {
       if (!$quiet) {
         $this->syskitIo->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
       }
-      $this->setAddCurPodsFromJson($output);
+      $this->setAddCurPodsFromJson($output, $only_running);
     }
   }
 
@@ -171,18 +174,28 @@ trait KubeExecTrait {
    *
    * @param string $json
    *   The JSON string to parse and add pods from.
+   * @param bool $only_running
+   *   TRUE if the selector should only return running pods.
    *
    * @throws \Exception
    */
-  private function setAddCurPodsFromJson(string $json) {
+  private function setAddCurPodsFromJson(string $json, bool $only_running = TRUE) {
     $response = json_decode(
       $json,
       NULL,
       512,
       JSON_THROW_ON_ERROR
     );
+    $items = $response->items;
+    if ($only_running) {
+      foreach ($items as $item_key => $item) {
+        if ($item->status->phase != 'Running') {
+          unset($items[$item_key]);
+        }
+      }
+    }
     if (!empty($response->items)) {
-      $this->kubeCurPods = array_merge($this->kubeCurPods, $response->items);
+      $this->kubeCurPods = array_merge($this->kubeCurPods, $items);
     }
     else {
       $this->syskitIo->say('Warning : No pods were returned from the cluster');
