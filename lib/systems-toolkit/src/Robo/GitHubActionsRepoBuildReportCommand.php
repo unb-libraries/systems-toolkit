@@ -84,8 +84,6 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
       if (!empty($workflow_data)) {
         $io->title('Latest Workflows By Branch');
         $table_rows = [];
-        $progress_bar = new ProgressBar($io, count($workflow_data));
-        $progress_bar->start();
         foreach ($workflow_data as $repository_data) {
           if (!empty($repository_data['runs'])) {
             $first_row_of_repo = TRUE;
