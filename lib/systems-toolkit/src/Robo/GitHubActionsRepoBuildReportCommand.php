@@ -57,7 +57,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
       $workflow_data = [];
       $io->title('Retrieving Workflow Data');
       $progress_bar = new ProgressBar($io, count($this->githubRepositories));
-      $progress_bar->setFormat('verbose');
+      $progress_bar->setFormat('very_verbose');
       $progress_bar->start();
       foreach ($this->githubRepositories as $repository_data) {
         $repo_owner = $repository_data['owner']['login'];
