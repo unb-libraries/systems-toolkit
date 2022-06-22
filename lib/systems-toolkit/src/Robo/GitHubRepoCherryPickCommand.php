@@ -16,7 +16,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
 
   public const ERROR_MISSING_REPOSITORY = 'The repository [%s] was not found in any of your configured organizations.';
   public const FILE_SOURCE_PATCH = 'syskit_tmp_cherry_patch.txt';
-  public const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s]';
+  public const MESSAGE_BEGINNING_CHERRY_PICK = 'Starting cherry pick operation from [%s] onto all repositories matching topics [%s] and name [%s], omitting topics [%s] and repositories named [%s]';
   public const MESSAGE_CHERRY_PATCH_FAILED = 'Patch cannot apply to [%s/%s]';
   public const MESSAGE_CHERRY_PATCH_SUCCESS = 'Patch successfully applied to [%s/%s]';
   public const MESSAGE_CHERRY_PICKING = 'Cherry picking [%s] onto [%s/%s]...';
@@ -124,7 +124,9 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
         self::MESSAGE_BEGINNING_CHERRY_PICK,
         $source_repository,
         implode(',', $target_topics),
-        implode(',', $target_name_match)
+        implode(',', $target_name_match),
+        implode(',', $omit_topics),
+        implode(',', $omit_names)
       )
     );
 
