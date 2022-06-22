@@ -63,6 +63,8 @@ trait GitHubMultipleInstanceTrait {
    *   'operation'.
    * @param bool $no_confirm
    *   TRUE if all confirmations be assumed yes.
+   * @param array $omit_topics
+   *   An array of repository topics to omit from the list.
    *
    * @return bool
    *   TRUE if user agreed, FALSE otherwise.
@@ -73,9 +75,10 @@ trait GitHubMultipleInstanceTrait {
     array $callback_filters = [],
     array $omit = [],
     string $operation = 'operation',
-    bool $no_confirm = FALSE
+    bool $no_confirm = FALSE,
+    array $omit_topics = [],
   ) : bool {
-    $this->setRepositoryList($name_filters, $topic_filters, $callback_filters, $omit);
+    $this->setRepositoryList($name_filters, $topic_filters, $callback_filters, $omit, $omit_topics);
 
     // Optionally filter them.
     if (!$no_confirm) {
@@ -123,21 +126,17 @@ trait GitHubMultipleInstanceTrait {
    *   TRUE will be stored. Optional.
    * @param array $omit
    *   An array of repository names to omit from the list.
+   * @param array $omit_topics
+   *   An array of repository topics to omit from the list.
    */
   private function setRepositoryList(
     array $name_filters = [],
     array $topic_filters = [],
     array $callback_filters = [],
-    array $omit = []
+    array $omit = [],
+    array $omit_topics = []
   ) {
     $this->populateGitHubRepositoryList();
-
-    // Remove omissions.
-    foreach ($this->githubRepositories as $repository_index => $repository) {
-      if (in_array($repository['name'], $omit)) {
-        unset($this->githubRepositories[$repository_index]);
-      }
-    }
 
     // Case : no filtering.
     if (empty($name_filters[0]) && empty($topic_filters[0]) && empty($callback_filters[0])) {
@@ -148,6 +147,20 @@ trait GitHubMultipleInstanceTrait {
     $this->filterRepositoriesByName($name_filters);
     $this->filterRepositoriesByCallback($callback_filters);
     $this->filterRepositoriesByTopic($topic_filters);
+
+    // Remove omissions.
+    foreach ($this->githubRepositories as $repository_index => $repository) {
+      foreach ($omit_topics as $omit_topic) {
+        if (in_array($omit_topic, $repository['topics'])) {
+          unset($this->githubRepositories[$repository_index]);
+          break;
+        }
+      }
+      if (in_array($repository['name'], $omit)) {
+        unset($this->githubRepositories[$repository_index]);
+      }
+
+    }
 
     // If we have any repositories left, pedantically rekey the array.
     $this->githubRepositories = array_values($this->githubRepositories);
