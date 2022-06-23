@@ -38,7 +38,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
       'yes' => FALSE,
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
-  ) {
+  ) : void {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
@@ -75,7 +75,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
       'yes' => FALSE,
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
-  ) {
+  ) : void {
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(

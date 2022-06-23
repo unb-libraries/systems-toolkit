@@ -37,16 +37,16 @@ class OcrCommand extends SystemsToolkitCommand {
   private string $tesseractImage;
 
   /**
-   * Gets the tesseract docker image from config.
+   * Gets the Tesseract docker image from config.
    *
    * @throws \Exception
    *
    * @hook init
    */
-  public function setTesseractImage() {
+  public function setTesseractImage() : void {
     $this->tesseractImage = Robo::Config()->get('syskit.imaging.tesseractImage');
     if (empty($this->tesseractImage)) {
-      throw new \Exception(sprintf('The tesseract docker image has not been set in the configuration file. (tesseractImage)'));
+      throw new \Exception(sprintf('The Tesseract docker image has not been set in the configuration file. (tesseractImage)'));
     }
   }
 
@@ -82,7 +82,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'oem' => 1,
       'threads' => NULL,
     ]
-  ) {
+  ) : void {
     $options['args'] = 'tsv';
     $options['skip-existing'] = FALSE;
     $options['skip-confirm'] = TRUE;
@@ -164,7 +164,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @option $no-unset-files
    *   Do not unset the recursive file stack after processing.
    * @option $oem
-   *   The tesseract engine ID to use.
+   *   The Tesseract engine ID to use.
    * @option $skip-confirm
    *   Skip the confirmation process, assume 'yes'.
    * @option $skip-existing
@@ -189,7 +189,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'skip-existing' => FALSE,
       'threads' => NULL,
     ]
-  ) {
+  ) : void {
     $regex = "/^.+\.{$options['extension']}$/i";
     $this->recursiveFileTreeRoot = $root;
     $this->recursiveFileRegex = $regex;
@@ -245,7 +245,7 @@ class OcrCommand extends SystemsToolkitCommand {
    * @option $lang
    *   The language to use.
    * @option $oem
-   *   The tesseract engine ID to use.
+   *   The Tesseract engine ID to use.
    *
    * @return \Robo\Contract\CommandInterface
    *   The command to generate OCR for the file.
@@ -292,7 +292,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'lang' => 'eng',
       'args' => NULL,
     ]
-  ) {
+  ) : void {
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
     }
@@ -305,7 +305,7 @@ class OcrCommand extends SystemsToolkitCommand {
    *
    * @command ocr:pull-image
    */
-  public function setPullOcrImage() {
+  public function setPullOcrImage() : void {
     shell_exec("docker pull {$this->tesseractImage}");
   }
 

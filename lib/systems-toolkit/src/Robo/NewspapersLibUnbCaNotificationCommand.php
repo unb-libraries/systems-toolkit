@@ -21,7 +21,7 @@ class NewspapersLibUnbCaNotificationCommand extends BasicKubeCommand {
    *
    * @hook post-init
    */
-  public function setNbhpNotificationSnsTopicId() {
+  public function setNbhpNotificationSnsTopicId() : void {
     $topic_id = Robo::Config()->get('syskit.nbhp.awsNotificationTopicId');
     if (empty($topic_id)) {
       throw new \Exception('The NBHP SNS notification topic ID is unset in in config (syskit.nbhp.awsNotificationTopicId).');
@@ -51,7 +51,7 @@ class NewspapersLibUnbCaNotificationCommand extends BasicKubeCommand {
     $title_id,
     $year,
     $result = 'complete'
-  ) {
+  ) : void {
     $message = sprintf(
       "newspapers.lib.unb.ca - %s\n[%s:%s] import (%s)",
       date(self::TIME_STRING_FORMAT),

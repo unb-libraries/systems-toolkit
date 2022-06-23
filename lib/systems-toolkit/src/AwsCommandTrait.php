@@ -37,7 +37,7 @@ trait AwsCommandTrait {
    *
    * @hook init
    */
-  public function setAwsAccessKeyId() {
+  public function setAwsAccessKeyId() : void {
     $this->accessKeyId = Robo::Config()->get('syskit.aws.keyId');
     if (empty($this->accessKeyId)) {
       throw new \Exception(sprintf('The AWS Access Key ID is unset in %s.', $this->configFile));
@@ -51,7 +51,7 @@ trait AwsCommandTrait {
    *
    * @hook init
    */
-  public function setAwsDefaultRegion() {
+  public function setAwsDefaultRegion() : void {
     $this->awsDefaultRegion = Robo::Config()->get('syskit.aws.defaultRegion');
     if (empty($this->awsDefaultRegion)) {
       throw new \Exception(sprintf('The AWS Default Region is unset in %s.', $this->configFile));
@@ -65,7 +65,7 @@ trait AwsCommandTrait {
    *
    * @hook init
    */
-  public function setAwsSecretAccessKey() {
+  public function setAwsSecretAccessKey() : void {
     $this->secretAccessKey = Robo::Config()->get('syskit.aws.secretKey');
     if (empty($this->secretAccessKey)) {
       throw new \Exception(sprintf('The AWS Secret Access Key is unset in %s.', $this->configFile));

@@ -23,7 +23,7 @@ trait GuzzleClientTrait {
    *
    * @hook post-init
    */
-  public function create() {
+  public function create() : void {
     $this->guzzleClient = new Client();
   }
 

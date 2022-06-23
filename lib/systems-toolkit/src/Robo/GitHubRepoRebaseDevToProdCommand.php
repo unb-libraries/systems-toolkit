@@ -60,7 +60,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
       'repo-exclude' => [],
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $match_array = explode(",", $match);
     $topics_array = explode(",", $topics);
 
@@ -105,7 +105,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
       'repo-exclude' => [],
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     // Get repositories.
     $continue = $this->setConfirmRepositoryList(
       $match,
@@ -129,8 +129,15 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
         $this->say(
           self::MESSAGE_CHECKING_OUT_REPO
         );
-        $repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
-        if (!self::repoBranchesAreSynchronized($repo, self::UPMERGE_SOURCE_BRANCH, self::UPMERGE_TARGET_BRANCH)) {
+        $repo = GitRepo::setCreateFromClone(
+          $repository_data['ssh_url'],
+          $this->tmpDir
+        );
+        if (!self::repoBranchesAreSynchronized(
+          $repo,
+          self::UPMERGE_SOURCE_BRANCH,
+          self::UPMERGE_TARGET_BRANCH
+        )) {
           // Rebase.
           $repo->repo->checkout('prod');
           $this->say(
@@ -201,7 +208,11 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if the branches are synchronized. False otherwise.
    */
-  private static function repoBranchesAreSynchronized(GitRepo $repo, string $branch1, string $branch2) : bool {
+  private static function repoBranchesAreSynchronized(
+    GitRepo $repo,
+    string $branch1,
+    string $branch2
+  ) : bool {
     $repo->repo->checkout($branch1);
     $repo->repo->checkout($branch2);
     return self::getRepoHeadHash($repo, $branch1) ==
@@ -221,7 +232,10 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @return string[]
    *   The value of the branch HEAD commit hash.
    */
-  private static function getRepoHeadHash(GitRepo $repo, string $branch) : array {
+  private static function getRepoHeadHash(
+    GitRepo $repo,
+    string $branch
+  ) : array {
     return $repo->repo->execute(
       [
         'log',

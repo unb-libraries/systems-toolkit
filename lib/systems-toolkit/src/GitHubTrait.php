@@ -53,7 +53,7 @@ trait GitHubTrait {
    *
    * @hook init
    */
-  public function setGitHubAuthKey() {
+  public function setGitHubAuthKey() : void {
     $this->authKey = Robo::Config()->get('syskit.github.authKey');
     if (empty($this->authKey)) {
       throw new \Exception(sprintf('The GitHub authentication key has not been set in the configuration file. (authKey)'));
@@ -67,7 +67,7 @@ trait GitHubTrait {
    *
    * @hook init
    */
-  public function setGitHubEmail() {
+  public function setGitHubEmail() : void {
     $this->userEmail = Robo::Config()->get('syskit.github.userEmail');
     if (empty($this->userEmail)) {
       throw new \Exception(sprintf('The GitHub user name has not been set in the configuration file. (userEmail)'));
@@ -81,7 +81,7 @@ trait GitHubTrait {
    *
    * @hook post-init
    */
-  public function setGitHubOrgs() {
+  public function setGitHubOrgs() : void {
     $this->organizations = Robo::Config()->get('syskit.github.organizations');
     if (empty($this->organizations)) {
       throw new \Exception(sprintf('No target organizations have been specified in the configuration file. (organizations)'));
@@ -95,7 +95,7 @@ trait GitHubTrait {
    *
    * @hook post-init
    */
-  public function setGitHubClient() {
+  public function setGitHubClient() : void {
     try {
       $this->client = new Client();
       $this->client->authenticate(
@@ -122,7 +122,7 @@ trait GitHubTrait {
    *
    * @hook init
    */
-  public function setGitHubUserName() {
+  public function setGitHubUserName() : void {
     $this->userName = Robo::Config()->get('syskit.github.userName');
     if (empty($this->userName)) {
       throw new \Exception(sprintf('The GitHub user name has not been set in the configuration file. (userName)'));

@@ -19,7 +19,7 @@ trait NbhpSnsMessageTrait {
    *
    * @hook post-init @nbhp
    */
-  public function setNbhpSnsTopicId() {
+  public function setNbhpSnsTopicId() : void {
     $topic_id = Robo::Config()->get('syskit.nbhp.awsSnsTopicId');
     if (empty($topic_id)) {
       throw new \Exception('The NBHP SNS topic ID is unset in in config (syskit.nbhp.awsSnsTopicId).');

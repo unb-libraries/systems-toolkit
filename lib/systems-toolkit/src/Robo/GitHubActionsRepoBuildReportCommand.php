@@ -38,7 +38,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
   public function getGitHubActionsBuildReports(
     string $match = '',
     array $options = ['only-failure' => FALSE]
-  ) {
+  ) : void {
     $matches = explode(',', $match);
     $this->io()->title('Retrieving Repositories');
     $continue = $this->setConfirmRepositoryList(
@@ -53,17 +53,22 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
     if ($continue && !empty($this->githubRepositories)) {
       $workflow_data = [];
       $this->io()->title('Retrieving Workflow Data');
-      $progress_bar = new ProgressBar($this->io(), count($this->githubRepositories));
+      $progress_bar = new ProgressBar(
+        $this->io(),
+        count($this->githubRepositories)
+      );
       $progress_bar->setFormat('very_verbose');
       $progress_bar->start();
       foreach ($this->githubRepositories as $repository_data) {
         $repo_owner = $repository_data['owner']['login'];
         $repo_name = $repository_data['name'];
-        $workflows = $this->client->api('repo')->workflows()->all($repo_owner, $repo_name);
+        $workflows = $this->client->api('repo')->workflows()
+          ->all($repo_owner, $repo_name);
         if (!empty($workflows['workflows'])) {
           foreach ($workflows['workflows'] as $workflow) {
             if ($workflow['name'] == $repo_name) {
-              $runs = $this->client->api('repo')->workflowRuns()->listRuns($repo_owner, $repo_name, $workflow['id']);
+              $runs = $this->client->api('repo')->workflowRuns()
+                ->listRuns($repo_owner, $repo_name, $workflow['id']);
               $workflow_data[] = [
                 'repository' => $repository_data,
                 'workflow' => $workflow,

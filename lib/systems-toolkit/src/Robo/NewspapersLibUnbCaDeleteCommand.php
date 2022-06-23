@@ -40,7 +40,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     array $options = [
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $issues = $this->getTitleYearIssues($title_id, $year);
     if (!empty($issues)) {
@@ -68,7 +68,10 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @throws \Exception
    */
-  private function getTitleYearIssues(string $title_id, string $year) : array {
+  private function getTitleYearIssues(
+    string $title_id,
+    string $year
+  ) : array {
     $ids = [];
 
     $ch = curl_init();
@@ -120,7 +123,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     array $options = [
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $this->setDeleteFilesInTree($path, '.nbnp_processed');
     $this->setDeleteFilesInTree($path, '.nbnp_verified');
@@ -134,7 +137,10 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @param string $file_name
    *   The filename to delete.
    */
-  protected function setDeleteFilesInTree(string $path, string $file_name) {
+  protected function setDeleteFilesInTree(
+    string $path,
+    string $file_name
+  ) : void {
     $files_to_delete = [];
     $finder = new Finder();
     $finder->files()
@@ -171,7 +177,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    */
   public function setDeleteNewspapersIssue(
     string $issue_id
-  ) {
+  ) : void {
     if (empty($this->kubeCurPods)) {
       $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
     }
@@ -199,7 +205,10 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    * @return string[]
    *   The result of the command.
    */
-  private function setDrushDeleteIssueCommand(object $pod, string $issue_id) : array {
+  private function setDrushDeleteIssueCommand(
+    object $pod,
+    string $issue_id
+  ) : array {
     $delete_command = sprintf(
      '$storage = \Drupal::entityTypeManager()->getStorage("digital_serial_issue"); $page = $storage->load(%s); $page->delete();',
       $issue_id

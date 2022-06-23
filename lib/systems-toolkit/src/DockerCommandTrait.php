@@ -14,7 +14,7 @@ trait DockerCommandTrait {
    *
    * @hook post-init
    */
-  public function applicationCleanup() {
+  public function applicationCleanup() : void {
     $this->say("Cleaning up dangling containers and volumes:");
     $this->_exec('docker network prune -f');
     $this->_exec('docker volume prune -f');

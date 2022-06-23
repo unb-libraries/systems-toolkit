@@ -28,7 +28,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    *
    * @nbhp
    */
-  public function getNewspapersStats() {
+  public function getNewspapersStats() : void {
     $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
 
     foreach ($this->kubeCurPods as $pod) {
@@ -61,7 +61,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    * @return string
    *   The output from the drush command.
    */
-  private function getDrushQueryOutput(object $pod, string $query) {
+  private function getDrushQueryOutput(object $pod, string $query) : string {
     $command_string = trim(
       sprintf(
         "%s '--kubeconfig=%s' '--namespace=%s' exec %s -- drush sqlq '%s'",

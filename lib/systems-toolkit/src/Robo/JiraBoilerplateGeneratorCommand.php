@@ -47,7 +47,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    *
    * @command jira:boilerplate:multi-instance-worklist
    */
-  public function generateMultiInstanceWorklistTable() {
+  public function generateMultiInstanceWorklistTable() : void {
     $this->io()->title('Generating multi-instance JIRA worklist boilerplate');
     $this->getWorklistTasks();
     $this->io()->newLine();
@@ -61,7 +61,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   /**
    * Gets a list of tasks for the multi-instance worklist.
    */
-  private function getWorklistTasks() {
+  private function getWorklistTasks() : void {
     $need_action = TRUE;
     $action_no = 1;
 
@@ -86,7 +86,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   /**
    * Gets a list of repositories to add to the multi-instance worklist.
    */
-  private function getWorklistRepositories() {
+  private function getWorklistRepositories() : void {
     $topic = $this->askDefault('GitHub topic to include?', 'drupal8');
     $this->setRepositoryList(
       [],
@@ -99,7 +99,7 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
   /**
    * Build the multi-instance worklist table JIRA source.
    */
-  private function buildJiraTableSource() {
+  private function buildJiraTableSource() : void {
     $this->jiraInstanceSource = '|| ' . implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
     foreach ($this->githubRepositories as $repository_index => $repository) {
       $id = $repository_index + 1;
@@ -120,7 +120,9 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    * @return string
    *   The formatted cell value.
    */
-  private function getFormattedWorkItemCellValue(string $cell_value = '') : string {
+  private function getFormattedWorkItemCellValue(
+    string $cell_value = ''
+  ) : string {
     if (empty($cell_value)) {
       return ' |';
     }

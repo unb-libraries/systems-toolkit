@@ -38,7 +38,7 @@ trait KubeExecTrait {
    *
    * @hook pre-init
    */
-  public function setKubeBin() {
+  public function setKubeBin() : void {
     $this->kubeBin = Robo::Config()->get('syskit.kubectl.bin');
     if (empty($this->kubeBin)) {
       throw new \Exception(sprintf('The kubectl binary path is unset in %s', $this->configFile));
@@ -52,7 +52,7 @@ trait KubeExecTrait {
    *
    * @hook init
    */
-  public function setKubeBinExists() {
+  public function setKubeBinExists() : void {
     if (!is_executable($this->kubeBin)) {
       throw new \Exception(sprintf('The kubectl binary, %s, cannot be executed.', $this->kubeBin));
     }
@@ -65,7 +65,7 @@ trait KubeExecTrait {
    *
    * @hook init
    */
-  public function setKubeConfig() {
+  public function setKubeConfig() : void {
     $this->kubeConfig = Robo::Config()->get('syskit.kubectl.config');
     if (empty($this->kubeConfig)) {
       throw new \Exception(sprintf('The kubectl config location is unset in %s', $this->configFile));
@@ -89,7 +89,7 @@ trait KubeExecTrait {
     string $flags = '-it',
     array $args = [],
     bool $print_output = TRUE
-  ) {
+  ) : void {
     foreach ($this->kubeCurPods as $pod) {
       $this->kubeExecPod($pod, $exec, $flags, $args, $print_output);
     }
@@ -157,7 +157,7 @@ trait KubeExecTrait {
     array $namespaces = ['dev', 'prod'],
     bool $quiet = FALSE,
     bool $only_running = TRUE
-  ) {
+  ) : void {
     $selector_string = implode(',', $selectors);
     foreach ($namespaces as $namespace) {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
@@ -179,7 +179,10 @@ trait KubeExecTrait {
    *
    * @throws \Exception
    */
-  private function setAddCurPodsFromJson(string $json, bool $only_running = TRUE) {
+  private function setAddCurPodsFromJson(
+    string $json,
+    bool $only_running = TRUE
+  ) : void {
     $response = json_decode(
       $json,
       NULL,

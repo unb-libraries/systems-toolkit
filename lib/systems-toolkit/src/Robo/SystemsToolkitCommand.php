@@ -76,7 +76,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *
    * @hook pre-init
    */
-  public function checkConfigExists() {
+  public function checkConfigExists() : void {
     if (!file_exists($this->repoRoot . '/' . $this->configFile)) {
       throw new \Exception(
         sprintf(
@@ -95,7 +95,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *
    * @hook pre-init
    */
-  public function setSyskitTmpDir() {
+  public function setSyskitTmpDir() : void {
     $tmp_dir_root = Robo::Config()->get('syskit.local.tmpdir');
     if (!empty($tmp_dir_root)) {
       $this->tmpDir = $tmp_dir_root;
@@ -122,7 +122,10 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    * @return string
    *   The return code of the command.
    */
-  public function setRunOtherCommand(string $command_string, string $exception_message = '') : string {
+  public function setRunOtherCommand(
+    string $command_string,
+    string $exception_message = ''
+  ) : string {
     $this->io()->note("Spawning new command thread: $command_string");
 
     $bin = $_SERVER['argv'][0];

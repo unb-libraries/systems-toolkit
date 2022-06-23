@@ -24,7 +24,7 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
    */
   public function doDrupal7Updates(
     array $updates
-  ) {
+  ) : void {
     if (empty($updates)) {
       $this->say('No updates requested!');
       return;

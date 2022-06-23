@@ -80,7 +80,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       'yes' => FALSE,
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $this->commandString = $command_string;
     $this->nameFilter = $options['repo-name'];
@@ -94,7 +94,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function runDockworkerCommand() {
+  protected function runDockworkerCommand() : void {
     $continue = $this->setConfirmRepositoryList(
       $this->nameFilter,
       $this->tagFilter,
@@ -114,7 +114,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  private function updateAllRepositories() {
+  private function updateAllRepositories() : void {
     $last_repo_key = array_key_last($this->githubRepositories);
     foreach ($this->githubRepositories as $repository_index => $repository) {
       $this->io()->title($repository['name']);
@@ -143,7 +143,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  private function updateRepository(array $repository) {
+  private function updateRepository(array $repository) : void {
     $this->repoChangesPushed = FALSE;
     $this->io()->note(
       sprintf(

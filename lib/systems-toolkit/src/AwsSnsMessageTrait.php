@@ -33,7 +33,7 @@ trait AwsSnsMessageTrait {
    *
    * @hook post-init
    */
-  public function setSnsClient() {
+  public function setSnsClient() : void {
     $credentials = new Credentials($this->accessKeyId, $this->secretAccessKey);
     $this->snsClient = new SnsClient(
       [
@@ -52,7 +52,7 @@ trait AwsSnsMessageTrait {
    *
    * @throws \Exception
    */
-  public function setSnsTopicId(string $topic_id) {
+  public function setSnsTopicId(string $topic_id) : void {
     $this->snsTopicId = $topic_id;
   }
 

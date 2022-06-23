@@ -163,7 +163,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     array $options = [
       'instance-uri' => 'http://localhost:3095',
     ]
-  ) {
+  ) : bool {
     $remote_file_path = $options['instance-uri'] . "/serials_pages/download/$issue_id/$page_no/download";
     if (!self::remoteHashIsSame($remote_file_path, $local_file_path)) {
       $contents = file_get_contents($remote_file_path);
@@ -241,7 +241,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
       'instance-uri' => 'http://localhost:3095',
       'issue-page-extension' => 'jpg',
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $this->drupalRestUri = $this->options['instance-uri'];
     $this->webStorageBasePath = $web_storage_path;
@@ -259,7 +259,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setIssuesQueue(string $file_path) {
+  private function setIssuesQueue(string $file_path) : void {
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -272,7 +272,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setAuditIssues() {
+  private function setAuditIssues() : void {
     $this->setUpProgressBar();
     foreach ($this->recursiveDirectories as $directory_to_process) {
       $this->verifyIssueFromDir($directory_to_process);
@@ -286,7 +286,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Sets up the progress bar that monitors the recursive audit.
    */
-  private function setUpProgressBar() {
+  private function setUpProgressBar() : void {
     $issue_count = count($this->recursiveDirectories);
     $this->say("Verifying $issue_count issues...");
     $this->progressBar = new ProgressBar($this->output, $issue_count);
@@ -303,7 +303,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function verifyIssueFromDir(string $path) {
+  private function verifyIssueFromDir(string $path) : void {
     $this->setIssueInit();
     $this->issuePath = $path;
     $this->issueMetadataFile = "$path/metadata.php";
@@ -343,7 +343,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Initializes the current issue metadata values.
    */
-  private function setIssueInit() {
+  private function setIssueInit() : void {
     unset($this->issueConfig);
     $this->issueLocalFiles = [];
     $this->issueMetadataFile = '';
@@ -357,7 +357,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \JsonException
    */
-  private function setIssueConfig() {
+  private function setIssueConfig() : void {
     $rewrite_command = 'sudo php -f ' . $this->repoRoot . "/lib/systems-toolkit/rewriteConfigFile.php {$this->issuePath}/metadata.php";
     exec($rewrite_command);
     $this->issueConfig = json_decode(
@@ -373,7 +373,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setPagesForAudit() {
+  private function setPagesForAudit() : void {
     $regex = "/^.+\.{$this->options['issue-page-extension']}$/i";
     $this->recursiveFileTreeRoot = $this->issuePath;
     $this->recursiveFileRegex = $regex;
@@ -387,7 +387,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setPossibleEntityIds() {
+  private function setPossibleEntityIds() : void {
     $this->issuePossibleEntityIds = [];
     $date = strtotime($this->issueConfig->date);
     $day_string = date('d', $date);
@@ -450,7 +450,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Sets up the current issue's local files.
    */
-  private function setIssueLocalFiles() {
+  private function setIssueLocalFiles() : void {
     $this->issueLocalFiles = [];
     foreach ($this->recursiveFiles as $local_file) {
       $md5_sum = $this->getMd5Sum($local_file);
@@ -489,7 +489,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param array $context
    *   The context for the message.
    */
-  protected function printMessage(string $level, string $message, array $context = []) {
+  protected function printMessage(
+    string $level,
+    string $message,
+    array $context = []
+  ) : void {
     $this->logger->log($level, $message, $context);
   }
 
@@ -502,7 +506,9 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string
    *   The constructed page number.
    */
-  private static function getPageNumberFromMikeFileName(string $filename) : string {
+  private static function getPageNumberFromMikeFileName(
+    string $filename
+  ) : string {
     $path_info = pathinfo($filename);
     $filename_components = explode('_', $path_info['filename']);
     return ltrim($filename_components[5], '0');
@@ -514,7 +520,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param string[] $response
    *   The REST entity object returned from the query.
    */
-  private function setIssueRemoteFiles(array $response) {
+  private function setIssueRemoteFiles(array $response) : void {
     $this->issueRemoteFiles = [];
     foreach ($response as $remote_file) {
       $remote_file_path = str_replace('/sites/default', $this->webStorageBasePath, $remote_file->page_image__target_id);
@@ -533,7 +539,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Audits if the current local issue matches the remote one.
    */
-  private function auditIssue($issue_id, $path) {
+  private function auditIssue($issue_id, $path) : void {
     $issue_fail = FALSE;
 
     $missing_remote_images = self::arrayKeyDiff($this->issueLocalFiles, $this->issueRemoteFiles, 'hash');
@@ -585,7 +591,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @return string[]
    *   The difference between the two values.
    */
-  private static function arrayKeyDiff(array $arr1, array $arr2, string $key) : array {
+  private static function arrayKeyDiff(
+    array $arr1,
+    array $arr2,
+    string $key
+  ) : array {
     foreach ($arr1 as $idx1 => $val1) {
       $found = FALSE;
       foreach ($arr2 as $val2) {
@@ -635,7 +645,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param string $path
    *   The path to the local issue.
    */
-  protected function setIssueFlagFiles(string $path) {
+  protected function setIssueFlagFiles(string $path) : void {
     // Also set the 'processed' flag as well. Old imports did not set this.
     shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_processed"));
     shell_exec('sudo touch ' . escapeshellarg("$path/.nbnp_verified"));
@@ -644,7 +654,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the audit failures from the current issue.
    */
-  protected function displayAuditFailures() {
+  protected function displayAuditFailures() : void {
     if ($this->issueIsFullyValid()) {
       $this->io()->newLine();
       $this->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
@@ -677,13 +687,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the issues identified as missing remotely.
    */
-  protected function displayMissingRemoteIssues() {
+  protected function displayMissingRemoteIssues() : void {
     if (!empty($this->missingRemoteIssues)) {
       $this->io()->newLine();
       $column_names = [
         'Local Path',
       ];
-      $this->outputTable('Missing Remote Issues Found!', $column_names, array_values($this->missingRemoteIssues));
+      $this->outputTable(
+        'Missing Remote Issues Found!',
+        $column_names,
+        array_values($this->missingRemoteIssues)
+      );
       $missing_issue_count = count($this->missingRemoteIssues);
       $this->say("$missing_issue_count missing issues found.");
     }
@@ -699,7 +713,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    * @param array $rows
    *   The row data.
    */
-  protected function outputTable(string $title, array $column_names, array $rows) {
+  protected function outputTable(
+    string $title,
+    array $column_names,
+    array $rows
+  ) : void {
     $this->io()->title($title);
     $table = new Table($this->output());
     $table
@@ -711,13 +729,17 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the files identified as zero-length from the current issue.
    */
-  protected function displayZeroLengthFiles() {
+  protected function displayZeroLengthFiles() : void {
     if (!empty($this->zeroLengthFiles)) {
       $this->io()->newLine();
       $column_names = [
         'Path',
       ];
-      $this->outputTable('Zero Length Files Found!', $column_names, array_values($this->zeroLengthFiles));
+      $this->outputTable(
+        'Zero Length Files Found!',
+        $column_names,
+        array_values($this->zeroLengthFiles)
+      );
       $zero_length_count = count($this->zeroLengthFiles);
       $this->say("$zero_length_count zero length files found.");
     }
@@ -726,7 +748,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the issues identified as duplicate.
    */
-  protected function displayDuplicateIssues() {
+  protected function displayDuplicateIssues() : void {
     if (!empty($this->duplicateIssues)) {
       $this->io()->newLine();
       $duplicate_issues = [];
@@ -777,7 +799,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the pages identified as missing remotely.
    */
-  protected function displayMissingRemotePages() {
+  protected function displayMissingRemotePages() : void {
     $missing_pages = [];
     $column_names = [
       'eid',
@@ -812,7 +834,11 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
           }
         }
       }
-      $this->outputTable('Some Local Pages are Missing From Remote Issues!', $column_names, $missing_pages);
+      $this->outputTable(
+        'Some Local Pages are Missing From Remote Issues!',
+        $column_names,
+        $missing_pages
+      );
       $missing_page_count = count($missing_pages);
       $this->say("$missing_page_count missing remote pages found.");
     }
@@ -821,7 +847,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Displays the pages identified as duplicate remotely.
    */
-  protected function displayDuplicateRemotePages() {
+  protected function displayDuplicateRemotePages() : void {
     $missing_pages = [];
     $duplicate_pages = [];
     $column_names = [
@@ -866,7 +892,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   /**
    * Reports the failures from the current issue.
    */
-  protected function reportIssueFailures() {
+  protected function reportIssueFailures() : void {
     $this->io()->newLine();
     $this->say(
       sprintf(

@@ -19,7 +19,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *
    * @command repository-list:dockworker
    */
-  public function listDockworkerRepositories() {
+  public function listDockworkerRepositories() : void {
     $this->setRepositoryList(
       [],
       ['dockworker'],
@@ -36,7 +36,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *
    * @command repository-list:drupal
    */
-  public function listDrupalRepositories() {
+  public function listDrupalRepositories() : void {
     $this->setRepositoryList(
       [],
       ['drupal8', 'drupal9'],
@@ -52,7 +52,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    * @param string $title
    *   The string to use as the title.
    */
-  protected function repositoryListDisplay(string $title) {
+  protected function repositoryListDisplay(string $title) : void {
     if (empty($this->githubRepositories)) {
       $this->say('No repositories found!');
       return;
@@ -83,7 +83,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
     string $name_filter,
     string $tag_filter,
     string $branch = 'dev'
-  ) {
+  ) : void {
     $this->setRepositoryList(
       [$name_filter],
       [$tag_filter],

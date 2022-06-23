@@ -29,7 +29,7 @@ trait QueuedParallelExecTrait {
    * @param \Robo\Contract\CommandInterface $command
    *   The command to add.
    */
-  public function setAddCommandToQueue(CommandInterface $command) {
+  public function setAddCommandToQueue(CommandInterface $command) : void {
     $this->queue[] = $command;
   }
 
@@ -39,7 +39,9 @@ trait QueuedParallelExecTrait {
    * @param string $operation_name
    *   The name of the operation to print.
    */
-  public function setRunProcessQueue(string $operation_name = 'operation') {
+  public function setRunProcessQueue(
+    string $operation_name = 'operation'
+  ) : void {
     // Make sure the queue is populated.
     if (empty($this->queue)) {
       return;
@@ -74,14 +76,14 @@ trait QueuedParallelExecTrait {
    * @param int $threads
    *   The number of threads to employ when executing the commands.
    */
-  public function setThreads(int $threads) {
+  public function setThreads(int $threads) : void {
     $this->threads = $threads;
   }
 
   /**
    * Based on CPU, guesses at the threads to use to run these commands.
    */
-  private function setThreadsDefault() {
+  private function setThreadsDefault() : void {
     $command = 'grep "^cpu\scores" /proc/cpuinfo | uniq | awk \'{print $4}\'';
     $cores_to_use = floatval(shell_exec($command)) * 0.8;
     $this->threads = (int) floor($cores_to_use);

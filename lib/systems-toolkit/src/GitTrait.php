@@ -18,7 +18,10 @@ trait GitTrait {
    * @param int $number
    *   The hash of the commit to check for. Defaults to 10.
    */
-  protected function getCommitListTable(GitRepo $repo, int $number = 10) {
+  protected function getCommitListTable(
+    GitRepo $repo,
+    int $number = 10
+  ) : void {
     $wrapped_rows = [];
 
     foreach ($repo->commits as $commit) {
@@ -44,7 +47,7 @@ trait GitTrait {
    *
    * @throws \Exception
    */
-  protected function getRepoHasCommit(GitRepo $repo, string $hash) {
+  protected function getRepoHasCommit(GitRepo $repo, string $hash) : void {
     if (!$this->getCommitInRepo($repo, $hash)) {
       throw new \Exception(sprintf('The hash [%s] was not found in any branch of the repository.', $hash));
     }

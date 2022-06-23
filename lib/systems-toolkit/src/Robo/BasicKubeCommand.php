@@ -28,7 +28,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
   public function getKubeServiceLogsFromUri(
     string $uri,
     string $namespace
-  ) {
+  ) : void {
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
 
     foreach ($this->kubeCurPods as $pod) {
@@ -60,7 +60,7 @@ class BasicKubeCommand extends SystemsToolkitCommand {
     string $uri,
     string $namespace,
     string $shell = 'sh'
-  ) {
+  ) : void {
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
     $this->kubeExecAll($shell);
   }

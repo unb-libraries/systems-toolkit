@@ -44,7 +44,7 @@ class GitRepo {
    * @param string $tmp_root
    *   Optional, the root path for the temp dir. Optional, defaults to system.
    */
-  protected function setTempDir(string $tmp_root = '') {
+  protected function setTempDir(string $tmp_root = '') : void {
     if (empty($tmp_root)) {
       $tmp_root = sys_get_temp_dir();
     }
@@ -89,7 +89,10 @@ class GitRepo {
    *
    * @throws \Exception
    */
-  private function setCloneToTempDir(string $repo_url, string $tmp_root = '') {
+  private function setCloneToTempDir(
+    string $repo_url,
+    string $tmp_root = ''
+  ) : void {
     $this->setTempDir($tmp_root);
     $git = new Git();
     $this->repo = $git->cloneRepository(
@@ -127,7 +130,7 @@ class GitRepo {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  private function setBranches() {
+  private function setBranches() : void {
     foreach ($this->repo->getBranches() as $repo_branch) {
       if (str_contains($repo_branch, 'HEAD')) {
         continue;
@@ -167,7 +170,7 @@ class GitRepo {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  private function setCommits() {
+  private function setCommits() : void {
     $commits = $this->repo->execute(
       [
         'log',

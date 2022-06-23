@@ -42,7 +42,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
       'tag' => ['dockworker'],
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $continue = $this->setConfirmRepositoryList(
       $options['match'],
       $options['tag'],

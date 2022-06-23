@@ -35,14 +35,13 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    * @usage unbherbarium,pmportal
    */
   public function upmergeDrupalDevToProd(
-
     string $match = '',
     array $options = [
       'repo-exclude' => [],
       'yes' => FALSE,
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
-  ) {
+  ) : void {
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,

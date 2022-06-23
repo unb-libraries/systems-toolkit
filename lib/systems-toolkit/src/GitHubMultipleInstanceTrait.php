@@ -135,7 +135,7 @@ trait GitHubMultipleInstanceTrait {
     array $callback_filters = [],
     array $omit = [],
     array $omit_topics = []
-  ) {
+  ) : void {
     $this->populateGitHubRepositoryList();
 
     // Case : no filtering.
@@ -169,7 +169,7 @@ trait GitHubMultipleInstanceTrait {
   /**
    * Populates the repository list with all organizational repositories.
    */
-  private function populateGitHubRepositoryList() {
+  private function populateGitHubRepositoryList() : void {
     // Check for config based insanity.
     if (empty($this->organizations)) {
       $this->say('No organizations specified in syskit_config.yml. Please provide them as a list!');
@@ -193,7 +193,9 @@ trait GitHubMultipleInstanceTrait {
    *   An array of callback names to execute. Callbacks returning FALSE indicate
    *   to remove the item.
    */
-  private function filterRepositoriesByCallback(array $callback_filters) {
+  private function filterRepositoriesByCallback(
+    array $callback_filters
+  ) : void {
     if (!empty($callback_filters[0])) {
       $this->say('Callback filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
@@ -215,7 +217,7 @@ trait GitHubMultipleInstanceTrait {
    *   An array of keywords to compare against repository names. Repositories
    *   that do not match any keywords will be removed.
    */
-  private function filterRepositoriesByName(array $name_filters) {
+  private function filterRepositoriesByName(array $name_filters) : void {
     if (!empty($name_filters[0])) {
       $this->say('Name filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
@@ -234,7 +236,7 @@ trait GitHubMultipleInstanceTrait {
    *   An array of keywords to compare against repository topics. Repositories
    *   that do not match any of the topics will be filtered.
    */
-  private function filterRepositoriesByTopic(array $topic_filters) {
+  private function filterRepositoriesByTopic(array $topic_filters) : void {
     if (!empty($topic_filters[0])) {
       $this->say('Topic filtering repositories...');
       foreach ($this->githubRepositories as $repository_index => $repository) {
@@ -270,7 +272,7 @@ trait GitHubMultipleInstanceTrait {
   /**
    * Outputs a formatted list of repositories set to operate on to the console.
    */
-  protected function listRepositoryNames() {
+  protected function listRepositoryNames() : void {
     $wrapped_rows = array_map(
       fn($el) => [$el['name']],
       $this->githubRepositories

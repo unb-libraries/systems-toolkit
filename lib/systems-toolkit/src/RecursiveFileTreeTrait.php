@@ -38,7 +38,7 @@ trait RecursiveFileTreeTrait {
    *
    * @throws \Exception
    */
-  public function setFilesToIterate() {
+  public function setFilesToIterate() : void {
     if (!file_exists($this->recursiveFileTreeRoot)) {
       throw new \Exception(sprintf('The directory [%s] does not exist.', $this->recursiveFileTreeRoot));
     }
@@ -76,7 +76,7 @@ trait RecursiveFileTreeTrait {
   public function getConfirmFiles(
     string $operation_name = 'Operation',
     bool $skip_confirm = FALSE
-  ) {
+  ) : void {
     if (!$skip_confirm) {
       $table = new Table($this->output());
       $table_rows = array_map([$this, 'arrayWrap'], $this->recursiveFiles);

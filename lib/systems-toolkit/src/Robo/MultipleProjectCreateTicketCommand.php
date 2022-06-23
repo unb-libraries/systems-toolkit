@@ -67,7 +67,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       'yes' => FALSE,
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
-  ) {
+  ) : void {
     $continue = $this->setConfirmRepositoryList(
       [$match],
       [$topics],
@@ -153,7 +153,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    *
    * @return bool
    */
-  protected function printConfirmIssuesToCreate($issues_to_create) {
+  protected function printConfirmIssuesToCreate($issues_to_create) : bool {
     $table = new Table($this->io());
     $table
       ->setHeaders(

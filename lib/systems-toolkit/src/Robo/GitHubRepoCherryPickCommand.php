@@ -68,7 +68,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     string $target_name_match = '',
     string $omit_names_match = '',
     string $omit_topics_match = ''
-  ) {
+  ) : void {
     $match_array = explode(",", $target_name_match);
     $topics_array = explode(",", $target_topics);
     $omit_names_array = explode(",", $omit_names_match);
@@ -115,7 +115,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     array $target_name_match = [],
     array $omit_names = [],
     array $omit_topics = []
-  ) {
+  ) : void {
     $this->say(
       sprintf(
         self::MESSAGE_BEGINNING_CHERRY_PICK,
@@ -134,9 +134,17 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     $source_repo = GitRepo::setCreateFromClone($this->sourceRepo['ssh_url'], $this->tmpDir);
 
     // Ask which Commit to Rebase.
-    $this->say(sprintf(self::MESSAGE_TITLE_REPO_COMMIT_LIST, $source_repository));
+    $this->say(
+      sprintf(
+        self::MESSAGE_TITLE_REPO_COMMIT_LIST,
+        $source_repository
+      )
+    );
     $this->getCommitListTable($source_repo, 10);
-    $cherry_hash = $this->askDefault(self::MESSAGE_CHOOSE_COMMIT_HASH, $source_repo->getCommit(0)['hash']);
+    $cherry_hash = $this->askDefault(
+      self::MESSAGE_CHOOSE_COMMIT_HASH,
+      $source_repo->getCommit(0)['hash']
+    );
     $cherry_commit_msg = $source_repo->getCommitMessage($cherry_hash);
 
     // Verify commit is in repo and release local source repo.
@@ -187,13 +195,24 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     // Cherry-Pick and push up to GitHub.
     if ($continue) {
       // Ask what branch commit should be cherry-picked to.
-      $target_branch = $this->askDefault(self::MESSAGE_CHOOSE_TARGET_BRANCH, 'dev');
+      $target_branch = $this->askDefault(
+        self::MESSAGE_CHOOSE_TARGET_BRANCH,
+        'dev'
+      );
 
       foreach ($this->githubRepositories as $repository_data) {
         // Check to see if this repo has the target branch.
-        if (!$this->getGitHubRepositoryHasBranch($repository_data['owner']['login'], $repository_data['name'], $target_branch)) {
+        if (!$this->getGitHubRepositoryHasBranch(
+          $repository_data['owner']['login'],
+          $repository_data['name'],
+          $target_branch
+        )) {
           $this->say(
-            sprintf(self::MESSAGE_TARGET_BRANCH_MISSING_REPO, $target_branch, $repository_data['name'])
+            sprintf(
+              self::MESSAGE_TARGET_BRANCH_MISSING_REPO,
+              $target_branch,
+              $repository_data['name']
+            )
           );
           $this->failedRepos[$repository_data['name']] = "$target_branch branch does not exist";
           continue;
@@ -206,18 +225,33 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
             $target_branch
           )
         );
-        $target_repo = GitRepo::setCreateFromClone($repository_data['ssh_url'], $this->tmpDir);
+        $target_repo = GitRepo::setCreateFromClone(
+          $repository_data['ssh_url'],
+          $this->tmpDir
+        );
         $target_repo->repo->checkout($target_branch);
 
         // Apply patch.
         exec("cd {$target_repo->getTmpDir()} && patch -p1 < " . $this->tmpDir . '/' . self::FILE_SOURCE_PATCH . ' && git add .', $output, $return);
         if ($return) {
-          $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_FAILED, $target_branch, $repository_data['name']));
+          $this->say(
+            sprintf(
+              self::MESSAGE_CHERRY_PATCH_FAILED,
+              $target_branch,
+              $repository_data['name']
+            )
+          );
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";
           continue;
         }
 
-        $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
+        $this->say(
+          sprintf(
+            self::MESSAGE_CHERRY_PATCH_SUCCESS,
+            $target_branch,
+            $repository_data['name']
+          )
+        );
         $cherry_output = $target_repo->repo->execute(
           [
             'commit',

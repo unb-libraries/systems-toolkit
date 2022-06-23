@@ -216,7 +216,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       'central-repo-branch' => '1.23',
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $this->nameFilter = $name_filter;
     $this->tagFilter = $tag_filter;
@@ -228,7 +228,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function runKubernetesMetadataServiceAudit() {
+  protected function runKubernetesMetadataServiceAudit() : void {
     $continue = $this->setConfirmRepositoryList(
       [$this->nameFilter],
       [$this->tagFilter],
@@ -248,7 +248,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function auditAllRepositories() {
+  protected function auditAllRepositories() : void {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
       $this->say("Cloning central repo/{$this->options['central-repo-branch']}...");
@@ -284,7 +284,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function auditRepository() {
+  protected function auditRepository() : void {
     try {
       $this->initRepositoryAudit();
     }
@@ -322,7 +322,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function initRepositoryAudit() {
+  protected function initRepositoryAudit() : void {
     $this->curLeanRepoNeedsPush = FALSE;
     $this->io()->title($this->curLeanRepo['name']);
     $this->say('Cloning lean repo...');
@@ -335,7 +335,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Sets the current docker image.
    */
-  protected function setCurDockerImage() {
+  protected function setCurDockerImage() : void {
     $this->curDockerImage = sprintf(
       self::DOCKER_IMAGE_FORMAT,
       $this->curLeanRepo['name']
@@ -345,7 +345,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Sets the lean repo slug name.
    */
-  protected function setCurLeanRepoSlug() {
+  protected function setCurLeanRepoSlug() : void {
     $this->curLeanRepoSlug = self::slugifyName($this->curLeanRepo['name']);
   }
 
@@ -365,7 +365,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Sets the current audit file from the lean metadata repo.
    */
-  protected function setLeanMetadataFile() {
+  protected function setLeanMetadataFile() : void {
     $file_path = implode(
         '/',
         [
@@ -391,7 +391,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Sets the current audit file from the central metadata repo.
    */
-  protected function setCentralMetadataFile() {
+  protected function setCentralMetadataFile() : void {
     if ($this->curMetadataType == 'backup') {
       if ($this->curDeployEnv == 'prod') {
         $file_path = implode(
@@ -463,7 +463,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   /**
    * Chooses and commits the canonical metadata file.
    */
-  protected function setCanonicalMetadataFile() {
+  protected function setCanonicalMetadataFile() : void {
     if ($this->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
       switch ($this->getRepoCorrectionChoiceValue()) {
         case 'c':
@@ -517,7 +517,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  protected function setCentralRepoVersionAsCanonical() {
+  protected function setCentralRepoVersionAsCanonical() : void {
     $output_contents = str_replace(
       $this->curDockerImage . ':' . $this->curDeployEnv,
       self::LEAN_REPO_IMAGE_PLACEHOLDER,
@@ -548,7 +548,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  protected function setLeanRepoVersionAsCanonical() {
+  protected function setLeanRepoVersionAsCanonical() : void {
     $output_contents = str_replace(self::LEAN_REPO_IMAGE_PLACEHOLDER, $this->curDockerImage . ':' . $this->curDeployEnv, $this->curLeanMetadataFileContents);
     file_put_contents($this->curCentralMetadataFile, $output_contents);
     $commit_message = "Update {$this->curLeanRepo['name']}/$this->curDeployEnv $this->curMetadataType from lean repository";
@@ -574,7 +574,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  protected function pushCurLeanRepo() {
+  protected function pushCurLeanRepo() : void {
     $this->curLeanRepoClone->repo->execute(
       [
         'push',
@@ -589,7 +589,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *
    * @throws \CzProject\GitPhp\GitException
    */
-  protected function pushCentralRepo() {
+  protected function pushCentralRepo() : void {
     $this->centralMetadataRepo->repo->execute(
       [
         'push',

@@ -111,7 +111,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
       'skip-commit-prefix' => FALSE,
       'target-branch' => '',
     ]
-  ) {
+  ) : void {
     $this->modifyingScriptFilePath = $script_path;
     $this->modifyingScriptName = basename($this->modifyingScriptFilePath);
     $this->commitMessage = $commit_message;
@@ -169,7 +169,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function checkModifyingScript() {
+  protected function checkModifyingScript() : void {
     if (!is_executable($this->modifyingScriptFilePath)) {
       throw new \Exception(
         sprintf(
@@ -186,7 +186,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \CzProject\GitPhp\GitException
    * @throws \Exception
    */
-  protected function cloneTempRepo() {
+  protected function cloneTempRepo() : void {
     $this->say(self::MESSAGE_CLONING_REPO);
     $this->curCloneRepo = GitRepo::setCreateFromClone($this->curRepoMetadata['ssh_url'], $this->tmpDir);
     if (!empty($this->options['target-branch'])) {
@@ -199,7 +199,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function copyModifyingScript() {
+  protected function copyModifyingScript() : void {
     $this->say(self::MESSAGE_COPYING_SCRIPT);
     $git_path = $this->curCloneRepo->getTmpDir();
     $git_script = "$git_path/$this->modifyingScriptName";
@@ -212,7 +212,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function executeModifyingScript() {
+  protected function executeModifyingScript() : void {
     $this->say(self::MESSAGE_EXECUTING_SCRIPT);
     passthru("cd {$this->curCloneRepo->getTmpDir()} && ./$this->modifyingScriptName {$this->curRepoMetadata['name']} ; rm -f {$this->modifyingScriptName}");
     $this->say(self::MESSAGE_STEP_DONE);
@@ -223,7 +223,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function stageChangesInRepo() {
+  protected function stageChangesInRepo() : void {
     $this->say(self::MESSAGE_STAGING_CHANGES);
     if ($this->options['manual-file-stage']) {
       $this->say(
@@ -244,7 +244,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function commitChangesInRepo() {
+  protected function commitChangesInRepo() : void {
     $this->say(
       sprintf(
         self::MESSAGE_COMMITTING_CHANGES,
@@ -263,10 +263,15 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    *
    * @throws \Exception
    */
-  protected function pushRepositoryChangesToGitHub() {
+  protected function pushRepositoryChangesToGitHub() : void {
     $this->say(self::MESSAGE_PUSHING_CHANGES);
     if (!empty($this->options['target-branch'])) {
-      $this->curCloneRepo->repo->push(['origin', $this->options['target-branch']]);
+      $this->curCloneRepo->repo->push(
+        [
+          'origin',
+          $this->options['target-branch']
+        ]
+      );
     }
     else {
       $this->curCloneRepo->repo->push('origin');

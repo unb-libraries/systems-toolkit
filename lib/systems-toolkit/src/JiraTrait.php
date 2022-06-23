@@ -53,7 +53,7 @@ trait JiraTrait {
    *
    * @hook pre-init
    */
-  public function setJiraHost() {
+  public function setJiraHost() : void {
     $this->jiraHostName = Robo::Config()->get('syskit.jira.hostName');
     if (empty($this->jiraHostName)) {
       throw new \Exception('The Jira hostname has not been set in the configuration file. (jiraHostName)');
@@ -67,7 +67,7 @@ trait JiraTrait {
    *
    * @hook post-init
    */
-  public function setJiraService() {
+  public function setJiraService() : void {
     $this->jiraService = new ProjectService($this->jiraConfig);
   }
 
@@ -78,7 +78,7 @@ trait JiraTrait {
    *
    * @hook pre-init
    */
-  public function setJiraUser() {
+  public function setJiraUser() : void {
     $this->jiraUserName = Robo::Config()->get('syskit.jira.userName');
     if (empty($this->jiraUserName)) {
       throw new \Exception('The Jira username has not been set in the configuration file. (jiraUserName)');
@@ -95,7 +95,7 @@ trait JiraTrait {
    *
    * @hook pre-init
    */
-  public function setJiraPass() {
+  public function setJiraPass() : void {
     $this->jiraUserPassword = $this->ask(
       "Enter $this->jiraUserName's JIRA password for $this->jiraHostName"
     );
@@ -108,7 +108,7 @@ trait JiraTrait {
    *
    * @hook init
    */
-  public function setJiraConfig() {
+  public function setJiraConfig() : void {
     $this->jiraConfig = new ArrayConfiguration(
       [
         'jiraHost' => $this->jiraHostName,

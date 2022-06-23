@@ -92,7 +92,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => '',
     ]
-  ) {
+  ) : void {
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
@@ -203,7 +203,11 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *
    * @throws \Exception
    */
-  private function setPageOcr(string $id, string $field_name, string $content) {
+  private function setPageOcr(
+    string $id,
+    string $field_name,
+    string $content
+  ) : void {
     $this->say("Updating page #$id [$field_name]");
     $patch_content = json_encode(
       [
@@ -261,7 +265,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'webtree-path' => NULL,
       'yes' => FALSE,
     ]
-  ) {
+  ) : void {
     $this->options = $options;
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
@@ -275,7 +279,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->setRunOtherCommand('dzi:pull-image');
     $options['no-pull'] = TRUE;
 
-    // Queue up every file in the tree and run tesseract now.
+    // Queue up every file in the tree and run Tesseract now.
     $this->ocrTesseractTree(
       $file_path,
       [
@@ -372,7 +376,7 @@ EOT;
   /**
    * Writes out a summary of the import in a ledger file.
    */
-  private function writeImportLedger() {
+  private function writeImportLedger() : void {
     $filename = 'nbnp_import_' . date('m-d-Y_hia') . '.txt';
     $filepath = getcwd() . "/$filename";
     file_put_contents($filepath, print_r($this->resultsLedger, TRUE));
@@ -424,7 +428,7 @@ EOT;
       'threads' => NULL,
       'webtree-path' => NULL,
     ]
-  ) {
+  ) : void {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Pull upstream docker images, if permitted.
@@ -579,7 +583,10 @@ EOT;
    * @return string
    *   The unique page_no string.
    */
-  protected function getUniqueIssuePageNo(array &$issue_ingested_pages, string $page_no) : string {
+  protected function getUniqueIssuePageNo(
+    array &$issue_ingested_pages,
+    string $page_no
+  ) : string {
     $counter = 0;
     $page_check = $page_no;
     while (in_array($page_check, $issue_ingested_pages)) {
@@ -622,7 +629,7 @@ EOT;
       'instance-uri' => 'http://localhost:3095',
       'no-verify' => FALSE,
     ]
-  ) {
+  ) : void {
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.

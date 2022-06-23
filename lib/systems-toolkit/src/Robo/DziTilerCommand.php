@@ -27,13 +27,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
   private string $imagemagickImage;
 
   /**
-   * Gets the tesseract docker image from config.
+   * Gets the Tesseract docker image from config.
    *
    * @throws \Exception
    *
    * @hook init
    */
-  public function setImagingImage() {
+  public function setImagingImage() : void {
     $this->imagemagickImage = Robo::Config()->get('syskit.imaging.imagemagickImage');
     if (empty($this->imagemagickImage)) {
       throw new \Exception(sprintf('The imagemagick docker image has not been set in the configuration file. (imagemagickImage)'));
@@ -83,7 +83,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'threads' => NULL,
       'tile-size' => '256',
     ]
-  ) {
+  ) : void {
     $regex_root = preg_quote($root, '/');
 
     if (!$options['no-pull']) {
@@ -153,7 +153,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'skip-existing' => FALSE,
       'threads' => 1,
     ]
-  ) {
+  ) : void {
     $cmd_options = [
       'extension' => 'jpg',
       'no-pull' => $options['no-pull'],
@@ -250,7 +250,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'target-uid' => '100',
       'tile-size' => '256',
     ]
-  ) {
+  ) : void {
     $dzi_file_path_info = pathinfo($file);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");
@@ -272,7 +272,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @command dzi:pull-image
    */
-  public function setPullTilerImage() {
+  public function setPullTilerImage() : void {
     shell_exec("docker pull {$this->imagemagickImage}");
   }
 

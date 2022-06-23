@@ -41,18 +41,24 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    */
   public function getActivity(
     string $email
-  ) {
+  ) : void {
     $commits = [];
     $this->email = $email;
 
     $users = $this->client->api('search')->users("$email in:email");
 
     if (empty($users['items'][0])) {
-      throw new \Exception(sprintf('No user was found for the E-Mail address [%s].', $this->email));
+      throw new \Exception(
+        sprintf(
+          'No user was found for the E-Mail address [%s].',
+          $this->email
+        )
+      );
     }
     $this->user = $users['items'][0];
 
-    $response = $this->client->getHttpClient()->get("/users/{$this->user['login']}/events");
+    $response = $this->client->getHttpClient()
+      ->get("/users/{$this->user['login']}/events");
     $activity = ResponseMediator::getContent($response);
     foreach ($activity as $action) {
       if ($action['type'] = 'PushEvent') {
@@ -79,7 +85,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    * @param array $commits
    *   The list of commits to append found commits onto.
    */
-  private function setCommitsFromAction(array $action, array &$commits) {
+  private function setCommitsFromAction(array $action, array &$commits) : void {
     if (!empty($action['payload']['commits'])) {
       $repo_name = $action['repo']['name'];
       $created_date = \DateTime::createFromFormat("Y-m-d\TH:i:sP", $action['created_at']);
@@ -129,7 +135,7 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    * @param array $day_commits
    *   The file to parse.
    */
-  private function setPrintDayCommits(array $day_commits) {
+  private function setPrintDayCommits(array $day_commits) : void {
     $table = new Table($this->output());
     $table->setHeaders(['Repository Name', 'Hash', 'Description']);
     $table->setRows($day_commits);

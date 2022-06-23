@@ -29,7 +29,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
    */
   public function getProjectInfo(
     string $project_id
-  ) {
+  ) : void {
     try {
       $project = new ProjectService($this->jiraConfig);
       $project_info = $project->get($project_id);

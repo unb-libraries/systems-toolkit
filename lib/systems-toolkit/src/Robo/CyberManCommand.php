@@ -22,7 +22,7 @@ class CyberManCommand extends SystemsToolkitCommand {
    *
    * @hook post-init
    */
-  public function setCyberManSnsTopicId() {
+  public function setCyberManSnsTopicId() : void {
     $topic_id = Robo::Config()->get('syskit.cyberman.awsSnsTopicId');
     if (empty($topic_id)) {
       throw new \Exception(sprintf(self::ERROR_SNS_TOPIC_ID_UNSET, $this->configFile));
@@ -47,7 +47,7 @@ class CyberManCommand extends SystemsToolkitCommand {
    */
   public function sendCyberManMessage(
     string $message
-  ) {
+  ) : void {
     $this->say(
       $this->setSendSnsMessage($message)
     );
