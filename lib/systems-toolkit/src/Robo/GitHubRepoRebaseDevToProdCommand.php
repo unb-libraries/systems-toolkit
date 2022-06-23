@@ -45,11 +45,13 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    *   The amount of time to delay between updating repositories.
    * @option $yes
    *   Assume a 'yes' answer for all prompts.
+   * @option $repo-exclude
+   *   A repository to exclude from the rebase. Defaults to none.
    *
    * @throws \Exception
    *
    * @command github:repo:rebasedevprod
-   * @usage unbherbarium,pmportal drupal8
+   * @usage github:repo:rebasedevprod unbherbarium,pmportal drupal8
    */
   public function upmergeRepoDevToProd(
     ConsoleIO $io,
@@ -57,6 +59,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
     string $topics = '',
     array $options = [
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
+      'repo-exclude' => [],
       'yes' => FALSE,
     ]
   ) {
