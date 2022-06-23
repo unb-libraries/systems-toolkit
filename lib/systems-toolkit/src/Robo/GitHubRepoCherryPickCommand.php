@@ -60,7 +60,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command github:repo:cherry-pick-multiple
-   * @usage github:repo:cherry-pick-multiple drupal.solr.lib.unb.ca dockworker '' 'pmportal.org,guides.lib.unb.ca' drupal9
+   * @usage drupal.solr.lib.unb.ca dockworker '' 'pmportal.org,guides.lib.unb.ca' drupal9
    */
   public function cherryPickMultiple(
     string $source_repository,

@@ -53,7 +53,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command jira:multiple-repo:create-issue
-   * @usage jira:multiple-repo:create '' 'drupal8' 'Drupal 9.x Upgrade' 'Update Drupal to Drupal 9.x. See https://stackoverflow.com/c/unblibsystems/articles/131 .' 'Task' 'IN-243' --yes
+   * @usage '' 'drupal8' 'Drupal 9.x Upgrade' 'Update Drupal to Drupal 9.x. See https://stackoverflow.com/c/unblibsystems/articles/131 .' 'Task' 'IN-243' --yes
    */
   public function createMultipleJiraTicket(
     string $match,

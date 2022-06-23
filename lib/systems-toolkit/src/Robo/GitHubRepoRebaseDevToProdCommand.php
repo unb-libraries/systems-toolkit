@@ -50,7 +50,7 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command github:repo:rebasedevprod
-   * @usage github:repo:rebasedevprod unbherbarium,pmportal drupal8
+   * @usage unbherbarium,pmportal drupal8
    */
   public function upmergeRepoDevToProd(
     string $match = '',

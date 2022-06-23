@@ -27,7 +27,7 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    *
    * @command drupal:readme-bulk-update
    *
-   * @usage drupal:readme-bulk-update 'IN-244 Update Readme Files' --yes
+   * @usage 'IN-244 Update Readme Files' --yes
    *
    * @throws \Exception
    */

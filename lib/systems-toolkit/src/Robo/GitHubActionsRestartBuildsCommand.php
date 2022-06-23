@@ -32,7 +32,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    *   Assume a 'yes' answer for all prompts.
    *
    * @command github:actions:restart-latest
-   * @usage github:actions:restart-latest --namespace=dev --namespace=prod --tag=drupal8 --match=pmportal.org --yes
+   * @usage --namespace=dev --namespace=prod --tag=drupal8 --match=pmportal.org --yes
    */
   public function getGitHubActionsRestartLatestBuild(
     array $options = [

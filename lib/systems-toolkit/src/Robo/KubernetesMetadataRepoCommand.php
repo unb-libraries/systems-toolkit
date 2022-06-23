@@ -204,8 +204,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    *   Assume a 'yes' answer for all prompts.
    *
    * @command k8s:metadata:audit-repos
-   * @usage k8s:metadata:audit-repos 'drupal8' '' --yes
-   * @usage k8s:metadata:audit-repos '' 'pmportal.org' --yes
+   * @usage 'drupal8' '' --yes
+   * @usage '' 'pmportal.org' --yes
    *
    * @throws \Exception
    */

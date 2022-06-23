@@ -97,7 +97,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command github:multiple-repo:script-modify
-   * @usage github:multiple-repo:script-modify '' 'drupal9' 'Config catch-up related to core update 8.x -> 9.x' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/updateRepoWithProdConfig.sh --yes --skip-commit-prefix --manual-file-stage
+   * @usage '' 'drupal9' 'Config catch-up related to core update 8.x -> 9.x' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/updateRepoWithProdConfig.sh --yes --skip-commit-prefix --manual-file-stage
    */
   public function setModifyMultipleRepositoriesFromScript(
     string $match,

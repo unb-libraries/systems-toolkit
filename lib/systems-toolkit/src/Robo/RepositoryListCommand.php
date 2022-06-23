@@ -76,7 +76,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *   The repository branch to query. Defaults to 'dev'.
    *
    * @command repository-list:contains-file
-   * @usage repository-list:contains-file config-yml/samlauth.authentication.yml '' drupal8
+   * @usage config-yml/samlauth.authentication.yml '' drupal8
    */
   public function listContainsFileRepositories(
     string $file_path,

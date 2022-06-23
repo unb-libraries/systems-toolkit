@@ -25,7 +25,7 @@ class BasicJiraCommand extends SystemsToolkitCommand {
    * @throws \Exception
    *
    * @command jira:project:info
-   * @usage jira:project:info NBNP
+   * @usage NBNP
    */
   public function getProjectInfo(
     string $project_id
