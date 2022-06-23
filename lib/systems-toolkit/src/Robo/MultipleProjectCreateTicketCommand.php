@@ -89,7 +89,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           }
           catch (JiraException $e) {
             print("Error Occured! " . $e->getMessage());
-            $this->confirm->newLine();
+            $this->io()->newLine();
           }
 
           if (empty($verified_projects)) {
@@ -137,9 +137,9 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       if (!empty($issues_to_create)) {
         if ($this->printConfirmIssuesToCreate($issues_to_create)) {
           foreach ($issuefields_to_create as $issuefield_key => $issuefield_to_create) {
-            // $issueService = new IssueService($this->jiraConfig);
+            $issueService = new IssueService($this->jiraConfig);
             $this->say("Creating issue for {$issues_to_create[$issuefield_key][0]}..");
-            // $issueService->create($issuefield_to_create);
+            $issueService->create($issuefield_to_create);
             $this->say("Sleeping to avoid overloading API...");
             sleep(5);
           }
@@ -154,7 +154,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @return bool
    */
   protected function printConfirmIssuesToCreate($issues_to_create) {
-    $table = new Table($this->confirm);
+    $table = new Table($this->io());
     $table
       ->setHeaders(
         [

@@ -123,7 +123,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *   The return code of the command.
    */
   public function setRunOtherCommand(string $command_string, string $exception_message = '') : string {
-    $this->confirm->note("Spawning new command thread: $command_string");
+    $this->io()->note("Spawning new command thread: $command_string");
 
     $bin = $_SERVER['argv'][0];
     $command = "$bin --ansi $command_string";
