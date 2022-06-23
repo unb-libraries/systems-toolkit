@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -27,15 +26,13 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * @usage pmportal.org dev
    */
   public function getKubeServiceLogsFromUri(
-    ConsoleIO $io,
     string $uri,
     string $namespace
   ) {
-    $this->setIo($io);
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
 
     foreach ($this->kubeCurPods as $pod) {
-      $this->syskitIo->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
+      $this->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
       $this->taskExec($this->kubeBin)
         ->arg("--kubeconfig=$this->kubeConfig")
         ->arg("--namespace={$pod->metadata->namespace}")
@@ -60,12 +57,10 @@ class BasicKubeCommand extends SystemsToolkitCommand {
    * @command k8s:shell
    */
   public function getKubeShellFromUri(
-    ConsoleIO $io,
     string $uri,
     string $namespace,
     string $shell = 'sh'
   ) {
-    $this->setIo($io);
     $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
     $this->kubeExecAll($shell);
   }

@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -72,7 +71,6 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function setDoBulkDockworkerCommands(
-    ConsoleIO $io,
     string $command_string,
     string $commit_message,
     array $options = [
@@ -83,7 +81,6 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
-    $this->setIo($io);
     $this->options = $options;
     $this->commandString = $command_string;
     $this->nameFilter = $options['repo-name'];
@@ -119,10 +116,10 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    */
   private function updateAllRepositories() {
     foreach ($this->githubRepositories as $repository) {
-      $this->syskitIo->title($repository['name']);
+      $this->io()->title($repository['name']);
       $this->updateRepository($repository);
       if ($this->repoChangesPushed) {
-        $this->syskitIo->note(
+        $this->io()->note(
           sprintf(
             self::MESSAGE_SLEEPING,
             $this->options['multi-repo-delay']
@@ -131,9 +128,9 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
         sleep($this->options['multi-repo-delay']);
       }
       else {
-        $this->syskitIo->note("Command [$this->commandString] resulted in no changes!");
+        $this->io()->note("Command [$this->commandString] resulted in no changes!");
       }
-      $this->syskitIo->newLine();
+      $this->io()->newLine();
     }
   }
 
@@ -147,7 +144,7 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    */
   private function updateRepository(array $repository) {
     $this->repoChangesPushed = FALSE;
-    $this->syskitIo->note(
+    $this->io()->note(
       sprintf(
         self::MESSAGE_CHECKING_OUT_REPO,
         $repository['name']
@@ -158,15 +155,15 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
       $repo = GitRepo::setCreateFromClone($repository['ssh_url'], $this->tmpDir);
       $repo->repo->checkout($namespace);
       $repo_path = $repo->repo->getRepositoryPath();
-      $this->syskitIo->note('Installing Dockworker...');
+      $this->io()->note('Installing Dockworker...');
       passthru("cd $repo_path; composer install");
-      $this->syskitIo->note("Running /vendor/bin/dockworker {$this->commandString}...");
+      $this->io()->note("Running /vendor/bin/dockworker {$this->commandString}...");
       passthru("cd $repo_path; ./vendor/bin/dockworker {$this->commandString};");
       if ($repo->repo->hasChanges()) {
-        $this->syskitIo->note('Updates found, committing...');
+        $this->io()->note('Updates found, committing...');
         $repo->repo->addAllChanges();
         $repo->repo->commit($this->commitMessage, ['--no-verify']);
-        $this->syskitIo->note('Pushing Changes to GitHub...');
+        $this->io()->note('Pushing Changes to GitHub...');
         $repo->repo->push(['origin', $namespace]);
         $this->repoChangesPushed = TRUE;
       }

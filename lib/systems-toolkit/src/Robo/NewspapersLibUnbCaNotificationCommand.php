@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\AwsSnsMessageTrait;
 
 /**
@@ -49,12 +48,10 @@ class NewspapersLibUnbCaNotificationCommand extends BasicKubeCommand {
    * @nbhp
    */
   public function getNewspaperIngestStatusNotification(
-    ConsoleIO $io,
     $title_id,
     $year,
     $result = 'complete'
   ) {
-    $this->setIo($io);
     $message = sprintf(
       "newspapers.lib.unb.ca - %s\n[%s:%s] import (%s)",
       date(self::TIME_STRING_FORMAT),

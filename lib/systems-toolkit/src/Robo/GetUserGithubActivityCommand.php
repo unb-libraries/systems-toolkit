@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Github\HttpClient\Message\ResponseMediator;
-use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -41,10 +40,8 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
    * @throws \Http\Client\Exception
    */
   public function getActivity(
-    ConsoleIO $io,
     string $email
   ) {
-    $this->setIo($io);
     $commits = [];
     $this->email = $email;
 
@@ -64,12 +61,12 @@ class GetUserGithubActivityCommand extends SystemsToolkitCommand {
     }
 
     if ((is_countable($commits) ? count($commits) : 0) < 1) {
-      $this->syskitIo->say("No commits found for user $email");
+      $this->say("No commits found for user $email");
       return;
     }
 
     foreach ($commits as $push_date => $day_commits) {
-      $this->syskitIo->say("Commits pushed on $push_date:");
+      $this->say("Commits pushed on $push_date:");
       $this->setPrintDayCommits($day_commits);
     }
   }

@@ -4,7 +4,6 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Contract\CommandInterface;
 use Robo\Robo;
-use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use UnbLibraries\SystemsToolkit\DockerCommandTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
@@ -71,7 +70,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @command dzi:generate-tiles:tree
    */
   public function dziFilesTree(
-    ConsoleIO $io,
     string $root,
     array $options = [
       'extension' => '.tif',
@@ -86,7 +84,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'tile-size' => '256',
     ]
   ) {
-    $this->setIo($io);
     $regex_root = preg_quote($root, '/');
 
     if (!$options['no-pull']) {
@@ -115,7 +112,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
       ) {
-        $this->syskitIo->say("Skipping file with existing tiles [$file_to_process]");
+        $this->say("Skipping file with existing tiles [$file_to_process]");
       }
       else {
         $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
@@ -149,7 +146,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function nbnpDziIssue(
-    ConsoleIO $io,
     string $root,
     string $issue_id,
     array $options = [
@@ -158,7 +154,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'threads' => 1,
     ]
   ) {
-    $this->setIo($io);
     $cmd_options = [
       'extension' => 'jpg',
       'no-pull' => $options['no-pull'],
@@ -172,7 +167,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'tile-size' => '256',
     ];
     $this->dziFilesTree(
-      $io,
       $root . '/files/serials/pages',
       $cmd_options
     );
@@ -247,7 +241,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @command dzi:generate-tiles
    */
   public function generateDziFiles(
-    ConsoleIO $io,
     string $file,
     array $options = [
       'no-pull' => FALSE,
@@ -258,7 +251,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'tile-size' => '256',
     ]
   ) {
-    $this->setIo($io);
     $dzi_file_path_info = pathinfo($file);
     if (!file_exists($file)) {
       throw new FileNotFoundException("File $file not Found!");

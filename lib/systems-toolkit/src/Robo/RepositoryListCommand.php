@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -20,8 +19,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *
    * @command repository-list:dockworker
    */
-  public function listDockworkerRepositories(ConsoleIO $io) {
-    $this->setIo($io);
+  public function listDockworkerRepositories() {
     $this->setRepositoryList(
       [],
       ['dockworker'],
@@ -38,8 +36,7 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    *
    * @command repository-list:drupal
    */
-  public function listDrupalRepositories(ConsoleIO $io) {
-    $this->syskitIo = $io;
+  public function listDrupalRepositories() {
     $this->setRepositoryList(
       [],
       ['drupal8', 'drupal9'],
@@ -57,12 +54,12 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    */
   protected function repositoryListDisplay(string $title) {
     if (empty($this->githubRepositories)) {
-      $this->syskitIo->say('No repositories found!');
+      $this->say('No repositories found!');
       return;
     }
-    $this->syskitIo->title($title);
+    $this->io()->title($title);
     foreach ($this->githubRepositories as $repository) {
-      $this->syskitIo->writeln($repository['name']);
+      $this->io()->writeln($repository['name']);
     }
   }
 
@@ -82,13 +79,11 @@ class RepositoryListCommand extends SystemsToolkitCommand {
    * @usage repository-list:contains-file config-yml/samlauth.authentication.yml '' drupal8
    */
   public function listContainsFileRepositories(
-    ConsoleIO $io,
     string $file_path,
     string $name_filter,
     string $tag_filter,
     string $branch = 'dev'
   ) {
-    $this->syskitIo = $io;
     $this->setRepositoryList(
       [$name_filter],
       [$tag_filter],

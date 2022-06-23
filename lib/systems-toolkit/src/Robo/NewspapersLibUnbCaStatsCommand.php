@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use DateTimeInterface;
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\KubeExecTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\BasicKubeCommand;
@@ -29,12 +28,11 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    *
    * @nbhp
    */
-  public function getNewspapersStats(ConsoleIO $io) {
-    $this->setIo($io);
+  public function getNewspapersStats() {
     $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
 
     foreach ($this->kubeCurPods as $pod) {
-      $this->syskitIo->say(sprintf('Querying statistics from %s', $pod->metadata->name));
+      $this->say(sprintf('Querying statistics from %s', $pod->metadata->name));
       $pages = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_page');
       $issues = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_issue');
       $titles = $this->getDrushQueryOutput($pod, 'SELECT count(*) FROM digital_serial_title');
@@ -48,7 +46,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
       );
 
       $this->setSendSnsMessage($message);
-      $this->syskitIo->block($message);
+      $this->io()->block($message);
     }
   }
 

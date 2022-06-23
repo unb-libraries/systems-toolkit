@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -37,13 +36,11 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function getGitHubActionsBuildReports(
-    ConsoleIO $io,
     string $match = '',
     array $options = ['only-failure' => FALSE]
   ) {
-    $this->setIo($io);
     $matches = explode(',', $match);
-    $io->title('Retrieving Repositories');
+    $this->io()->title('Retrieving Repositories');
     $continue = $this->setConfirmRepositoryList(
       $matches,
       ['github-actions'],
@@ -55,8 +52,8 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
 
     if ($continue && !empty($this->githubRepositories)) {
       $workflow_data = [];
-      $io->title('Retrieving Workflow Data');
-      $progress_bar = new ProgressBar($io, count($this->githubRepositories));
+      $this->io()->title('Retrieving Workflow Data');
+      $progress_bar = new ProgressBar($this->io(), count($this->githubRepositories));
       $progress_bar->setFormat('very_verbose');
       $progress_bar->start();
       foreach ($this->githubRepositories as $repository_data) {
@@ -82,7 +79,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
 
       // Tabulate the data.
       if (!empty($workflow_data)) {
-        $io->title('Latest Workflows By Branch');
+        $this->io()->title('Latest Workflows By Branch');
         $table_rows = [];
         foreach ($workflow_data as $repository_data) {
           if (!empty($repository_data['runs'])) {
@@ -118,7 +115,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
         }
 
         if (!empty($table_rows)) {
-          $table = new Table($io);
+          $table = new Table($this->io());
           $table
             ->setHeaders(['Repository', 'Branch', 'ID', 'Status', 'URL'])
             ->setRows($table_rows);

@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -24,16 +23,14 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
    * @command drupal:7:doupdates
    */
   public function doDrupal7Updates(
-    ConsoleIO $io,
     array $updates
   ) {
-    $this->setIo($io);
     if (empty($updates)) {
-      $this->syskitIo->say('No updates requested!');
+      $this->say('No updates requested!');
       return;
     }
 
-    $this->syskitIo->say('Getting Drupal 7 repostories from GitHub');
+    $this->say('Getting Drupal 7 repostories from GitHub');
     $this->setRepositoryList(
       [],
       ['drupal7'],
@@ -60,14 +57,14 @@ class Drupal7UpdatesCommand extends SystemsToolkitCommand {
       $owner = $repository['owner']['login'];
       $repo = $repository['name'];
 
-      $this->syskitIo->say("Scanning {$repo}...");
+      $this->say("Scanning {$repo}...");
       $file = 'make/' . preg_replace(['/build-profile-/', '/\./'], ['', '_'], $repo) . '.makefile';
       $oldContent = $this->client->api('repo')->contents()->download($owner, $repo, $file, $branch);
 
       foreach ($parsedUpdates as $find => $info) {
         if (preg_match("/$find/", $oldContent)) {
           $newContent = preg_replace("/$find/", $info['replace'], $oldContent);
-          $this->syskitIo->say($info['commit']);
+          $this->say($info['commit']);
           $oldHashes = $this->client->api('repo')->contents()->show($owner, $repo, $file, $branch);
 
           $this->client->api('repo')

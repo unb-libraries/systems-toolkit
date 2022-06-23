@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
@@ -211,7 +210,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   public function setKubernetesMetadataServiceAudit(
-    ConsoleIO $io,
     string $tag_filter,
     string $name_filter,
     array $options = [
@@ -219,7 +217,6 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       'yes' => FALSE,
     ]
   ) {
-    $this->setIo($io);
     $this->options = $options;
     $this->nameFilter = $name_filter;
     $this->tagFilter = $tag_filter;
@@ -254,7 +251,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function auditAllRepositories() {
     if (!empty($this->githubRepositories)) {
       // Instantiate local source repo.
-      $this->syskitIo->say("Cloning central repo/{$this->options['central-repo-branch']}...");
+      $this->say("Cloning central repo/{$this->options['central-repo-branch']}...");
       $this->centralMetadataRepo = GitRepo::setCreateFromClone(self::CENTRAL_METADATA_REPO, $this->tmpDir);
       $this->centralMetadataRepo->repo->checkout($this->options['central-repo-branch']);
     }
@@ -264,22 +261,22 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->auditRepository();
 
       if ($this->curLeanRepoNeedsPush) {
-        $this->syskitIo->say('Pushing lean repo changes to GitHub...');
+        $this->say('Pushing lean repo changes to GitHub...');
         $this->pushCurLeanRepo();
-        $this->syskitIo->say('Done!');
+        $this->say('Done!');
       }
       else {
-        $this->syskitIo->say('No differences found!');
+        $this->say('No differences found!');
       }
-      $this->syskitIo->newLine();
+      $this->io()->newLine();
     }
 
     if ($this->centralMetadataRepoNeedsPush) {
-      $this->syskitIo->say('Pushing central repo changes to GitHub...');
+      $this->say('Pushing central repo changes to GitHub...');
       $this->pushCentralRepo();
-      $this->syskitIo->say('Done!');
+      $this->say('Done!');
     }
-    $this->syskitIo->newLine();
+    $this->io()->newLine();
   }
 
   /**
@@ -292,7 +289,7 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
       $this->initRepositoryAudit();
     }
     catch (\Exception $e) {
-      $this->syskitIo->warning("Error initializing lean repo {$this->curLeanRepo['name']} default branch [$e]");
+      $this->io()->warning("Error initializing lean repo {$this->curLeanRepo['name']} default branch [$e]");
       return;
     }
 
@@ -306,11 +303,11 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
 
         // Case : both central and lean repo have the file.
         if ($this->curLeanMetadataFileExists && $this->curCentralMetadataFileExists) {
-          $this->syskitIo->say("Comparing Files: $this->curFileSlug...");
+          $this->say("Comparing Files: $this->curFileSlug...");
           $diff_contents = $this->diffRepositoryFiles();
           if ($diff_contents != self::DIFF_HEADER) {
-            $this->syskitIo->warning("$this->curFileSlug Files Differ!");
-            $this->syskitIo->block($diff_contents);
+            $this->io()->warning("$this->curFileSlug Files Differ!");
+            $this->io()->block($diff_contents);
             $this->setCanonicalMetadataFile();
           }
         }
@@ -327,8 +324,8 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    */
   protected function initRepositoryAudit() {
     $this->curLeanRepoNeedsPush = FALSE;
-    $this->syskitIo->title($this->curLeanRepo['name']);
-    $this->syskitIo->say('Cloning lean repo...');
+    $this->io()->title($this->curLeanRepo['name']);
+    $this->say('Cloning lean repo...');
     $this->curLeanRepoClone = GitRepo::setCreateFromClone($this->curLeanRepo['ssh_url'], $this->tmpDir);
     $this->curLeanRepoClone->repo->checkout(self::LEAN_REPO_BRANCH);
     $this->setCurDockerImage();
@@ -467,20 +464,20 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
    * Chooses and commits the canonical metadata file.
    */
   protected function setCanonicalMetadataFile() {
-    if ($this->syskitIo->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
+    if ($this->confirm("Differences Found in $this->curFileSlug, Would you Like To Choose a 'Correct' File?")) {
       switch ($this->getRepoCorrectionChoiceValue()) {
         case 'c':
           $this->setCentralRepoVersionAsCanonical();
-          $this->syskitIo->say('Deferring remote push until all of this repository\'s files have been processed.');
+          $this->say('Deferring remote push until all of this repository\'s files have been processed.');
           break;
 
         case 'l':
           $this->setLeanRepoVersionAsCanonical();
-          $this->syskitIo->say('Deferring remote push until all repositories have been processed.');
+          $this->say('Deferring remote push until all repositories have been processed.');
           break;
 
         default:
-          $this->syskitIo->say('Skipping correction...');
+          $this->say('Skipping correction...');
       }
     }
   }
@@ -494,9 +491,9 @@ class KubernetesMetadataRepoCommand extends SystemsToolkitCommand {
   protected function getRepoCorrectionChoiceValue() : string {
     $choice = '';
     while (!self::isValidCorrectionChoice($choice)) {
-      $choice = strtolower($this->syskitIo->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
+      $choice = strtolower($this->ask("What version is correct? Enter 'c' for central [+] or 'l' for lean [-] ('s' to skip)"));
       if (!self::isValidCorrectionChoice($choice)) {
-        $this->syskitIo->warning("Please choose either 'c' or 'l'");
+        $this->io()->warning("Please choose either 'c' or 'l'");
       }
     }
     return $choice;

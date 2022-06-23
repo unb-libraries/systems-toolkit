@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\Robo\GitHubRepoRebaseDevToProdCommand;
 
 /**
@@ -36,7 +35,7 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
    * @usage unbherbarium,pmportal
    */
   public function upmergeDrupalDevToProd(
-    ConsoleIO $io,
+
     string $match = '',
     array $options = [
       'repo-exclude' => [],
@@ -44,7 +43,6 @@ class GitHubDrupalRebaseDevToProdCommand extends GitHubRepoRebaseDevToProdComman
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
-    $this->setIo($io);
     $match_array = explode(",", $match);
     parent::rebaseDevToProd(
       $match_array,

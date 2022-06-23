@@ -6,7 +6,6 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Robo\Common\ConfigAwareTrait;
 use Robo\Robo;
-use Robo\Symfony\ConsoleIO;
 use Robo\Tasks;
 
 /**
@@ -48,13 +47,6 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    * @var string
    */
   protected string $repoRoot;
-
-  /**
-   * The active output object.
-   *
-   * @var \Robo\Symfony\ConsoleIO
-   */
-  protected ConsoleIO $syskitIo;
 
   /**
    * The temporary directory to use, if necessary.
@@ -131,9 +123,7 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
    *   The return code of the command.
    */
   public function setRunOtherCommand(string $command_string, string $exception_message = '') : string {
-    if (!empty($this->syskitIo)) {
-      $this->syskitIo->note("Spawning new command thread: $command_string");
-    }
+    $this->confirm->note("Spawning new command thread: $command_string");
 
     $bin = $_SERVER['argv'][0];
     $command = "$bin --ansi $command_string";
@@ -143,16 +133,6 @@ class SystemsToolkitCommand extends Tasks implements LoggerAwareInterface {
       throw new \Exception($exception_message);
     }
     return $return;
-  }
-
-  /**
-   * Sets the IO.
-   *
-   * @param \Robo\Symfony\ConsoleIO $io
-   *   The IO to use.
-   */
-  protected function setIo(ConsoleIO $io) : void {
-    $this->syskitIo = $io;
   }
 
 }

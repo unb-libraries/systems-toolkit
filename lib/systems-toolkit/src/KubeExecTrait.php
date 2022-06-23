@@ -134,7 +134,7 @@ trait KubeExecTrait {
         $kube->arg($arg);
       }
     }
-    $this->syskitIo->say(sprintf('Executing %s in %s...', $exec, $pod->metadata->name));
+    $this->say(sprintf('Executing %s in %s...', $exec, $pod->metadata->name));
     return $kube->run();
   }
 
@@ -163,7 +163,7 @@ trait KubeExecTrait {
       $command = "{$this->kubeBin} --kubeconfig={$this->kubeConfig} get pods --namespace=$namespace --selector=$selector_string -ojson";
       $output = shell_exec($command);
       if (!$quiet) {
-        $this->syskitIo->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
+        $this->say(sprintf('Getting pods from the cluster [%s, namespace=%s]', $selector_string, $namespace));
       }
       $this->setAddCurPodsFromJson($output, $only_running);
     }
@@ -198,7 +198,7 @@ trait KubeExecTrait {
       $this->kubeCurPods = array_merge($this->kubeCurPods, $items);
     }
     else {
-      $this->syskitIo->say('Warning : No pods were returned from the cluster');
+      $this->say('Warning : No pods were returned from the cluster');
     }
   }
 

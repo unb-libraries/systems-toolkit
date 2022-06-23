@@ -96,7 +96,7 @@ trait JiraTrait {
    * @hook pre-init
    */
   public function setJiraPass() {
-    $this->jiraUserPassword = $this->syskitIo->ask(
+    $this->jiraUserPassword = $this->ask(
       "Enter $this->jiraUserName's JIRA password for $this->jiraHostName"
     );
   }

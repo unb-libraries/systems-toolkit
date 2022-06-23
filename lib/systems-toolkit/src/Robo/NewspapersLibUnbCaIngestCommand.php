@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
@@ -88,24 +87,20 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function setOcrForPage(
-    ConsoleIO $io,
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => '',
     ]
   ) {
-    $this->setIo($io);
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
     $local_file = $this->getPageImage(
-      $io,
       $id,
       $options
     );
     $this->ocrTesseractFile(
-      $io,
       $local_file,
       $options = [
         'oem' => 1,
@@ -146,14 +141,12 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
   public function getPageImage(
-    ConsoleIO $io,
     string $id,
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'output-dir' => '',
     ]
   ) : string {
-    $this->setIo($io);
     if (empty($options['output-dir'])) {
       $options['output-dir'] = $this->tmpDir;
     }
@@ -183,7 +176,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       $page_uri = $page_details->page_image[0]->url;
       $path_parts = pathinfo($page_uri);
       $output_path = "$output_dir/{$path_parts['basename']}";
-      $this->syskitIo->say("Downloading $page_uri to $output_path...");
+      $this->say("Downloading $page_uri to $output_path...");
       $this->guzzleClient->request(
         'GET',
         $page_uri,
@@ -194,7 +187,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       return $output_path;
     }
 
-    $this->syskitIo->say("An image file was not found for the entity.");
+    $this->say("An image file was not found for the entity.");
     return '';
   }
 
@@ -211,7 +204,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @throws \Exception
    */
   private function setPageOcr(string $id, string $field_name, string $content) {
-    $this->syskitIo->say("Updating page #$id [$field_name]");
+    $this->say("Updating page #$id [$field_name]");
     $patch_content = json_encode(
       [
         $field_name => [
@@ -257,7 +250,6 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @nbhp
    */
   public function createIssuesFromTree(
-    ConsoleIO $io,
     string $title_id,
     string $file_path,
     array $options = [
@@ -270,7 +262,6 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'yes' => FALSE,
     ]
   ) {
-    $this->setIo($io);
     $this->options = $options;
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
@@ -286,7 +277,6 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
     // Queue up every file in the tree and run tesseract now.
     $this->ocrTesseractTree(
-      $io,
       $file_path,
       [
         'args' => 'hocr',
@@ -315,11 +305,10 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
       try {
         if (!file_exists($processed_flag_file)) {
-          $this->syskitIo->newLine();
-          $this->syskitIo->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
+          $this->io()->newLine();
+          $this->io()->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
           $this->curIssueId = 0;
           $this->createIssueFromDir(
-            $io,
             $title_id,
             $directory_to_process,
             $options
@@ -332,7 +321,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         }
         else {
-          $this->syskitIo->say("Skipping already-imported issue - {$this->curIssuePath}");
+          $this->say("Skipping already-imported issue - {$this->curIssuePath}");
           $this->resultsLedger['skipped'][] = [
             'path' => $this->curIssuePath,
           ];
@@ -350,9 +339,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
     // Tidy-up.
     $this->recursiveDirectories = [];
-    $this->syskitIo->title('Operation Complete!');
+    $this->io()->title('Operation Complete!');
     $output_summary = $this->getNbhpNotificationString($file_path);
-    $this->syskitIo->block($output_summary);
+    $this->io()->block($output_summary);
     $this->setSendSnsMessage($output_summary);
     $this->setRunOtherCommand("newspapers.lib.unb.ca:import:notify $this->curTitleId $this->curIssuePath complete");
     $this->writeImportLedger();
@@ -423,7 +412,6 @@ EOT;
    * @command newspapers.lib.unb.ca:create-issue
    */
   public function createIssueFromDir(
-    ConsoleIO $io,
     string $title_id,
     string $path,
     array $options = [
@@ -437,7 +425,6 @@ EOT;
       'webtree-path' => NULL,
     ]
   ) {
-    $this->setIo($io);
     $this->drupalRestUri = $options['instance-uri'];
 
     // Pull upstream docker images, if permitted.
@@ -520,11 +507,10 @@ EOT;
       $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
       $issue_id = $issue_object->id[0]->value;
       $this->curIssueId = $issue_id;
-      $this->syskitIo->say("Importing pages to Issue #$issue_id");
+      $this->say("Importing pages to Issue #$issue_id");
 
       if ($options['generate-ocr']) {
         $this->ocrTesseractTree(
-          $io,
           $path,
           [
             'args' => 'hocr',
@@ -555,7 +541,6 @@ EOT;
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
 
           $this->createSerialPageFromFile(
-            $io,
             $issue_id,
             $page_no,
             str_pad(
@@ -575,11 +560,11 @@ EOT;
       }
 
       $this->recursiveFiles = [];
-      $this->syskitIo->say("New issue created at:");
-      $this->syskitIo->say($options['instance-uri'] . "/serials/$title_id/issues/$issue_id/pages");
+      $this->say("New issue created at:");
+      $this->say($options['instance-uri'] . "/serials/$title_id/issues/$issue_id/pages");
     }
     else {
-      $this->syskitIo->say("The path $path does not contain a metadata.php file.");
+      $this->say("The path $path does not contain a metadata.php file.");
     }
   }
 
@@ -629,7 +614,6 @@ EOT;
    * @throws \Exception
    */
   public function createSerialPageFromFile(
-    ConsoleIO $io,
     string $issue_id,
     string $page_no,
     string $page_sort,
@@ -639,7 +623,6 @@ EOT;
       'no-verify' => FALSE,
     ]
   ) {
-    $this->setIo($io);
     $this->drupalRestUri = $options['instance-uri'];
 
     // Do OCR on file.
@@ -651,7 +634,6 @@ EOT;
       ];
 
       $this->ocrTesseractFile(
-        $io,
         $file_path,
         $ocr_options
       );
@@ -670,7 +652,7 @@ EOT;
     $additional_pad_chars = strlen(substr(strrchr($page_no, "_"), 0));
     $page_no_padded = str_pad($page_no, 4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
-    $this->syskitIo->say("Creating Page [$page_no_padded] From: $file_path");
+    $this->say("Creating Page [$page_no_padded] From: $file_path");
     $file_entity = $this->uploadDrupalRestFileToEntityField(
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     );
@@ -749,7 +731,7 @@ EOT;
   ) : object {
     $this->setUpDrupalRestClientToken();
     $post_uri = $this->drupalRestUri . "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
-    $this->syskitIo->say($post_uri);
+    $this->say($post_uri);
     $this->drupalRestResponse = $this->guzzleClient->post(
       $post_uri,
       [

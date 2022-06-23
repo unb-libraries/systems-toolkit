@@ -2,8 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Common\IO;
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -12,7 +10,6 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
  */
 class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
 
-  use IO;
   use GitHubMultipleInstanceTrait;
 
   /**
@@ -38,7 +35,6 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
    * @usage github:actions:restart-latest --namespace=dev --namespace=prod --tag=drupal8 --match=pmportal.org --yes
    */
   public function getGitHubActionsRestartLatestBuild(
-    ConsoleIO $io,
     array $options = [
       'match' => [],
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
@@ -47,7 +43,6 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
       'yes' => FALSE,
     ]
   ) {
-    $this->setIo($io);
     $continue = $this->setConfirmRepositoryList(
       $options['match'],
       $options['tag'],
@@ -69,7 +64,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
               foreach ($options['namespace'] as $cur_namespace) {
                 foreach ($run['workflow_runs'] as $cur_run) {
                   if ($cur_run['head_branch'] == $cur_namespace) {
-                    $this->syskitIo->say("Restarting $repo_name/$cur_namespace Run #{$cur_run['id']}");
+                    $this->say("Restarting $repo_name/$cur_namespace Run #{$cur_run['id']}");
                     $this->client->api('repo')->workflowRuns()->rerun($repo_owner, $repo_name, $cur_run['id']);
                     break;
                   }
@@ -78,7 +73,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
             }
           }
         }
-        $this->syskitIo->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
         sleep($options['multi-repo-delay']);
       }
     }

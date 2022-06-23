@@ -5,7 +5,6 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use JiraRestApi\Issue\IssueField;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
-use Robo\Symfony\ConsoleIO;
 use Symfony\Component\Console\Helper\Table;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\JiraTrait;
@@ -57,7 +56,6 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @usage jira:multiple-repo:create '' 'drupal8' 'Drupal 9.x Upgrade' 'Update Drupal to Drupal 9.x. See https://stackoverflow.com/c/unblibsystems/articles/131 .' 'Task' 'IN-243' --yes
    */
   public function createMultipleJiraTicket(
-    ConsoleIO $io,
     string $match,
     string $topics,
     string $summary,
@@ -70,7 +68,6 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
-    $this->setIo($io);
     $continue = $this->setConfirmRepositoryList(
       [$match],
       [$topics],
@@ -92,7 +89,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
           }
           catch (JiraException $e) {
             print("Error Occured! " . $e->getMessage());
-            $this->io()->newLine();
+            $this->confirm->newLine();
           }
 
           if (empty($verified_projects)) {
@@ -141,9 +138,9 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
         if ($this->printConfirmIssuesToCreate($issues_to_create)) {
           foreach ($issuefields_to_create as $issuefield_key => $issuefield_to_create) {
             // $issueService = new IssueService($this->jiraConfig);
-            $this->syskitIo->say("Creating issue for {$issues_to_create[$issuefield_key][0]}..");
+            $this->say("Creating issue for {$issues_to_create[$issuefield_key][0]}..");
             // $issueService->create($issuefield_to_create);
-            $this->syskitIo->say("Sleeping to avoid overloading API...");
+            $this->say("Sleeping to avoid overloading API...");
             sleep(5);
           }
         }
@@ -157,7 +154,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
    * @return bool
    */
   protected function printConfirmIssuesToCreate($issues_to_create) {
-    $table = new Table($this->io());
+    $table = new Table($this->confirm);
     $table
       ->setHeaders(
         [
@@ -172,7 +169,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
       )
       ->setRows($issues_to_create);
     $table->render();
-    return $this->syskitIo->confirm('The following issues will be created. Continue?');
+    return $this->confirm('The following issues will be created. Continue?');
   }
 
 }

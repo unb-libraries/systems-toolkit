@@ -2,7 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
+
 use UnbLibraries\SystemsToolkit\Robo\BulkDockworkerCommand;
 
 /**
@@ -32,7 +32,6 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    * @throws \Exception
    */
   public function setDoBulkDrupalReadmeUpdate(
-    ConsoleIO $io,
     string $commit_message,
     array $options = [
       'namespaces' => ['dev'],
@@ -40,11 +39,9 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
-    $this->setIo($io);
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
-      $io,
       'readme:update',
       $commit_message,
       $options
@@ -72,7 +69,6 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
    * @throws \Exception
    */
   public function setDoBulkDrupalActionsUpdate(
-    ConsoleIO $io,
     string $commit_message,
     array $options = [
       'namespaces' => ['dev'],
@@ -80,11 +76,9 @@ class DrupalBulkDockworkerCommand extends BulkDockworkerCommand {
       'multi-repo-delay' => self::DEFAULT_MULTI_REPO_DELAY,
     ]
   ) {
-    $this->setIo($io);
     $options['repo-name'] = [];
     $options['repo-tag'] = ['drupal8', 'drupal9'];
     $this->setDoBulkDockworkerCommands(
-      $io,
       'ci:update-workflow-file',
       $commit_message,
       $options

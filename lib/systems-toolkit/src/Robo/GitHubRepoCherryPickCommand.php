@@ -2,7 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\GitHubMultipleInstanceTrait;
 use UnbLibraries\SystemsToolkit\Git\GitRepo;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -64,21 +63,19 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
    * @usage github:repo:cherry-pick-multiple drupal.solr.lib.unb.ca dockworker '' 'pmportal.org,guides.lib.unb.ca' drupal9
    */
   public function cherryPickMultiple(
-    ConsoleIO $io,
     string $source_repository,
     string $target_topics = '',
     string $target_name_match = '',
     string $omit_names_match = '',
     string $omit_topics_match = ''
   ) {
-    $this->setIo($io);
     $match_array = explode(",", $target_name_match);
     $topics_array = explode(",", $target_topics);
     $omit_names_array = explode(",", $omit_names_match);
     $omit_topics_array = explode(",", $omit_topics_match);
 
     if (empty($match_array[0]) && empty($topics_array[0])) {
-      $this->syskitIo->say(self::MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES);
+      $this->say(self::MESSAGE_REFUSING_CHERRY_ALL_REPOSITORIES);
       return;
     }
 
@@ -119,7 +116,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     array $omit_names = [],
     array $omit_topics = []
   ) {
-    $this->syskitIo->say(
+    $this->say(
       sprintf(
         self::MESSAGE_BEGINNING_CHERRY_PICK,
         $source_repository,
@@ -137,7 +134,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     $source_repo = GitRepo::setCreateFromClone($this->sourceRepo['ssh_url'], $this->tmpDir);
 
     // Ask which Commit to Rebase.
-    $this->syskitIo->say(sprintf(self::MESSAGE_TITLE_REPO_COMMIT_LIST, $source_repository));
+    $this->say(sprintf(self::MESSAGE_TITLE_REPO_COMMIT_LIST, $source_repository));
     $this->getCommitListTable($source_repo, 10);
     $cherry_hash = $this->askDefault(self::MESSAGE_CHOOSE_COMMIT_HASH, $source_repo->getCommit(0)['hash']);
     $cherry_commit_msg = $source_repo->getCommitMessage($cherry_hash);
@@ -146,7 +143,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
     $this->getRepoHasCommit($source_repo, $cherry_hash);
 
     // Write patch to local file.
-    $this->syskitIo->say('Writing patch to local file...');
+    $this->say('Writing patch to local file...');
     $source_repo->repo->execute(
       [
         'diff',
@@ -195,14 +192,14 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
       foreach ($this->githubRepositories as $repository_data) {
         // Check to see if this repo has the target branch.
         if (!$this->getGitHubRepositoryHasBranch($repository_data['owner']['login'], $repository_data['name'], $target_branch)) {
-          $this->syskitIo->say(
+          $this->say(
             sprintf(self::MESSAGE_TARGET_BRANCH_MISSING_REPO, $target_branch, $repository_data['name'])
           );
           $this->failedRepos[$repository_data['name']] = "$target_branch branch does not exist";
           continue;
         };
 
-        $this->syskitIo->say(
+        $this->say(
           sprintf(self::MESSAGE_CHERRY_PICKING,
             $cherry_hash,
             $repository_data['name'],
@@ -215,12 +212,12 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
         // Apply patch.
         exec("cd {$target_repo->getTmpDir()} && patch -p1 < " . $this->tmpDir . '/' . self::FILE_SOURCE_PATCH . ' && git add .', $output, $return);
         if ($return) {
-          $this->syskitIo->say(sprintf(self::MESSAGE_CHERRY_PATCH_FAILED, $target_branch, $repository_data['name']));
+          $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_FAILED, $target_branch, $repository_data['name']));
           $this->failedRepos[$repository_data['name']] = "Patch could not be applied.";
           continue;
         }
 
-        $this->syskitIo->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
+        $this->say(sprintf(self::MESSAGE_CHERRY_PATCH_SUCCESS, $target_branch, $repository_data['name']));
         $cherry_output = $target_repo->repo->execute(
           [
             'commit',
@@ -230,11 +227,11 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
           ]
         );
 
-        $this->syskitIo->say(self::MESSAGE_CHERRY_RESULTS_TITLE);
-        $this->syskitIo->say(implode("\n", $cherry_output));
+        $this->say(self::MESSAGE_CHERRY_RESULTS_TITLE);
+        $this->say(implode("\n", $cherry_output));
 
         // Push.
-        $continue = $this->syskitIo->confirm(self::MESSAGE_CONFIRM_PUSH);
+        $continue = $this->confirm(self::MESSAGE_CONFIRM_PUSH);
         if ($continue) {
           $push_output = $target_repo->repo->execute(
             [
@@ -243,8 +240,8 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
               $target_branch,
             ]
           );
-          $this->syskitIo->say(self::MESSAGE_PUSH_RESULTS_TITLE);
-          $this->syskitIo->say(implode("\n", $push_output));
+          $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
+          $this->say(implode("\n", $push_output));
         }
         $this->successfulRepos[$repository_data['name']] = "Success.";
       }

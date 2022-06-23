@@ -3,7 +3,6 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use Robo\Robo;
-use Robo\Symfony\ConsoleIO;
 use UnbLibraries\SystemsToolkit\AwsSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
@@ -47,11 +46,9 @@ class CyberManCommand extends SystemsToolkitCommand {
    * @usage "Hello, cyberman here!"
    */
   public function sendCyberManMessage(
-    ConsoleIO $io,
     string $message
   ) {
-    $this->setIo($io);
-    $this->syskitIo->say(
+    $this->say(
       $this->setSendSnsMessage($message)
     );
   }
