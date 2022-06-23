@@ -122,7 +122,8 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
 
     // Rebase and push up to GitHub.
     if ($continue) {
-      foreach ($this->githubRepositories as $repository_data) {
+      $last_repo_key = array_key_last($this->githubRepositories);
+      foreach ($this->githubRepositories as $repository_index => $repository_data) {
         // Pull down.
         $this->io()->title($repository_data['name']);
         $this->say(
@@ -165,9 +166,11 @@ class GitHubRepoRebaseDevToProdCommand extends SystemsToolkitCommand {
             $this->say(self::MESSAGE_PUSH_RESULTS_TITLE);
             $this->say(implode("\n", $push_output));
           }
-          $this->io()->newLine();
-          $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
-          sleep($options['multi-repo-delay']);
+          if ($repository_index != $last_repo_key) {
+            $this->io()->newLine();
+            $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+            sleep($options['multi-repo-delay']);
+          }
         }
         else {
           $this->say(

@@ -101,8 +101,8 @@ class JiraBoilerplateGeneratorCommand extends SystemsToolkitCommand {
    */
   private function buildJiraTableSource() {
     $this->jiraInstanceSource = '|| ' . implode(' || ', $this->jiraInstanceTableHeaders) . ' ||' . PHP_EOL;
-    foreach ($this->githubRepositories as $idx => $repository) {
-      $id = $idx + 1;
+    foreach ($this->githubRepositories as $repository_index => $repository) {
+      $id = $repository_index + 1;
       $this->jiraInstanceSource .= "| $id | {$repository['name']} |";
       for ($i = 0; $i < count($this->jiraInstanceTableHeaders) - 2; $i++) {
         $this->jiraInstanceSource .= $this->getFormattedWorkItemCellValue($this->jiraInstanceDefaultValues[$i]);

@@ -128,7 +128,8 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     );
 
     if ($continue) {
-      foreach ($this->githubRepositories as $this->curRepoMetadata) {
+      $last_repo_key = array_key_last($this->githubRepositories);
+      foreach ($this->githubRepositories as $repository_index => $this->curRepoMetadata) {
         $this->repoChangesPushed = FALSE;
         $this->io()->title($this->curRepoMetadata['name']);
         $this->cloneTempRepo();
@@ -141,13 +142,15 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
             if (!empty($this->curCloneRepo->repo->execute(['diff', '--cached']))) {
               $this->commitChangesInRepo();
               $this->pushRepositoryChangesToGitHub();
-              $this->say(
-                sprintf(
-                  self::MESSAGE_SLEEPING,
-                  $options['multi-repo-delay']
-                )
-              );
-              sleep($options['multi-repo-delay']);
+              if ($repository_index != $last_repo_key) {
+                $this->say(
+                  sprintf(
+                    self::MESSAGE_SLEEPING,
+                    $options['multi-repo-delay']
+                  )
+                );
+                sleep($options['multi-repo-delay']);
+              }
             }
             else {
               $this->say(self::MESSAGE_NO_STAGED_CHANGES);

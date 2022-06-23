@@ -465,9 +465,10 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
    * @throws \Psr\Cache\InvalidArgumentException
    */
   private function updateAllRepositories(array $options) {
-    foreach ($this->githubRepositories as $repository) {
+    $last_repo_key = array_key_last($this->githubRepositories);
+    foreach ($this->githubRepositories as $repository_index => $repository) {
       $updates_pushed = $this->updateRepository($repository);
-      if ($updates_pushed) {
+      if ($updates_pushed && $repository_index != $last_repo_key) {
         $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
         sleep($options['multi-repo-delay']);
       }

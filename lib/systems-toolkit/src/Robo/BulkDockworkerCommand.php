@@ -115,10 +115,11 @@ class BulkDockworkerCommand extends SystemsToolkitCommand {
    * @throws \Exception
    */
   private function updateAllRepositories() {
-    foreach ($this->githubRepositories as $repository) {
+    $last_repo_key = array_key_last($this->githubRepositories);
+    foreach ($this->githubRepositories as $repository_index => $repository) {
       $this->io()->title($repository['name']);
       $this->updateRepository($repository);
-      if ($this->repoChangesPushed) {
+      if ($this->repoChangesPushed && $repository_index != $last_repo_key) {
         $this->io()->note(
           sprintf(
             self::MESSAGE_SLEEPING,

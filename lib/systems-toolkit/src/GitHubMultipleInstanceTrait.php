@@ -93,10 +93,10 @@ trait GitHubMultipleInstanceTrait {
       $to_remove = $this->ask('Which ones? (Specify Name, Comma separated list)');
       if (!empty($to_remove)) {
         $removes = explode(',', $to_remove);
-        foreach ($this->githubRepositories as $repo_index => $repository) {
+        foreach ($this->githubRepositories as $repository_index => $repository) {
           if (in_array($repository['name'], $removes)) {
             $this->say("Removing {$repository['name']} from list");
-            unset($this->githubRepositories[$repo_index]);
+            unset($this->githubRepositories[$repository_index]);
           }
         }
       }
@@ -237,10 +237,10 @@ trait GitHubMultipleInstanceTrait {
   private function filterRepositoriesByTopic(array $topic_filters) {
     if (!empty($topic_filters[0])) {
       $this->say('Topic filtering repositories...');
-      foreach ($this->githubRepositories as $repo_idx => $repo) {
+      foreach ($this->githubRepositories as $repository_index => $repository) {
         // This assumes an AND filter for multiple repo topics.
-        if (!count(array_intersect($repo['topics'], $topic_filters)) == count($topic_filters)) {
-          unset($this->githubRepositories[$repo_idx]);
+        if (!count(array_intersect($repository['topics'], $topic_filters)) == count($topic_filters)) {
+          unset($this->githubRepositories[$repository_index]);
         }
       }
       $this->say('Topic filtering complete!');

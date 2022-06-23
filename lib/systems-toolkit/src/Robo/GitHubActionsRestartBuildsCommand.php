@@ -53,7 +53,8 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
     );
 
     if ($continue) {
-      foreach ($this->githubRepositories as $repository_data) {
+      $last_repo_key = array_key_last($this->githubRepositories);
+      foreach ($this->githubRepositories as $repository_index => $repository_data) {
         $repo_owner = $repository_data['owner']['login'];
         $repo_name = $repository_data['name'];
         $workflows = $this->client->api('repo')->workflows()->all($repo_owner, $repo_name);
@@ -73,8 +74,11 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
             }
           }
         }
-        $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
-        sleep($options['multi-repo-delay']);
+        if ($repository_index != $last_repo_key) {
+          $this->io()->newLine();
+          $this->say("Sleeping for {$options['multi-repo-delay']} seconds to spread build times...");
+          sleep($options['multi-repo-delay']);
+        }
       }
     }
   }
