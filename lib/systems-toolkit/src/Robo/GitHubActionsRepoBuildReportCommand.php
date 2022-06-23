@@ -17,7 +17,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
   /**
    * Shows the latest build results for GitHub Actions build repositories.
    *
-   * This command will list the latest github action runs in each branch of
+   * This command will list the latest GitHub action runs in each branch of
    * the GitHub repository.
    *
    * @param string $match

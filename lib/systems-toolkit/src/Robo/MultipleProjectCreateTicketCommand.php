@@ -24,7 +24,7 @@ class MultipleProjectCreateTicketCommand extends SystemsToolkitCommand {
   public const DEFAULT_PROJECT_KEY = 'IN';
 
   /**
-   * Creates a JIRA issue for multiple Github projects based on tags or name.
+   * Creates a JIRA issue for multiple GitHub projects based on tags or name.
    *
    * @param string $match
    *   Only repositories whose names contain one of $match values will be

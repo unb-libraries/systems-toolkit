@@ -13,7 +13,7 @@ class GitHubActionsRestartBuildsCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
 
   /**
-   * Restarts the latest builds for Github Actions deployed repositories.
+   * Restarts the latest builds for GitHub Actions deployed repositories.
    *
    * @param string[] $options
    *   The array of available CLI options.

@@ -8,9 +8,9 @@ use UnbLibraries\SystemsToolkit\GitHubTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 
 /**
- * Class for GetUserGithubActivityCommand Robo commands.
+ * Class for GetUserGitHubActivityCommand Robo commands.
  */
-class GetUserGithubActivityCommand extends SystemsToolkitCommand {
+class GetUserGitHubActivityCommand extends SystemsToolkitCommand {
 
   use GitHubTrait;
 
