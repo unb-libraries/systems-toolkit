@@ -201,6 +201,7 @@ class GitHubRepoCherryPickCommand extends SystemsToolkitCommand {
       );
 
       foreach ($this->githubRepositories as $repository_data) {
+        $this->syskitIo->title($repository_data['name']);
         // Check to see if this repo has the target branch.
         if (!$this->getGitHubRepositoryHasBranch(
           $repository_data['owner']['login'],
