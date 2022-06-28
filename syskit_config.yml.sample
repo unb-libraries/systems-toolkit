@@ -15,8 +15,9 @@ syskit:
       lockedProjects:
         bootstrap_barrio: 5.1.6
         drupal: 8.9.20
-        geolocation: 3.8 # 3.9 Required 9.x core, breaks pmportal
-        paragraphs: 1.13 # 1.14 Required 9.x core, breaks pmportal
+        geolocation: 8.x-3.8 # 3.9 Required 9.x core, breaks pmportal
+        honeypot: 2.0.2 # Further versions require 9.x, breaks pmportal
+        paragraphs: 8.x-1.13 # 1.14 Required 9.x core, breaks pmportal
         search_api: 8.x-1.23
         search_api_solr: 4.2.1
   github:
