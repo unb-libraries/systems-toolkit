@@ -18,6 +18,11 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
   use GitHubMultipleInstanceTrait;
   use KubeExecTrait;
 
+  const DO_NOT_UPDATE_INSTANCES = [
+    'guides.lib.unb.ca',
+    'pmportal.org',
+  ];
+
   /**
    * Should confirmations for this object be skipped?
    *
@@ -200,16 +205,23 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     array $module_exclude = [],
   ) : void {
     foreach ($this->kubeCurPods as $pod) {
-      try {
-        $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
-      }
-      catch (\Exception $e) {
-        $this->io()->warning(
-          sprintf(
-            'Unable to query %s pod for updates',
-            $pod->metadata->labels->instance
-          )
-        );
+      if (
+        !in_array(
+          $pod->metadata->labels->vcsRepository,
+          self::DO_NOT_UPDATE_INSTANCES
+        )
+      ) {
+        try {
+          $this->setNeededUpdates($pod, $module_whitelist, $module_exclude);
+        }
+        catch (\Exception $e) {
+          $this->io()->warning(
+            sprintf(
+              'Unable to query %s pod for updates',
+              $pod->metadata->labels->instance
+            )
+          );
+        }
       }
     }
   }
