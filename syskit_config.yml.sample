@@ -11,6 +11,7 @@ syskit:
       user: XXXXXXXXXXXXX
     updates:
       ignoredProjects:
+        - bootstrap_barrio
         - field_collection
       lockedProjects:
         bootstrap_barrio: 5.1.6

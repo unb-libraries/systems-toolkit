@@ -123,7 +123,7 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
       $this->io()->title("Matching Pods to GitHub Repositories");
       $continue = $this->setConfirmRepositoryList(
         array_keys($this->tabulatedUpdates),
-        ['drupal8', 'drupal9'],
+        ['drupal9'],
         [],
         [],
         'Upgrade Drupal Modules',
