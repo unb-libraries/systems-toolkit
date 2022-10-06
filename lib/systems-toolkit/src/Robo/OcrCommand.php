@@ -205,7 +205,7 @@ class OcrCommand extends SystemsToolkitCommand {
     $options['no-pull'] = TRUE;
 
     foreach ($this->recursiveFiles as $file_to_process) {
-      if ($options['skip-existing'] != TRUE && $this->fileHasOcrGenerated($file_to_process) != TRUE) {
+      if (!$this->fileHasOcrGenerated($file_to_process) || ( $this->fileHasOcrGenerated($file_to_process) && !$options['skip-existing']) ) {
         $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
       }
     }
