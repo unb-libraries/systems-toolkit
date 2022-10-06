@@ -361,9 +361,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The summary.
    */
   private function getNbhpNotificationString(string $path) : string {
-    $total_seconds = microtime(TRUE) - $this->commandStartTime;
+    $total_seconds = (int) floor(microtime(TRUE) - $this->commandStartTime);
     $total_time_string = gmdate("H:i:s", $total_seconds);
-    $seconds_each = $total_seconds / $this->issuesProcessed;
+    $seconds_each = (int) floor($total_seconds / $this->issuesProcessed);
     $each_string = gmdate("H:i:s", $seconds_each);
     return <<<EOT
 [$path] Import Finished!
