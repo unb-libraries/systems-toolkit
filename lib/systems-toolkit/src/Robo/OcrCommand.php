@@ -8,7 +8,7 @@ use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use UnbLibraries\SystemsToolkit\DockerCommandTrait;
+use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -18,7 +18,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
  */
 class OcrCommand extends SystemsToolkitCommand {
 
-  use DockerCommandTrait;
+  use DockerCleanupTrait;
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
@@ -171,6 +171,8 @@ class OcrCommand extends SystemsToolkitCommand {
    *   If non-empty HOCR exists for the file, do not process again.
    * @option $threads
    *   The number of threads the OCR should use.
+   * @option $no-cleanup
+   *   Do not clean up unused docker assets after running.
    *
    * @throws \Exception
    *
@@ -188,6 +190,7 @@ class OcrCommand extends SystemsToolkitCommand {
       'skip-confirm' => FALSE,
       'skip-existing' => FALSE,
       'threads' => NULL,
+      'no-cleanup' => FALSE,
     ]
   ) : void {
     $regex = "/^.+\.{$options['extension']}$/i";
@@ -212,6 +215,9 @@ class OcrCommand extends SystemsToolkitCommand {
     $this->setRunProcessQueue('OCR');
     if (!$options['no-unset-files']) {
       $this->recursiveFiles = [];
+    }
+    if (!$options['no-cleanup']) {
+      $this->applicationCleanup();
     }
   }
 

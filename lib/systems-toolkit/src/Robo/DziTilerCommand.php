@@ -5,7 +5,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use UnbLibraries\SystemsToolkit\DockerCommandTrait;
+use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -15,7 +15,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
  */
 class DziTilerCommand extends SystemsToolkitCommand {
 
-  use DockerCommandTrait;
+  use DockerCleanupTrait;
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
@@ -64,6 +64,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The uid to assign the target files.
    * @option $target-gid
    *   The gid to assign the target files.
+   * @option $no-cleanup
+   *   Do not clean up unused docker assets after running needed containers.
    *
    * @throws \Exception
    *
@@ -82,6 +84,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'target-uid' => '100',
       'threads' => NULL,
       'tile-size' => '256',
+      'no-cleanup' => FALSE,
     ]
   ) : void {
     $regex_root = preg_quote($root, '/');
@@ -122,6 +125,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
       $this->setThreads($options['threads']);
     }
     $this->setRunProcessQueue('Generate DZI files');
+    if (!$options['no-cleanup']) {
+      $this->applicationCleanup();
+    }
   }
 
   /**
@@ -134,12 +140,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option $threads
-   *   The number of threads the process should use.
-   * @option $skip-existing
-   *   Skip any issues with tiles that have been previously generated.
+   * @option $no-cleanup
+   *   Do not clean up unused docker assets after running.
    * @option $no-pull
    *   Do not pull docker images prior to running.
+   * @option $skip-existing
+   *   Skip any issues with tiles that have been previously generated.
+   * @option $threads
+   *   The number of threads the process should use.
    *
    * @command newspapers.lib.unb.ca:issue:generate-dzi
    *
@@ -149,6 +157,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
     string $root,
     string $issue_id,
     array $options = [
+      'no-cleanup' => FALSE,
       'no-pull' => FALSE,
       'skip-existing' => FALSE,
       'threads' => 1,
@@ -170,6 +179,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
       $root . '/files/serials/pages',
       $cmd_options
     );
+    if (!$options['no-cleanup']) {
+      $this->applicationCleanup();
+    }
   }
 
   /**

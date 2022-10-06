@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
 use UnbLibraries\SystemsToolkit\RecursiveDirectoryTreeTrait;
@@ -14,6 +15,7 @@ use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
 class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
   use DrupalInstanceRestTrait;
+  use DockerCleanupTrait;
   use NbhpSnsMessageTrait;
   use RecursiveDirectoryTreeTrait;
 
@@ -278,6 +280,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->setRunOtherCommand('ocr:pull-image');
     $this->setRunOtherCommand('dzi:pull-image');
     $options['no-pull'] = TRUE;
+    $options['no-cleanup'] = TRUE;
 
     // Queue up every file in the tree and run Tesseract now.
     $this->ocrTesseractTree(
@@ -292,6 +295,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
         'skip-confirm' => TRUE,
         'skip-existing' => !$options['force-ocr'],
         'threads' => $options['threads'],
+        'no-cleanup' => $options['no-cleanup'],
       ]
     );
 
@@ -342,6 +346,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     }
 
     // Tidy-up.
+    $this->applicationCleanup();
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
     $output_summary = $this->getNbhpNotificationString($file_path);
@@ -408,6 +413,8 @@ EOT;
    *   The number of threads the OCR process should use.
    * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
+   * @option $no-cleanup
+   *   Do not clean up unused docker assets after running needed containers.
    *
    * @throws \Exception
    *
@@ -427,6 +434,7 @@ EOT;
       'no-verify' => FALSE,
       'threads' => NULL,
       'webtree-path' => NULL,
+      'no-cleanup' => FALSE,
     ]
   ) : void {
     $this->drupalRestUri = $options['instance-uri'];
@@ -526,6 +534,7 @@ EOT;
             'skip-confirm' => TRUE,
             'skip-existing' => !$options['force-ocr'],
             'threads' => $options['threads'],
+            'no-cleanup' => $options['no-cleanup'],
           ]
         );
       }
@@ -560,7 +569,13 @@ EOT;
       }
 
       if (!empty($options['webtree-path'])) {
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']} --no-pull");
+        if ($options['no-cleanup']) {
+          $no_cleanup_string='--no-cleanup';
+        }
+        else {
+          $no_cleanup_string = '';
+        }
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']} --no-pull $no_cleanup_string");
       }
 
       $this->recursiveFiles = [];

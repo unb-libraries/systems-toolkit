@@ -5,14 +5,12 @@ namespace UnbLibraries\SystemsToolkit;
 /**
  * Trait for interacting with Docker.
  */
-trait DockerCommandTrait {
+trait DockerCleanupTrait {
 
   /**
    * Cleans up any docker assets not being used.
    *
    * @command docker:cleanup
-   *
-   * @hook post-init
    */
   public function applicationCleanup() : void {
     $this->say("Cleaning up dangling containers and volumes:");
