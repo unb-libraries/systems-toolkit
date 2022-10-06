@@ -243,6 +243,8 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   Do not verify if the pages were successfully uploaded.
    * @option $threads
    *   The number of threads the OCR process should use.
+   * @option $dzi-threads
+   *   The number of threads the OCR process should use.
    * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    * @option $yes
@@ -264,6 +266,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'issue-page-extension' => 'jpg',
       'no-verify' => FALSE,
       'threads' => NULL,
+      'dzi-threads' => NULL,
       'webtree-path' => NULL,
       'yes' => FALSE,
     ]
@@ -411,6 +414,8 @@ EOT;
    *   Do not verify if the pages were successfully uploaded.
    * @option $threads
    *   The number of threads the OCR process should use.
+   * @option $dzi-threads
+   *   The number of threads the OCR process should use.
    * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    * @option $no-cleanup
@@ -433,6 +438,7 @@ EOT;
       'no-pull' => FALSE,
       'no-verify' => FALSE,
       'threads' => NULL,
+      'dzi-threads' => NULL,
       'webtree-path' => NULL,
       'no-cleanup' => FALSE,
     ]
@@ -575,7 +581,7 @@ EOT;
         else {
           $no_cleanup_string = '';
         }
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['threads']} --no-pull $no_cleanup_string");
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string");
       }
 
       $this->recursiveFiles = [];
