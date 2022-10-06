@@ -28,7 +28,7 @@ syskit:
     userName: XXXXXXXXXXXXX
     userEmail: XXXXXXXXXXXXX
   imaging:
-    tesseractImage: unblibraries/tesseract:latest
+    tesseractImage: ghcr.io/unb-libraries/tesseract:5.x-singlethread
     imagemagickImage: unblibraries/imagemagick:latest
   jira:
     hostName: https://jira.lib.unb.ca
