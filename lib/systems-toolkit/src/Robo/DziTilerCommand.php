@@ -174,6 +174,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'target-uid' => '100',
       'threads' => $options['threads'],
       'tile-size' => '256',
+      'no-cleanup' => TRUE,
     ];
     $this->dziFilesTree(
       $root . '/files/serials/pages',
