@@ -216,7 +216,7 @@ class OcrCommand extends SystemsToolkitCommand {
     if (!$options['no-unset-files']) {
       $this->recursiveFiles = [];
     }
-    if (!$options['no-cleanup']) {
+    if (!isset($options['no-cleanup']) || !$options['no-cleanup']) {
       $this->applicationCleanup();
     }
   }
