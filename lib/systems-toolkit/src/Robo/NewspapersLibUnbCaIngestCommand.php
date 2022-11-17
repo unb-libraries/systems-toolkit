@@ -559,7 +559,7 @@ EOT;
           $filename_components = explode('_', $path_info['filename']);
 
           if (empty($filename_components[5])) {
-            throw new \Exception("ERROR! The page image filename [{$path_info['filename']}] is not formatted as expected. Sample expected format: [003_ARG_1879_01_39_03.]");
+            die("ERROR! The page image filename [{$path_info['filename']}] is not formatted as expected. Sample expected format: [003_ARG_1879_01_39_03.]");
           }
 
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
