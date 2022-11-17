@@ -557,6 +557,11 @@ EOT;
         if (!file_exists($page_image . '.nbnp_skip')) {
           $path_info = pathinfo($page_image);
           $filename_components = explode('_', $path_info['filename']);
+
+          if (empty($filename_components[5])) {
+            throw new \Exception("ERROR! The page image filename [{$path_info['filename']}] is not formatted as expected. Sample expected format: [003_ARG_1879_01_39_03.]");
+          }
+
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
 
           $this->createSerialPageFromFile(
