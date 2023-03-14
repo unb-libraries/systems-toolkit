@@ -75,8 +75,24 @@ class DrupalUpdatesCommand extends SystemsToolkitCommand {
     $this->setCurKubePodsFromSelector($pod_selector, $options['namespaces']);
     foreach ($this->kubeCurPods as $pod) {
       foreach ($options['namespaces'] as $namespace) {
-        // Replace with gh-actions.
+        $repo_name = $pod->metadata->labels->vcsRepository;
+        $workflows = $this->client->api('repo')->workflows()->all('unb-libraries', $repo_name);
+        $workflow_id = '';
+        foreach ($workflows['workflows'] as $workflow) {
+          if ($workflow['name'] == $repo_name ) {
+            $workflow_id = $workflow['id'];
+            break;
+          }
+        }
+        if (!empty($workflow_id)) {
+          $this->say("Dispatching workflow for $repo_name in $namespace...");
+          $this->client->api('repo')->workflows()->dispatches('unb-libraries', $repo_name, $workflow_id, $namespace);
+        }
+        $this->say('Sleeping for 2 minutes to allow the namespace deployment to complete.');
+        sleep(120);
       }
+      $this->say('Sleeping for 4 minutes to allow the repo to complete.');
+      sleep(240);
     }
   }
 
