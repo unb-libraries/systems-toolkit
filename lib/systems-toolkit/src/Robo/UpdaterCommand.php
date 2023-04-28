@@ -22,7 +22,7 @@ class UpdaterCommand extends SystemsToolkitCommand {
     foreach ($servers as $server => $apps) {
       foreach ($apps as $app) {
         $this->taskSshExec($server)
-          ->exec("cd $app; composer update --prefer-dist")
+          ->exec("cd $app; php7.4 /usr/local/bin/composer update --prefer-dist")
           ->run();
       }
     }
