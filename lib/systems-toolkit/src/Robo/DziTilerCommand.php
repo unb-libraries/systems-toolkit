@@ -52,18 +52,22 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The extensions to match when finding files.
    * @option $no-pull
    *   Do not pull docker images prior to running.
-   * @option $tile-size
-   *   The tile size to use.
+   * @option $prefix
+   *   The prefix to match when finding files.
+   * @option $skip-confirm
+   *   Should the confirmation process be skipped?
+   * @option $skip-existing
+   *   Should images with existing tiles be skipped?
    * @option $step
    *   The zoom step to use.
-   * @option $threads
-   *   The number of threads the process should use.
-   * @option $args
-   *   Any other arguments to pass.
-   * @option $target-uid
-   *   The uid to assign the target files.
    * @option $target-gid
    *   The gid to assign the target files.
+   * @option $target-uid
+   *   The uid to assign the target files.
+   * @option $threads
+   *   The number of threads the process should use.
+   * @option $tile-size
+   *   The tile size to use.
    * @option $no-cleanup
    *   Do not clean up unused docker assets after running needed containers.
    *
