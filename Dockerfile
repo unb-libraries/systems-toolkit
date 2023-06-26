@@ -7,8 +7,7 @@ RUN apk --no-cache \
   add \
   php81-dom
 
-RUN composer install --no-dev --no-interaction --no-progress --no-suggest --optimize-autoloader
-
+RUN composer install --no-interaction --no-progress --no-suggest
 ENTRYPOINT ["/app/vendor/bin/syskit"]
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
