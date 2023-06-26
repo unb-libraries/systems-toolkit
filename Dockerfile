@@ -9,7 +9,7 @@ RUN apk --no-cache \
 
 RUN composer install --no-dev --no-interaction --no-progress --no-suggest --optimize-autoloader
 
-CMD ["/app/vendor/bin/syskit"]
+ENTRYPOINT ["/app/vendor/bin/syskit"]
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
   org.label-schema.description="systems-toolkit is the systems-toolkit image at UNB Libraries." \
