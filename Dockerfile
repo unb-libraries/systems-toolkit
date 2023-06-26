@@ -1,6 +1,7 @@
 FROM ghcr.io/unb-libraries/php-cli:8.x
 
 COPY ./composer.json /app/composer.json
+COPY ./syskit_config.yml.sample /app/syskit_config.yml
 COPY ./lib /app/lib
 
 RUN apk --no-cache \
