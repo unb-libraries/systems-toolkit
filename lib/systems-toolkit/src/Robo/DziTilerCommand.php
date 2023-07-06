@@ -135,6 +135,85 @@ class DziTilerCommand extends SystemsToolkitCommand {
   }
 
   /**
+   * Generates DZI tiles for a list of files.
+   *
+   * @param string $filepath
+   *   The file containing the file list.
+   * @param string[] $options
+   *   The array of available CLI options.
+   *
+   * @option $no-pull
+   *   Do not pull docker images prior to running.
+   * @option $skip-confirm
+   *   Should the confirmation process be skipped?
+   * @option $skip-existing
+   *   Should images with existing tiles be skipped?
+   * @option $step
+   *   The zoom step to use.
+   * @option $target-gid
+   *   The gid to assign the target files.
+   * @option $target-uid
+   *   The uid to assign the target files.
+   * @option $threads
+   *   The number of threads the process should use.
+   * @option $tile-size
+   *   The tile size to use.
+   * @option $no-cleanup
+   *   Do not clean up unused docker assets after running needed containers.
+   *
+   * @throws \Exception
+   *
+   * @command dzi:generate-tiles:from-list
+   */
+  public function dziFilesFromList(
+    string $filepath,
+    array $options = [
+      'no-pull' => FALSE,
+      'skip-confirm' => FALSE,
+      'skip-existing' => FALSE,
+      'step' => '200',
+      'target-gid' => '102',
+      'target-uid' => '100',
+      'threads' => NULL,
+      'tile-size' => '256',
+      'no-cleanup' => FALSE,
+    ]
+  ) : void {
+    if (!$options['no-pull']) {
+      $this->setPullTilerImage();
+    }
+    $options['no-pull'] = TRUE;
+
+    $files_to_process = explode(
+      "\n",
+      file_get_contents($filepath)
+    );
+
+    // Remove temporary files from previous runs.
+    shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
+
+    foreach ($files_to_process as $file_to_process) {
+      $dzi_file_path_info = pathinfo($file_to_process);
+      if ($options['skip-existing'] &&
+        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
+        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+      ) {
+        $this->say("Skipping file with existing tiles [$file_to_process]");
+      }
+      else {
+        $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+      }
+    }
+    if (!empty($options['threads'])) {
+      $this->setThreads($options['threads']);
+    }
+    $this->setRunProcessQueue('Generate DZI files');
+    if (!$options['no-cleanup']) {
+      $this->applicationCleanup();
+    }
+  }
+
+  /**
    * Generates DZI tiles for a specific NBNP issue.
    *
    * @param string $root
