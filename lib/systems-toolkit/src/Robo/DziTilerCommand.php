@@ -193,17 +193,21 @@ class DziTilerCommand extends SystemsToolkitCommand {
     shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
 
     foreach ($files_to_process as $file_to_process) {
-      $dzi_file_path_info = pathinfo($file_to_process);
-      if ($options['skip-existing'] &&
-        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
-        file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
-      ) {
-        $this->say("Skipping file with existing tiles [$file_to_process]");
-      }
-      else {
-        $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+      $file_to_process = trim($file_to_process);
+      if (!empty($file_to_process)) {
+        $dzi_file_path_info = pathinfo($file_to_process);
+        if ($options['skip-existing'] &&
+          file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
+          file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
+        ) {
+          $this->say("Skipping file with existing tiles [$file_to_process]");
+        }
+        else {
+          $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+        }
       }
     }
+
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
