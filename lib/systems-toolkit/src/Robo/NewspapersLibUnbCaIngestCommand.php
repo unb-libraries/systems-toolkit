@@ -475,7 +475,7 @@ EOT;
           ],
           'issue_title' => [
             [
-              'value' => $issue_config->title,
+              'value' => $this->getIssueTitle($issue_config),
             ],
           ],
           'issue_vol' => [
@@ -596,6 +596,28 @@ EOT;
     else {
       $this->say("The path $path does not contain a metadata.php file.");
     }
+  }
+
+  /**
+   * Determine the title to assign to the issue.
+   *
+   * @param string[] $issue_ingested_pages
+   *   An array of currently ingested pages.
+   *
+   * @return string
+   *   The issue title.
+   */
+  protected function getIssueTitle(
+    mixed $issue_config
+  ) : string {
+    if (empty($issue_config->supplement_title)) {
+      return $issue_config->title;
+    }
+    return sprintf(
+      '%s: %s',
+      $issue_config->title,
+      $issue_config->supplement_title
+    );
   }
 
   /**

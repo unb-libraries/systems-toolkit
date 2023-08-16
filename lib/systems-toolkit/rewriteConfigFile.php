@@ -24,6 +24,7 @@ if (file_exists($argv[1])) {
     'errata' => ISSUE_ERRATA,
     'language' => ISSUE_LANGUAGE,
     'media' => SOURCE_MEDIA,
+    'supplement_title' => ISSUE_SUPPLEMENT_TITLE,
   ];
 
   file_put_contents($argv[1] . ".json", json_encode($config));
