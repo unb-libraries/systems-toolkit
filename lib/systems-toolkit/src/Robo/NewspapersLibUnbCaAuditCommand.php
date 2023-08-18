@@ -511,7 +511,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   ) : string {
     $path_info = pathinfo($filename);
     $filename_components = explode('_', $path_info['filename']);
-    return ltrim($filename_components[5], '0');
+    if (trim(strtolower($filename_components[5])) == 'sup' && !empty($filename_components[6])) {
+      $raw_page_no = $filename_components[6];
+    }
+    else {
+      $raw_page_no = $filename_components[5];
+    }
+    return ltrim($raw_page_no, '0');
   }
 
   /**
