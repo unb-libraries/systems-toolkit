@@ -16,6 +16,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
   use KubeExecTrait;
 
   public const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
+  public const NEWSPAPERS_FULL_SLUG = 'newspapers-lib-unb-ca';
   public const NEWSPAPERS_NAMESPACE = 'prod';
   public const TIME_STRING_FORMAT = DateTimeInterface::ISO8601;
 
@@ -29,7 +30,7 @@ class NewspapersLibUnbCaStatsCommand extends BasicKubeCommand {
    * @nbhp
    */
   public function getNewspapersStats() : void {
-    $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
+    $this->setCurKubePodsFromSelector(['app.kubernetes.io/instance=' . self::NEWSPAPERS_FULL_SLUG], [self::NEWSPAPERS_NAMESPACE]);
 
     foreach ($this->kubeCurPods as $pod) {
       $this->say(sprintf('Querying statistics from %s', $pod->metadata->name));

@@ -29,7 +29,8 @@ class BasicKubeCommand extends SystemsToolkitCommand {
     string $uri,
     string $namespace
   ) : void {
-    $this->setCurKubePodsFromSelector(["uri=$uri"], [$namespace]);
+    $slug = str_replace('.', '-', $uri);
+    $this->setCurKubePodsFromSelector(["app.kubernetes.io/instance=$slug"], [$namespace]);
 
     foreach ($this->kubeCurPods as $pod) {
       $this->say(sprintf('Listing Logs from %s:', $pod->metadata->name));
