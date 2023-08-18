@@ -613,11 +613,7 @@ EOT;
     if (empty($issue_config->supplement_title)) {
       return $issue_config->title;
     }
-    return sprintf(
-      '%s: %s',
-      $issue_config->title,
-      $issue_config->supplement_title
-    );
+    return $issue_config->supplement_title;
   }
 
   /**
