@@ -14,6 +14,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
   use KubeExecTrait;
 
   public const NEWSPAPERS_FULL_URI = 'newspapers.lib.unb.ca';
+  public const NEWSPAPERS_FULL_SLUG = 'newspapers-lib-unb-ca';
   public const NEWSPAPERS_NAMESPACE = 'prod';
 
   /**
@@ -179,7 +180,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     string $issue_id
   ) : void {
     if (empty($this->kubeCurPods)) {
-      $this->setCurKubePodsFromSelector(['uri=' . self::NEWSPAPERS_FULL_URI], [self::NEWSPAPERS_NAMESPACE]);
+      $this->setCurKubePodsFromSelector(['app.kubernetes.io/instance=' . self::NEWSPAPERS_FULL_SLUG], [self::NEWSPAPERS_NAMESPACE]);
     }
 
     foreach ($this->kubeCurPods as $pod) {
