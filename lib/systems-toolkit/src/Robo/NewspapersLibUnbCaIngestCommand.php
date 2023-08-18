@@ -564,10 +564,10 @@ EOT;
 
           // Some supplements have a different filename structure.
           if (trim(strtolower($filename_components[5])) == 'sup' && !empty($filename_components[6])) {
-            $raw_page_no = $filename_components[6];
+            $raw_page_no = trim($filename_components[6]);
           }
           else {
-            $raw_page_no = $filename_components[5];
+            $raw_page_no = trim($filename_components[5]);
           }
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $raw_page_no);
 
@@ -575,7 +575,7 @@ EOT;
             $issue_id,
             $page_no,
             str_pad(
-              $filename_components[5],
+              $raw_page_no,
               4,
               '0',
               STR_PAD_LEFT
