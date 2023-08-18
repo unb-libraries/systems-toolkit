@@ -562,7 +562,14 @@ EOT;
             die("ERROR! The page image filename [{$path_info['filename']}] is not formatted as expected. Sample expected format: [003_ARG_1879_01_39_03.]");
           }
 
-          $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $filename_components[5]);
+          // Some supplements have a different filename structure.
+          if (strtolower($filename_components[5]) == 'sup' && !empty($filename_components[6])) {
+            $raw_page_no = $filename_components[6];
+          }
+          else {
+            $raw_page_no = $filename_components[5];
+          }
+          $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $raw_page_no);
 
           $this->createSerialPageFromFile(
             $issue_id,
