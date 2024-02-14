@@ -119,9 +119,10 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         }
 
         foreach ($this->recursiveFiles as $file_to_process) {
+            # Files are named *.jpg.pdf
             $pdf_path_data = pathinfo($file_to_process);
             $embedded_path = str_replace($tmp_dir, '', $pdf_path_data['dirname']);
-            $full_path = "$root/$embedded_path/pdf";
+            $full_path = str_replace("//", "/", "$root/$embedded_path/pdf");
             $final_file_name = str_replace('.jpg', '.pdf', $pdf_path_data['filename']);
             if (!file_exists($full_path)) {
                 mkdir($full_path, 0755, TRUE);
