@@ -301,8 +301,8 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
             ->exec("cp $hocr_filepath $tmp_dir")
             ->exec("docker run -i --rm -v $tmp_dir:/usr/src/app {$this->imagemagickImage} bash -c \"hocr2pdf -i /usr/src/app/{$pdf_file_path_info['filename']}.jpg -o /usr/src/app/{$pdf_file_path_info['filename']}.pdf < /usr/src/app/{$pdf_file_path_info['filename']}.hocr\"")
             ->exec("sudo cp $tmp_dir/{$pdf_file_path_info['filename']}.pdf {$pdf_file_path_info['dirname']}/pdf/")
-            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf");
-            // ->exec("sudo rm -rf $tmp_dir");
+            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf")
+            ->exec("sudo rm -rf $tmp_dir");
     }
 
     /**
