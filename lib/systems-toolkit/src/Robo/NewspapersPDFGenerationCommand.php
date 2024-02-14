@@ -91,9 +91,10 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             if (!file_exists("$tmp_dir/$embedded_path")) {
                 mkdir("$tmp_dir/$embedded_path", 0777, TRUE);
             }
-
             copy($file_to_process, "$tmp_dir/$embedded_path/{$image_path_data['filename']}.{$image_path_data['extension']}");
         }
+        $this->recursiveFiles = [];
+
         $this->ocrTesseractTree(
             $tmp_dir,
             [
@@ -112,7 +113,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
 
         $this->recursiveFiles = [];
         $pdf_finder = Finder::create()
-            ->in($root)
+            ->in($tmp_dir)
             ->name(['*.pdf']);
         foreach ($pdf_finder as $file) {
             $this->recursiveFiles[] = $file->getRealPath();
