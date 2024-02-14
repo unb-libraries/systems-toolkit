@@ -107,7 +107,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       $options = [
         'oem' => 1,
         'lang' => 'eng',
-        'args' => 'hocr',
+        'output_type' => 'hocr',
       ]
     );
 
@@ -289,7 +289,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->ocrTesseractTree(
       $file_path,
       [
-        'args' => 'hocr',
+        'output_type' => 'hocr',
         'extension' => $options['issue-page-extension'],
         'lang' => 'eng',
         'no-pull' => $options['no-pull'],
@@ -531,7 +531,7 @@ EOT;
         $this->ocrTesseractTree(
           $path,
           [
-            'args' => 'hocr',
+            'output_type' => 'hocr',
             'extension' => $options['issue-page-extension'],
             'lang' => 'eng',
             'no-pull' => $options['no-pull'],
@@ -688,7 +688,7 @@ EOT;
       $ocr_options = [
         'oem' => 1,
         'lang' => 'eng',
-        'args' => 'hocr',
+        'output_type' => 'hocr',
       ];
 
       $this->ocrTesseractFile(

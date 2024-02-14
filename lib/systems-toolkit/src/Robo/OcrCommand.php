@@ -58,8 +58,8 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option $args
-   *   Any other arguments to pass.
+   * @option $output_type
+   *   The type of OCR to output. Defaults to HOCR.
    * @option $extension
    *   The extensions to match when finding files.
    * @option $lang
@@ -76,14 +76,14 @@ class OcrCommand extends SystemsToolkitCommand {
   public function ocrTesseractMetrics(
     string $root,
     array $options = [
-      'args' => NULL,
+      'output_type' => 'hocr',
       'extension' => 'tif',
       'lang' => 'eng',
       'oem' => 1,
       'threads' => NULL,
     ]
   ) : void {
-    $options['args'] = 'tsv';
+    $options['output_type'] = 'tsv';
     $options['skip-existing'] = FALSE;
     $options['skip-confirm'] = TRUE;
     $options['no-unset-files'] = TRUE;
@@ -153,8 +153,8 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option $args
-   *   Any other arguments to pass.
+   * @option $output_type
+   *  The type of OCR to output. Defaults to HOCR.
    * @option $extension
    *   The extensions to match when finding files.
    * @option $lang
@@ -181,7 +181,7 @@ class OcrCommand extends SystemsToolkitCommand {
   public function ocrTesseractTree(
     string $root,
     array $options = [
-      'args' => NULL,
+      'output_type' => 'hocr',
       'extension' => 'tif',
       'lang' => 'eng',
       'no-pull' => FALSE,
@@ -205,7 +205,7 @@ class OcrCommand extends SystemsToolkitCommand {
     $options['no-pull'] = TRUE;
 
     foreach ($this->recursiveFiles as $file_to_process) {
-      if (!$this->fileHasOcrGenerated($file_to_process) || ( $this->fileHasOcrGenerated($file_to_process) && !$options['skip-existing']) ) {
+      if (!$this->fileHasOcrGenerated($file_to_process, $options['output_type']) || ( $this->fileHasOcrGenerated($file_to_process, $options['output_type']) && !$options['skip-existing']) ) {
         $this->setAddCommandToQueue($this->getOcrFileCommand($file_to_process, $options));
       }
     }
@@ -230,9 +230,9 @@ class OcrCommand extends SystemsToolkitCommand {
    * @return bool
    *   TRUE if OCR has been previously generated for the file.
    */
-  private function fileHasOcrGenerated(string $filepath) : bool {
-    $hocr_filename = "$filepath.hocr";
-    if (file_exists($hocr_filename) && filesize($hocr_filename)) {
+  private function fileHasOcrGenerated(string $filepath, $output_type = 'hocr') : bool {
+    $output_filename = "$filepath.$output_type";
+    if (file_exists($output_filename) && filesize($output_filename)) {
       return TRUE;
     }
     return FALSE;
@@ -246,8 +246,8 @@ class OcrCommand extends SystemsToolkitCommand {
    * @param string[] $options
    *   The array of available CLI options.
    *
-   * @option $args
-   *   Any other arguments to pass.
+   * @option $output_type
+   *  The type of OCR to output. Defaults to HOCR.
    * @option $lang
    *   The language to use.
    * @option $oem
@@ -259,7 +259,7 @@ class OcrCommand extends SystemsToolkitCommand {
   private function getOcrFileCommand(
     string $file,
     array $options = [
-      'args' => NULL,
+      'output_type' => 'hocr',
       'lang' => 'eng',
       'oem' => 1,
     ]
@@ -269,7 +269,7 @@ class OcrCommand extends SystemsToolkitCommand {
       ->volume($ocr_file_path_info['dirname'], '/data')
       ->containerWorkdir('/data')
       ->arg('--rm')
-      ->exec("--oem {$options['oem']} --dpi 300 -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['args']}");
+      ->exec("--oem {$options['oem']} --dpi 300 -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['output_type']}");
   }
 
   /**
@@ -284,8 +284,8 @@ class OcrCommand extends SystemsToolkitCommand {
    *   The engine to use.
    * @option $lang
    *   The language to use.
-   * @option $args
-   *   Any other arguments to pass.
+   * @option $output_type
+   *  The type of OCR to output. Defaults to HOCR.
    *
    * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
    *
@@ -296,7 +296,7 @@ class OcrCommand extends SystemsToolkitCommand {
     array $options = [
       'oem' => 1,
       'lang' => 'eng',
-      'args' => NULL,
+      'output_type' => 'hocr',
     ]
   ) : void {
     if (!file_exists($file)) {
