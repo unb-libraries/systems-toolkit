@@ -89,7 +89,6 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
 
         if (!$options['no-init']) {
             $this->setPullImagemagickImage();
-            $this->buildOcrTools();
         }
         $options['no-init'] = TRUE;
 
@@ -108,7 +107,7 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
         foreach ($this->recursiveFiles as $file_to_process) {
             $pdf_file_path_info = pathinfo($file_to_process);
             if ($options['skip-existing'] &&
-                file_exists("{$pdf_file_path_info['dirname']}/{$pdf_file_path_info['filename']}.pdf")
+                file_exists("{$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf")
             ) {
                 $this->say("Skipping file with existing PDFs [$file_to_process]");
             }
@@ -172,7 +171,6 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
     ) : void {
         if (!$options['no-init']) {
             $this->setPullImagemagickImage();
-            $this->buildOcrTools();
         }
         $options['no-init'] = TRUE;
 
@@ -186,7 +184,7 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
             if (!empty($file_to_process)) {
                 $pdf_file_path_info = pathinfo($file_to_process);
                 if ($options['skip-existing'] &&
-                    file_exists("{$pdf_file_path_info['dirname']}/{$pdf_file_path_info['filename']}.pdf")
+                    file_exists("{$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf")
                 ) {
                     $this->say("Skipping file with existing tiles [$file_to_process]");
                 }
@@ -301,10 +299,10 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
             ->exec("mkdir -p $tmp_dir")
             ->exec("cp $file $tmp_dir")
             ->exec("cp $hocr_filepath $tmp_dir")
-            ->exec("docker run -i --rm -v $tmp_dir:/usr/src/app hocr-tools-app hocr-pdf --savefile {$pdf_file_path_info['filename']}.pdf /usr/src/app")
-            ->exec("sudo cp $tmp_dir/{$pdf_file_path_info['filename']}.pdf {$pdf_file_path_info['dirname']}/")
-            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$pdf_file_path_info['dirname']}/{$pdf_file_path_info['filename']}.pdf")
-            ->exec("sudo rm -rf $tmp_dir");
+            ->exec("docker run -i --rm -v $tmp_dir:/usr/src/app {$this->imagemagickImage} bash -c \"hocr2pdf -i /usr/src/app/{$pdf_file_path_info['filename']}.jpg -o /usr/src/app/{$pdf_file_path_info['filename']}.pdf < /usr/src/app/{$pdf_file_path_info['filename']}.hocr\"")
+            ->exec("sudo cp $tmp_dir/{$pdf_file_path_info['filename']}.pdf {$pdf_file_path_info['dirname']}/pdf/")
+            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf");
+            // ->exec("sudo rm -rf $tmp_dir");
     }
 
     /**
@@ -342,11 +340,10 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
             throw new FileNotFoundException("File $file not Found!");
         }
         if (!$options['skip-existing'] ||
-            !file_exists("{$pdf_file_path_info['dirname']}/{$pdf_file_path_info['filename']}.pdf")
+            !file_exists("{$pdf_file_path_info['dirname']}/pdf/{$pdf_file_path_info['filename']}.pdf")
         ) {
             if (!$options['no-init']) {
                 $this->setPullImagemagickImage();
-                $this->buildOcrTools();
             }
 
             $command = $this->getPdfCreateCommand($file, $options);
@@ -363,19 +360,4 @@ class NewspapersPDFGenerationCommand extends SystemsToolkitCommand {
         shell_exec("docker pull {$this->imagemagickImage}");
     }
 
-    private function buildOcrTools() {
-        $command = $this->getOCRToolsCreateCommand();
-        $command->run();
-    }
-
-    private function getOCRToolsCreateCommand() : CommandInterface {
-        $tmp_dir = "$this->tmpDir/hocr-tools";
-
-        return $this->taskExecStack()
-            ->stopOnFail()
-            ->exec("sudo rm -rf $tmp_dir")
-            ->exec("mkdir -p $tmp_dir")
-            ->exec("git clone https://github.com/ocropus/hocr-tools.git $tmp_dir")
-            ->exec("cd $tmp_dir && docker build -t hocr-tools-app .");
-    }
 }
