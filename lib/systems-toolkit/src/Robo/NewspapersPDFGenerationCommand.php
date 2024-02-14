@@ -5,6 +5,7 @@ namespace UnbLibraries\SystemsToolkit\Robo;
 use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
+use Symfony\Component\Finder\Finder;
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
@@ -64,21 +65,26 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'no-cleanup' => FALSE,
         ]
     ) : void {
-        $regex_root = preg_quote($root, '/');
         $tmp_dir = $this->tmpDir . '/pdf';
-
         if (!empty($options['prefix'])) {
-            $glob_path = "$root/{$options['prefix']}*.{$options['extension']}";
-            $this->recursiveFiles = glob($glob_path);
+            $file_mask = $options['prefix'] . '*.' . $options['extension'];
         }
         else {
-            $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}\$/i";
-            $this->recursiveFileTreeRoot = $root;
-            $this->recursiveFileRegex = $regex;
-            $this->setFilesToIterate();
-            $this->getConfirmFiles('Generate PDF files', $options['skip-confirm']);
+            $file_mask = '*.' . $options['extension'];
         }
 
+        $image_finder = Finder::create()
+            ->in($root)
+            ->name([$file_mask]);
+
+        foreach ($image_finder as $file) {
+            $this->recursiveFiles[] = $file->getRealPath();
+        }
+        if (empty($this->recursiveFiles)) {
+            exit("No files found in $root matching $file_mask.\n");
+        }
+
+        $this->getConfirmFiles('Generate PDF files', $options['skip-confirm']);
         foreach ($this->recursiveFiles as $file_to_process) {
             $image_path_data = pathinfo($file_to_process);
             $embedded_path = str_replace($root, '', $image_path_data['dirname']);
@@ -104,11 +110,13 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             ]
         );
 
-        $regex_tmp = preg_quote($tmp_dir, '/');
-        $regex = "/^{$regex_tmp}\/[^\/]+\.pdf\$/i";
-        $this->recursiveFileTreeRoot = $tmp_dir;
-        $this->recursiveFileRegex = $regex;
-        $this->setFilesToIterate();
+        $this->recursiveFiles = [];
+        $pdf_finder = Finder::create()
+            ->in($root)
+            ->name(['*.pdf']);
+        foreach ($pdf_finder as $file) {
+            $this->recursiveFiles[] = $file->getRealPath();
+        }
 
         foreach ($this->recursiveFiles as $file_to_process) {
             $pdf_path_data = pathinfo($file_to_process);
