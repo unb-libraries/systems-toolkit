@@ -69,7 +69,7 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
    *
    * @throws \Exception
    */
-  private function getTitleYearIssues(
+  public static function getTitleYearIssues(
     string $title_id,
     string $year
   ) : array {
