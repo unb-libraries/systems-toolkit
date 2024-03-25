@@ -52,7 +52,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:tree
+     * @command pdf:generate:year
      */
     public function pdfFilesIssueYear(
         string $title_id,
@@ -73,7 +73,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleYearIssues($title_id, $year);
         foreach ($issue_ids as $issue_id) {
             $options['prefix'] = "$issue_id-";
-            $this->pdfFilesTree($year);
+            $this->pdfFilesTree($root, $options);
         }
     }
 
