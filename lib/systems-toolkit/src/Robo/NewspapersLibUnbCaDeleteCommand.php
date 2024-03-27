@@ -104,6 +104,39 @@ class NewspapersLibUnbCaDeleteCommand extends BasicKubeCommand {
     return($ids);
   }
 
+  public static function getTitleIssues(
+    string $title_id
+  ) : array {
+    $ids = [];
+
+    $ch = curl_init();
+    $timeout = 5;
+
+    $rest_uri = sprintf(
+      "%s/serials-title-search/%s",
+      "https://" . self::NEWSPAPERS_FULL_URI,
+      $title_id
+    );
+
+    curl_setopt($ch,CURLOPT_URL, $rest_uri);
+    curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, $timeout);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    $raw_response = json_decode(
+      $data,
+      NULL,
+      512,
+      JSON_THROW_ON_ERROR
+    );
+    if (!empty($raw_response->data)) {
+      foreach ($raw_response->data as $entity_id) {
+        $ids[] = $entity_id;
+      }
+    }
+    return($ids);
+  }
+
   /**
    * Deletes newspapers.lib.unb.ca imported markers from a tree.
    *

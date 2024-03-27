@@ -22,7 +22,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
     use RecursiveFileTreeTrait;
 
     /**
-     * Generates PDFs for an issue's year.
+     * Generates PDFs for an title's year.
      *
      * @param string $title_id
      *    The parent digital title ID.
@@ -52,9 +52,9 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:year
+     * @command pdf:generate:title:year
      */
-    public function pdfFilesIssueYear(
+    public function pdfFilesTitleYear(
         string $title_id,
         string $year,
         string $root,
@@ -71,6 +71,59 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
     )
     {
         $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleYearIssues($title_id, $year);
+        foreach ($issue_ids as $issue_id) {
+            $options['prefix'] = "$issue_id-";
+            $this->pdfFilesTree($root, $options);
+        }
+    }
+
+    /**
+     * Generates PDFs for an title.
+     *
+     * @param string $title_id
+     *    The parent digital title ID.
+     * @param string $root
+     *     The tree root to parse.
+     * @param string[] $options
+     *     The array of available CLI options.
+     *
+     * @option $extension
+     *     The extensions to match when finding files.
+     * @option $no-init
+     *     Do not build and pull docker images prior to running.
+     * @option $skip-confirm
+     *     Should the confirmation process be skipped?
+     * @option $skip-existing
+     *     Should images with existing tiles be skipped?
+     * @option $target-gid
+     *     The gid to assign the target files.
+     * @option $target-uid
+     *     The uid to assign the target files.
+     * @option $threads
+     *     The number of threads the process should use.
+     * @option $no-cleanup
+     *     Do not clean up unused docker assets after running needed containers.
+     *
+     * @throws \Exception
+     *
+     * @command pdf:generate:title
+     */
+     public function pdfFilesTitle(
+        string $title_id,
+        string $root,
+        array $options = [
+            'extension' => 'jpg',
+            'no-init' => FALSE,
+            'skip-confirm' => FALSE,
+            'skip-existing' => FALSE,
+            'target-gid' => '102',
+            'target-uid' => '100',
+            'threads' => NULL,
+            'no-cleanup' => FALSE,
+        ]
+    )
+    {
+        $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleIssues($title_id);
         foreach ($issue_ids as $issue_id) {
             $options['prefix'] = "$issue_id-";
             $this->pdfFilesTree($root, $options);
