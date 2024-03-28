@@ -183,13 +183,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             $file_mask = '*.' . $options['extension'];
         }
 
-        $image_finder = Finder::create()
-            ->in($root)
-            ->name([$file_mask]);
-
-        foreach ($image_finder as $file) {
-            $this->recursiveFiles[] = $file->getRealPath();
-        }
+        $this->recursiveFiles = glob("$root/$file_mask");
         if (empty($this->recursiveFiles)) {
             exit("No files found in $root matching $file_mask.\n");
         }
@@ -222,12 +216,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         );
 
         $this->recursiveFiles = [];
-        $pdf_finder = Finder::create()
-            ->in($tmp_dir)
-            ->name(['*.pdf']);
-        foreach ($pdf_finder as $file) {
-            $this->recursiveFiles[] = $file->getRealPath();
-        }
+        $this->recursiveFiles = glob("$tmp_dir/*.pdf");
 
         foreach ($this->recursiveFiles as $file_to_process) {
             # Files are named *.jpg.pdf
