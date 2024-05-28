@@ -594,6 +594,7 @@ EOT;
           $no_cleanup_string = '';
         }
         $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string");
+        // $this->setRunOtherCommand("pdf:generate:issue {$this->curIssueId} {$options['webtree-path']} --no-pull $no_cleanup_string");
       }
 
       $this->recursiveFiles = [];
