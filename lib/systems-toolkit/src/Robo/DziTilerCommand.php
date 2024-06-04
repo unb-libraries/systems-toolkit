@@ -98,23 +98,29 @@ class DziTilerCommand extends SystemsToolkitCommand {
     }
     $options['no-pull'] = TRUE;
 
-    if (!empty($options['prefix'])) {
-      $glob_path = "$root/{$options['prefix']}*.{$options['extension']}";
-      $this->recursiveFiles = glob($glob_path);
-    }
-    else {
-      $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}$/i";
-      $this->recursiveFileTreeRoot = $root;
-      $this->recursiveFileRegex = $regex;
-      $this->setFilesToIterate();
-      $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
-    }
+    $regex = "/^{$regex_root}\/[^\/]+\.{$options['extension']}$/i";
+    $this->recursiveFileTreeRoot = $root;
+    $this->recursiveFileRegex = $regex;
+    $this->setFilesToIterate();
+    $this->getConfirmFiles('Generate DZI files', $options['skip-confirm']);
 
+    // if (!empty($options['prefix'])) {
     // Remove temporary files from previous runs.
     shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
 
     foreach ($this->recursiveFiles as $file_to_process) {
       $dzi_file_path_info = pathinfo($file_to_process);
+
+      if (!empty($options['prefix'])) {
+        $need_process_file = strpos($dzi_file_path_info['filename'], $options['prefix']) === 0;
+      }
+      else {
+        $need_process_file = TRUE;
+      }
+      if (!$need_process_file) {
+        continue;
+      }
+
       if ($options['skip-existing'] &&
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
         file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
