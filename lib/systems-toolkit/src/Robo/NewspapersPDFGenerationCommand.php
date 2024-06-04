@@ -273,7 +273,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             $pdf_path_data = pathinfo($file_to_process);
             $pdf_dir = explode('-', $pdf_path_data['filename'])[0];
             $embedded_path = str_replace($tmp_dir, '', $pdf_path_data['dirname']);
-            $full_path = str_replace("//", "/", "$root/$embedded_path/pdf/$pdf_dir");
+            $full_path = str_replace("//", "/", "$root/$embedded_path");
             $final_file_name = str_replace('.jpg', '.pdf', $pdf_path_data['filename']);
             if (!file_exists($full_path)) {
                 mkdir($full_path, 0755, TRUE);
