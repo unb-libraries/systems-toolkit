@@ -129,14 +129,13 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         }
     }
 
-
     /**
      * Generates PDFs for an issue.
      *
-     * @param string $issue_id
-     *    The parent digital issue ID.
      * @param string $root
      *     The tree root to parse.
+     * @param string $issue_id
+     *    The parent digital issue ID.
      * @param string[] $options
      *     The array of available CLI options.
      *
@@ -162,8 +161,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      * @command pdf:generate:issue
      */
     public function pdfFilesIssue(
-        string $issue_id,
         string $root,
+        string $issue_id,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
@@ -176,8 +175,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         ]
     )
     {
-        $options['prefix'] = "$issue_id-";
-        $this->pdfFilesTree($root, $options);
+        $this->pdfFilesTree($root . "/$issue_id", $options);
     }
 
     /**

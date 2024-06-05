@@ -258,7 +258,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
     $cmd_options = [
       'extension' => 'jpg',
       'no-pull' => $options['no-pull'],
-      'prefix' => "{$issue_id}-",
+      'prefix' => NULL,
       'skip-confirm' => TRUE,
       'skip-existing' => $options['skip-existing'],
       'step' => '200',
@@ -269,7 +269,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'no-cleanup' => TRUE,
     ];
     $this->dziFilesTree(
-      $root . "/files/serials/pages",
+      $root . "/$issue_id",
       $cmd_options
     );
     if (!$options['no-cleanup']) {
