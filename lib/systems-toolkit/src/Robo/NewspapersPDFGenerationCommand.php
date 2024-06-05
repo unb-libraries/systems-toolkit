@@ -269,9 +269,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $this->recursiveFiles = glob("$tmp_dir/*.pdf");
 
         foreach ($this->recursiveFiles as $file_to_process) {
-            # Files are named *.jpg.pdf
             $pdf_path_data = pathinfo($file_to_process);
-            $pdf_dir = explode('-', $pdf_path_data['filename'])[0];
             $embedded_path = str_replace($tmp_dir, '', $pdf_path_data['dirname']);
             $full_path = str_replace("//", "/", "$root/$embedded_path");
             $final_file_name = str_replace('.jpg', '.pdf', $pdf_path_data['filename']);

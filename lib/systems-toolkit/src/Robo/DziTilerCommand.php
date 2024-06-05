@@ -269,7 +269,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'no-cleanup' => TRUE,
     ];
     $this->dziFilesTree(
-      $root . '/files/serials/pages',
+      $root . "/files/serials/pages",
       $cmd_options
     );
     if (!$options['no-cleanup']) {
