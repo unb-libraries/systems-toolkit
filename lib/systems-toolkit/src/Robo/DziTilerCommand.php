@@ -227,6 +227,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @param string $root
    *   The NBNP webtree root file location.
+   * @param string $title_id
+   *   The issue title ID to process.
    * @param string $issue_id
    *   The issue entity ID to process.
    * @param string[] $options
@@ -241,12 +243,13 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @option $threads
    *   The number of threads the process should use.
    *
-   * @command newspapers.lib.unb.ca:issue:generate-dzi
+   * @command newspapers.lib.unb.ca:issue:generate-dzi 97 19347
    *
    * @throws \Exception
    */
   public function nbnpDziIssue(
     string $root,
+    string $title_id,
     string $issue_id,
     array $options = [
       'no-cleanup' => FALSE,
@@ -269,7 +272,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'no-cleanup' => TRUE,
     ];
     $this->dziFilesTree(
-      $root . "/$issue_id",
+      $root . "/$title_id/$issue_id",
       $cmd_options
     );
     if (!$options['no-cleanup']) {

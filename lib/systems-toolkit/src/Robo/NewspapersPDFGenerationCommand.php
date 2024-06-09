@@ -52,7 +52,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:title:year
+     * @command pdf:generate:title:year 73 1900 /path/to/files
      */
     public function pdfFilesTitleYear(
         string $title_id,
@@ -106,7 +106,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:title
+     * @command pdf:generate:title 73 /path/to/files
      */
      public function pdfFilesTitle(
         string $title_id,
@@ -125,7 +125,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
     {
         $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleIssues($title_id);
         foreach ($issue_ids as $issue_id) {
-            $this->pdfFilesIssue($issue_id, $root, $options);
+            $this->pdfFilesIssue($root, $title_id, $issue_id, $options);
         }
     }
 
@@ -134,6 +134,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @param string $root
      *     The tree root to parse.
+     * @param string $title_id
+     *    The parent digital title ID.
      * @param string $issue_id
      *    The parent digital issue ID.
      * @param string[] $options
@@ -162,6 +164,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      */
     public function pdfFilesIssue(
         string $root,
+        string $title_id,
         string $issue_id,
         array $options = [
             'extension' => 'jpg',
@@ -175,7 +178,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         ]
     )
     {
-        $this->pdfFilesTree($root . "/$issue_id", $options);
+        $this->pdfFilesTree($root . "/$title_id/$issue_id", $options);
     }
 
     /**
