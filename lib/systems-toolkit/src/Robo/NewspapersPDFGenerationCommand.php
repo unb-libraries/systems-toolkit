@@ -277,8 +277,19 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             if (!file_exists($full_path)) {
                 mkdir($full_path, 0755, TRUE);
             }
-            copy($file_to_process, "$full_path/$final_file_name");
+            $dest_file = str_replace("//", "/", "$full_path/$final_file_name");
+
+            $this->taskExecStack()
+            ->stopOnFail()
+            ->exec("sudo mv $file_to_process $dest_file")
+            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} $dest_file")
+            ->run();
         }
+
+        $this->taskExecStack()
+        ->stopOnFail()
+        ->exec("rm -rf $tmp_dir")
+        ->run();
     }
 
 }
