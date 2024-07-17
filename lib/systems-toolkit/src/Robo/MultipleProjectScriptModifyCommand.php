@@ -23,6 +23,7 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
   public const MESSAGE_NO_CHANGES_TO_REPO = 'The script\'s execution did not result in any changes to the repository.';
   public const MESSAGE_NO_STAGED_CHANGES = 'No staged changes were found, skipping commit!';
   public const MESSAGE_PUSHING_CHANGES = 'Pushing repository changes to GitHub...';
+  public const MESSAGE_REPO_ARCHIVED = 'Repository %s is archived, skipping...';
   public const MESSAGE_SLEEPING = 'Sleeping for %s seconds to spread build times...';
   public const MESSAGE_STAGING_CHANGES = 'Staging changes in repository...';
   public const MESSAGE_STEP_DONE = 'Done!';
@@ -130,6 +131,15 @@ class MultipleProjectScriptModifyCommand extends SystemsToolkitCommand {
     if ($continue) {
       $last_repo_key = array_key_last($this->githubRepositories);
       foreach ($this->githubRepositories as $repository_index => $this->curRepoMetadata) {
+        if ($this->curRepoMetadata['archived'] == 1) {
+          $this->say(
+            sprintf(
+              self::MESSAGE_REPO_ARCHIVED,
+              $this->curRepoMetadata['name']
+            )
+          );
+          continue;
+        }
         $this->repoChangesPushed = FALSE;
         $this->io()->title($this->curRepoMetadata['name']);
         $this->cloneTempRepo();

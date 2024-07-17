@@ -43,7 +43,7 @@ class GitHubActionsRepoBuildReportCommand extends SystemsToolkitCommand {
     $this->io()->title('Retrieving Repositories');
     $continue = $this->setConfirmRepositoryList(
       $matches,
-      ['github-actions'],
+      ['dockworker'],
       [],
       [],
       'List Build Status',
