@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vendor/bin/syskit github:multiple-repo:script-modify '' 'drupal' 'Add profiles to docker-compose' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/addProfileToMailHog.sh --yes --skip-commit-prefix --multi-repo-delay=120
+# vendor/bin/syskit github:multiple-repo:script-modify '' 'drupal' 'Add profiles to docker-compose' ~/gitDev/systems-toolkit/lib/systems-toolkit/data/multiple-modify-scripts/addProfileToMailHog.sh --yes --skip-commit-prefix --multi-repo-delay=320
 FILE='./docker-compose.yml'
 
 if grep -q 'mailhog' "$FILE"; then
