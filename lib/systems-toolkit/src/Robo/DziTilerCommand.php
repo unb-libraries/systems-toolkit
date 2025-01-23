@@ -19,6 +19,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
+  const MISSING_DZI_URL = 'https://newspapers.lib.unb.ca/serials_pages/with_missing_dzi';
+
   /**
    * The docker image to use for Imagemagick commands.
    *
@@ -38,6 +40,94 @@ class DziTilerCommand extends SystemsToolkitCommand {
     if (empty($this->imagemagickImage)) {
       throw new \Exception(sprintf('The imagemagick docker image has not been set in the configuration file. (imagemagickImage)'));
     }
+  }
+
+  /**
+   * Generates any missing DZIs.
+   *
+   * @param string $root
+   *     The filesystem root.
+   * @param string $dzi_root
+   *     The root location for the DZI files.
+   * @param string[] $options
+   *     The array of available CLI options.
+   *
+   * @option $extension
+   *     The extensions to match when finding files.
+   * @option $no-init
+   *     Do not build and pull docker images prior to running.
+   * @option $skip-confirm
+   *     Should the confirmation process be skipped?
+   * @option $skip-existing
+   *     Should images with existing tiles be skipped?
+   * @option $target-gid
+   *     The gid to assign the target files.
+   * @option $target-uid
+   *     The uid to assign the target files.
+   * @option $threads
+   *     The number of threads the process should use.
+   * @option $no-cleanup
+   *     Do not clean up unused docker assets after running needed containers.
+   * @option $limit
+   *    The number of files to process.
+   *
+   * @throws \Exception
+   *
+   * @command newspapers.lib.unb.ca:generate-missing-dzi
+   */
+  public function dziFilesMissing(
+    string $root,
+    string $dzi_root,
+    array $options = [
+        'extension' => 'jpg',
+        'no-init' => FALSE,
+        'skip-confirm' => FALSE,
+        'skip-existing' => FALSE,
+        'target-gid' => '102',
+        'target-uid' => '100',
+        'threads' => NULL,
+        'no-cleanup' => FALSE,
+        'limit' => 50,
+    ]
+  )
+  {
+      if (!$options['no-pull']) {
+        $this->setPullTilerImage();
+      }
+      $options['no-pull'] = TRUE;
+
+      // Query the website for missing files using guzzle.
+      $client = new \GuzzleHttp\Client();
+      $limit = $options['limit'];
+      $response = $client->request('GET', self::MISSING_DZI_URL . "/$limit");
+      $missing_files = json_decode($response->getBody()->getContents(), TRUE);
+      shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
+
+      foreach ($missing_files as $missing_file) {
+          $this->setAddCommandToQueue(
+            $this->getDziTileCommand(
+              $root . '/' . $missing_file['rel_image_path'],
+              $dzi_root,
+              $missing_file['title_id'],
+              $missing_file['issue_id'],
+              $options
+            )
+          );
+      }
+
+      if (empty($missing_files)) {
+          exit("No missing files found.\n");
+      }
+
+      if (!empty($options['threads'])) {
+        $this->setThreads($options['threads']);
+      }
+
+      $this->setRunProcessQueue('Generate DZI files');
+
+      if (!$options['no-cleanup']) {
+        $this->applicationCleanup();
+      }
   }
 
   /**
