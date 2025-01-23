@@ -285,10 +285,14 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $this->recursiveFiles = glob("$tmp_dir/*.pdf");
 
         $target_file_dir = "$pdf_root/$title_id/$issue_id";
-        mkdir("$target_file_dir", 0755, TRUE);
+        if (!file_exists($target_file_dir)) {
+            mkdir("$target_file_dir", 0755, TRUE);
+        }
+
         foreach ($this->recursiveFiles as $file_to_process) {
             $pdf_path_data = pathinfo($file_to_process);
-            $target_file_path = "$target_file_dir/{$pdf_path_data['filename']}.pdf";
+            $target_filename = str_replace('.jpg', '.pdf', $pdf_path_data['filename']);
+            $target_file_path = "$target_file_dir/$target_filename";
             $this->taskExecStack()
             ->stopOnFail()
             ->exec("sudo mv $file_to_process $target_file_path")
