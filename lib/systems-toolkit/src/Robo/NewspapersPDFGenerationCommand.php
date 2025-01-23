@@ -77,7 +77,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $file_data = [];
         foreach ($missing_files as $missing_file) {
             $file_data[] = [
-                'file_path' => $root . '/' . $missing_file['file_path'],
+                'file_path' => $root . '/' . $missing_file['rel_image_path'],
                 'issue_id' => $missing_file['issue_id'],
                 'title_id' => $missing_file['title_id'],
             ];
@@ -429,8 +429,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             ]
         );
 
-
-        $pdf_files = glob("$tmp_dir/*.pdf");
+        $pdf_files = glob("$tmp_dir/*/*/*.pdf");
         foreach ($pdf_files as $pdf_file) {
             $pdf_path_data = pathinfo($pdf_file);
             $path_parts = explode('/', $pdf_path_data['dirname']);
