@@ -150,8 +150,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   Do not pull docker images prior to running.
    * @option $prefix
    *   The prefix to match when finding files.
-   * @option $skip-confirm
-   *   Should the confirmation process be skipped?
    * @option $skip-existing
    *   Should images with existing tiles be skipped?
    * @option $step
@@ -180,7 +178,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
       'extension' => '.tif',
       'no-pull' => FALSE,
       'prefix' => NULL,
-      'skip-confirm' => FALSE,
       'skip-existing' => FALSE,
       'step' => '200',
       'target-gid' => '102',
