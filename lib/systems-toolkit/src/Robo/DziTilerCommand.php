@@ -56,8 +56,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *     The extensions to match when finding files.
    * @option $no-init
    *     Do not build and pull docker images prior to running.
-   * @option $skip-confirm
-   *     Should the confirmation process be skipped?
    * @option $skip-existing
    *     Should images with existing tiles be skipped?
    * @option $target-gid
@@ -81,7 +79,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
     array $options = [
         'extension' => 'jpg',
         'no-init' => FALSE,
-        'skip-confirm' => FALSE,
         'skip-existing' => FALSE,
         'target-gid' => '102',
         'target-uid' => '100',

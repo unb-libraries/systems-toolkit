@@ -33,8 +33,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *     The extensions to match when finding files.
      * @option $no-init
      *     Do not build and pull docker images prior to running.
-     * @option $skip-confirm
-     *     Should the confirmation process be skipped?
      * @option $skip-existing
      *     Should images with existing tiles be skipped?
      * @option $target-gid
@@ -58,7 +56,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
-            'skip-confirm' => FALSE,
             'skip-existing' => FALSE,
             'target-gid' => '102',
             'target-uid' => '100',
@@ -85,6 +82,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         if (empty($file_data)) {
             exit("No missing files found.\n");
         }
+
+        $options['skip-confirm'] = TRUE;
         $this->pdfFilesList(
             $pdf_root,
             $file_data,
