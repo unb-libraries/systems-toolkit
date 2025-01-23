@@ -24,6 +24,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @param string $root
      *     The filesystem root.
+     * @param string $pdf_root
+     *     The root location for the PDF files.
      * @param string[] $options
      *     The array of available CLI options.
      *
@@ -52,6 +54,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      */
     public function pdfFilesMissing(
         string $root,
+        string $pdf_root,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
@@ -82,7 +85,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         if (empty($file_data)) {
             exit("No missing files found.\n");
         }
-        $this->pdfFilesList($file_data, $root, $options);
+        $this->pdfFilesList($file_data, $root, $pdf_root, $options);
     }
 
     /**
