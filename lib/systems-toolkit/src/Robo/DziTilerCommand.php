@@ -45,6 +45,12 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @param string $root
    *   The tree root to parse.
+   * @param string $dzi_root
+   *    The root location for the DZI files.
+   * @param string $title_id
+   *    The parent digital title ID.
+   * @param string $issue_id
+   *    The parent digital issue ID.
    * @param string[] $options
    *   The array of available CLI options.
    *
@@ -77,6 +83,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
    */
   public function dziFilesTree(
     string $root,
+    string $dzi_root,
+    string $title_id,
+    string $issue_id,
     array $options = [
       'extension' => '.tif',
       'no-pull' => FALSE,
@@ -127,92 +136,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
         $this->say("Skipping file with existing tiles [$file_to_process]");
       }
       else {
-        $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
+        $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $dzi_root, $title_id, $issue_id, $options));
       }
     }
-    if (!empty($options['threads'])) {
-      $this->setThreads($options['threads']);
-    }
-    $this->setRunProcessQueue('Generate DZI files');
-    if (!$options['no-cleanup']) {
-      $this->applicationCleanup();
-    }
-  }
-
-  /**
-   * Generates DZI tiles for a list of files.
-   *
-   * @param string $filepath
-   *   The file containing the file list.
-   * @param string[] $options
-   *   The array of available CLI options.
-   *
-   * @option $no-pull
-   *   Do not pull docker images prior to running.
-   * @option $skip-confirm
-   *   Should the confirmation process be skipped?
-   * @option $skip-existing
-   *   Should images with existing tiles be skipped?
-   * @option $step
-   *   The zoom step to use.
-   * @option $target-gid
-   *   The gid to assign the target files.
-   * @option $target-uid
-   *   The uid to assign the target files.
-   * @option $threads
-   *   The number of threads the process should use.
-   * @option $tile-size
-   *   The tile size to use.
-   * @option $no-cleanup
-   *   Do not clean up unused docker assets after running needed containers.
-   *
-   * @throws \Exception
-   *
-   * @command dzi:generate-tiles:from-list
-   */
-  public function dziFilesFromList(
-    string $filepath,
-    array $options = [
-      'no-pull' => FALSE,
-      'skip-confirm' => FALSE,
-      'skip-existing' => FALSE,
-      'step' => '200',
-      'target-gid' => '102',
-      'target-uid' => '100',
-      'threads' => NULL,
-      'tile-size' => '256',
-      'no-cleanup' => FALSE,
-    ]
-  ) : void {
-    if (!$options['no-pull']) {
-      $this->setPullTilerImage();
-    }
-    $options['no-pull'] = TRUE;
-
-    $files_to_process = explode(
-      "\n",
-      file_get_contents($filepath)
-    );
-
-    // Remove temporary files from previous runs.
-    shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
-
-    foreach ($files_to_process as $file_to_process) {
-      $file_to_process = trim($file_to_process);
-      if (!empty($file_to_process)) {
-        $dzi_file_path_info = pathinfo($file_to_process);
-        if ($options['skip-existing'] &&
-          file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") &&
-          file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
-        ) {
-          $this->say("Skipping file with existing tiles [$file_to_process]");
-        }
-        else {
-          $this->setAddCommandToQueue($this->getDziTileCommand($file_to_process, $options));
-        }
-      }
-    }
-
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
@@ -231,6 +157,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *   The issue title ID to process.
    * @param string $issue_id
    *   The issue entity ID to process.
+   * @param string $dzi_root
+   *   The root location for the DZI files.
    * @param string[] $options
    *   The array of available CLI options.
    *
@@ -249,6 +177,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
    */
   public function nbnpDziIssue(
     string $root,
+    string $dzi_root,
     string $title_id,
     string $issue_id,
     array $options = [
@@ -273,6 +202,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
     ];
     $this->dziFilesTree(
       $root . "/$title_id/$issue_id",
+      $dzi_root,
+      $title_id,
+      $issue_id,
       $cmd_options
     );
     if (!$options['no-cleanup']) {
@@ -285,6 +217,12 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *
    * @param string $file
    *   The file to parse.
+   * @param string $dzi_root
+   *    The root location for the DZI files.
+   * @param string $title_id
+   *    The parent digital title ID.
+   * @param string $issue_id
+   *    The parent digital issue ID.
    * @param string[] $options
    *   The array of available CLI options.
    *
@@ -302,6 +240,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
    */
   private function getDziTileCommand(
     string $file,
+    string $dzi_root,
+    string $title_id,
+    string $issue_id,
     array $options = [
       'step' => '200',
       'target-gid' => '102',
@@ -311,6 +252,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   ) : CommandInterface {
     $dzi_file_path_info = pathinfo($file);
     $tmp_dir = "$this->tmpDir/dzi/{$dzi_file_path_info['filename']}";
+    $target_dir = $dzi_root . "/$title_id/$issue_id";
 
     return $this->taskExecStack()
       ->stopOnFail()
@@ -318,61 +260,12 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("mkdir -p $tmp_dir")
       ->exec("cp $file $tmp_dir")
       ->exec("docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} /app/magick-slicer.sh -- -e jpg -i /data/{$dzi_file_path_info['basename']} -o /data/{$dzi_file_path_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}")
-      ->exec("sudo cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files {$dzi_file_path_info['dirname']}/")
-      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R {$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
-      ->exec("sudo cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi {$dzi_file_path_info['dirname']}/")
-      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} {$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi")
+      ->exec("mkdir -p $target_dir")
+      ->exec("sudo cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files $target_dir/")
+      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R $target_dir/{$dzi_file_path_info['filename']}_files")
+      ->exec("sudo cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi $target_dir/")
+      ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} $target_dir/{$dzi_file_path_info['filename']}.dzi")
       ->exec("sudo rm -rf $tmp_dir");
-  }
-
-  /**
-   * Generates the DZI tiles for a file.
-   *
-   * @param string $file
-   *   The file to parse.
-   * @param string[] $options
-   *   The array of available CLI options.
-   *
-   * @option $tile-size
-   *   The tile size to use.
-   * @option $step
-   *   The zoom step to use.
-   * @option $target-uid
-   *   The uid to assign the target files.
-   * @option $target-gid
-   *   The gid to assign the target files.
-   * @option $no-pull
-   *   Do not pull docker images prior to running.
-   *
-   * @throws \Symfony\Component\Filesystem\Exception\FileNotFoundException
-   *
-   * @command dzi:generate-tiles
-   */
-  public function generateDziFiles(
-    string $file,
-    array $options = [
-      'no-pull' => FALSE,
-      'skip-existing' => FALSE,
-      'step' => '200',
-      'target-gid' => '102',
-      'target-uid' => '100',
-      'tile-size' => '256',
-    ]
-  ) : void {
-    $dzi_file_path_info = pathinfo($file);
-    if (!file_exists($file)) {
-      throw new FileNotFoundException("File $file not Found!");
-    }
-    if (!$options['skip-existing'] ||
-      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}.dzi") ||
-      !file_exists("{$dzi_file_path_info['dirname']}/{$dzi_file_path_info['filename']}_files")
-    ) {
-      if (!$options['no-pull']) {
-        $this->setPullTilerImage();
-      }
-      $command = $this->getDziTileCommand($file, $options);
-      $command->run();
-    }
   }
 
   /**

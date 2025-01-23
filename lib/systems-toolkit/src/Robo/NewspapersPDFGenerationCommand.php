@@ -2,10 +2,6 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
-use Robo\Contract\CommandInterface;
-use Robo\Robo;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Symfony\Component\Finder\Finder;
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
@@ -30,6 +26,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *     The year to generate PDFs for.
      * @param string $root
      *     The tree root to parse.
+     * @param string $pdf_root
+     *     The root location for the PDF files.
      * @param string[] $options
      *     The array of available CLI options.
      *
@@ -52,12 +50,13 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:title:year 73 1900 /path/to/files
+     * @command newspapers.lib.unb.ca:title:generate-pdf:year 73 1900 /path/to/files
      */
     public function pdfFilesTitleYear(
         string $title_id,
         string $year,
         string $root,
+        string $pdf_root,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
@@ -73,7 +72,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleYearIssues($title_id, $year);
         foreach ($issue_ids as $issue_id) {
             $options['prefix'] = "$issue_id-";
-            $this->pdfFilesTree($root, $options);
+            $this->pdfFilesTree($root, $pdf_root, $title_id, $issue_id, $options);
         }
     }
 
@@ -84,6 +83,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *    The parent digital title ID.
      * @param string $root
      *     The tree root to parse.
+     * @param string $pdf_root
+     *     The root location for the PDF files.
      * @param string[] $options
      *     The array of available CLI options.
      *
@@ -106,11 +107,12 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:title 73 /path/to/files
+     * @command newspapers.lib.unb.ca:title:generate-pdf 73 /path/to/files
      */
      public function pdfFilesTitle(
         string $title_id,
         string $root,
+        string $pdf_root,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
@@ -125,7 +127,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
     {
         $issue_ids = NewspapersLibUnbCaDeleteCommand::getTitleIssues($title_id);
         foreach ($issue_ids as $issue_id) {
-            $this->pdfFilesIssue($root, $title_id, $issue_id, $options);
+            $this->pdfFilesIssue($root, $pdf_root, $title_id, $issue_id, $options);
         }
     }
 
@@ -134,6 +136,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @param string $root
      *     The tree root to parse.
+     * @param string $pdf_root
+     *     The root location for the PDF files.
      * @param string $title_id
      *    The parent digital title ID.
      * @param string $issue_id
@@ -160,10 +164,11 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:issue
+     * @command newspapers.lib.unb.ca:issue:generate-pdf
      */
     public function pdfFilesIssue(
         string $root,
+        string $pdf_root,
         string $title_id,
         string $issue_id,
         array $options = [
@@ -178,7 +183,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         ]
     )
     {
-        $this->pdfFilesTree($root . "/$title_id/$issue_id", $options);
+        $tree_path = "$root/$title_id/$issue_id";
+        $this->pdfFilesTree($tree_path, $pdf_root, $title_id, $issue_id, $options);
     }
 
     /**
@@ -186,6 +192,12 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @param string $root
      *     The tree root to parse.
+     * @param string $pdf_root
+     *     The root location for the PDF files.
+     * @param string $title_id
+     *    The parent digital title ID.
+     * @param string $issue_id
+     *    The parent digital issue ID.
      * @param string[] $options
      *     The array of available CLI options.
      *
@@ -214,6 +226,9 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      */
     public function pdfFilesTree(
         string $root,
+        string $pdf_root,
+        string $title_id,
+        string $issue_id,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
@@ -269,20 +284,15 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         $this->recursiveFiles = [];
         $this->recursiveFiles = glob("$tmp_dir/*.pdf");
 
+        $target_file_dir = "$pdf_root/$title_id/$issue_id";
+        mkdir("$target_file_dir", 0755, TRUE);
         foreach ($this->recursiveFiles as $file_to_process) {
             $pdf_path_data = pathinfo($file_to_process);
-            $embedded_path = str_replace($tmp_dir, '', $pdf_path_data['dirname']);
-            $full_path = str_replace("//", "/", "$root/$embedded_path");
-            $final_file_name = str_replace('.jpg', '.pdf', $pdf_path_data['filename']);
-            if (!file_exists($full_path)) {
-                mkdir($full_path, 0755, TRUE);
-            }
-            $dest_file = str_replace("//", "/", "$full_path/$final_file_name");
-
+            $target_file_path = "$target_file_dir/{$pdf_path_data['filename']}.pdf";
             $this->taskExecStack()
             ->stopOnFail()
-            ->exec("sudo mv $file_to_process $dest_file")
-            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} $dest_file")
+            ->exec("sudo mv $file_to_process $target_file_path")
+            ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} $target_file_path")
             ->run();
         }
 

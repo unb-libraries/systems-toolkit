@@ -593,8 +593,8 @@ EOT;
         else {
           $no_cleanup_string = '';
         }
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string");
-        $this->setRunOtherCommand("pdf:generate:issue {$options['webtree-path']}/files/serials/pages {$title_id} {$this->curIssueId} --skip-confirm");
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pages/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string");
+        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-pdf {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pages/pdf {$title_id} {$this->curIssueId} --skip-confirm");
       }
 
       $this->recursiveFiles = [];
