@@ -83,23 +83,30 @@ class DziTilerCommand extends SystemsToolkitCommand {
         'target-gid' => '102',
         'target-uid' => '100',
         'threads' => NULL,
+        'step' => '200',
+        'tile-size' => '256',
+        'threads' => NULL,
         'no-cleanup' => FALSE,
         'limit' => 50,
     ]
   )
   {
-      if (!$options['no-pull']) {
-        $this->setPullTilerImage();
-      }
+      $this->setPullTilerImage();
+
       $options['no-pull'] = TRUE;
+      $options['no-cleanup'] = TRUE;
 
       // Query the website for missing files using guzzle.
       $client = new \GuzzleHttp\Client();
       $limit = $options['limit'];
       $response = $client->request('GET', self::MISSING_DZI_URL . "/$limit");
-      $missing_files = json_decode($response->getBody()->getContents(), TRUE);
-      shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
 
+      $missing_files = json_decode($response->getBody()->getContents(), TRUE);
+      if (empty($missing_files)) {
+        exit("No missing files found.\n");
+      }
+
+      shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
       foreach ($missing_files as $missing_file) {
           $this->setAddCommandToQueue(
             $this->getDziTileCommand(
@@ -112,19 +119,11 @@ class DziTilerCommand extends SystemsToolkitCommand {
           );
       }
 
-      if (empty($missing_files)) {
-          exit("No missing files found.\n");
-      }
-
       if (!empty($options['threads'])) {
         $this->setThreads($options['threads']);
       }
-
       $this->setRunProcessQueue('Generate DZI files');
-
-      if (!$options['no-cleanup']) {
-        $this->applicationCleanup();
-      }
+      $this->applicationCleanup();
   }
 
   /**
