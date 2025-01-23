@@ -124,6 +124,10 @@ class DziTilerCommand extends SystemsToolkitCommand {
       }
       $this->setRunProcessQueue('Generate DZI files');
       $this->applicationCleanup();
+      $total_seconds = (int) floor(microtime(TRUE) - $this->commandStartTime);
+      $total_time_string = gmdate("H:i:s", $total_seconds);
+      $seconds_each = (int) floor($total_seconds / count($missing_files));
+      $this->say("Total time: $total_time_string. Average time per file: $seconds_each seconds.");
   }
 
   /**
