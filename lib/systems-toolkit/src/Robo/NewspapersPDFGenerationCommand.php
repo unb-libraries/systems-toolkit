@@ -85,7 +85,11 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         if (empty($file_data)) {
             exit("No missing files found.\n");
         }
-        $this->pdfFilesList($file_data, $root, $pdf_root, $options);
+        $this->pdfFilesList(
+            $pdf_root,
+            $file_data,
+            $options
+        );
     }
 
     /**
@@ -335,10 +339,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         }
 
         $this->pdfFilesList(
-            $file_data,
             $pdf_root,
-            $title_id,
-            $issue_id,
+            $file_data,
             $options
         );
     }
@@ -377,8 +379,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      * @command pdf:generate:tree
      */
     public function pdfFilesList(
-        array $file_data,
         string $pdf_root,
+        array $file_data,
         array $options = [
             'extension' => 'jpg',
             'no-init' => FALSE,
