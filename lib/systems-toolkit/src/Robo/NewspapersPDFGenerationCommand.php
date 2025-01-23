@@ -324,8 +324,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             $file_mask = '*.' . $options['extension'];
         }
         $files = glob("$root/$file_mask");
-
-        if (empty($this->recursiveFiles)) {
+        if (empty($files)) {
             exit("No files found in $root.\n");
         }
 
