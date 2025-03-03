@@ -38,7 +38,10 @@ trait RecursiveFileTreeTrait {
    *
    * @throws \Exception
    */
-  public function setFilesToIterate() : void {
+  public function setFilesToIterate($clear_existing = TRUE) : void {
+    if ($clear_existing) {
+      $this->recursiveFiles = [];
+    }
     if (!file_exists($this->recursiveFileTreeRoot)) {
       throw new \Exception(sprintf('The directory [%s] does not exist.', $this->recursiveFileTreeRoot));
     }

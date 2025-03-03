@@ -377,7 +377,6 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $regex = "/^.+\.{$this->options['issue-page-extension']}$/i";
     $this->recursiveFileTreeRoot = $this->issuePath;
     $this->recursiveFileRegex = $regex;
-    $this->recursiveFiles = [];
     $this->setFilesToIterate();
     $this->getConfirmFiles('Verify Issues', TRUE);
   }
