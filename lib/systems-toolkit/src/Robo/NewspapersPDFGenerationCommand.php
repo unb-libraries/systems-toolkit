@@ -45,6 +45,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *     Do not clean up unused docker assets after running needed containers.
      * @option $limit
      *    The number of files to process.
+     * @option $skip
+     *    The number of files to skip.
      *
      * @throws \Exception
      *
@@ -57,6 +59,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'extension' => 'jpg',
             'no-init' => FALSE,
             'skip-existing' => FALSE,
+            'skip' => 0,
             'target-gid' => '102',
             'target-uid' => '100',
             'threads' => NULL,
@@ -68,7 +71,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         // Query the website for missing files using guzzle.
         $client = new \GuzzleHttp\Client();
         $limit = $options['limit'];
-        $response = $client->request('GET', self::MISSING_PDF_URL . "/$limit");
+        $response = $client->request('GET', self::MISSING_PDF_URL . "/$limit/" . $options['skip']);
         $missing_files = json_decode($response->getBody()->getContents(), TRUE);
 
         $file_data = [];

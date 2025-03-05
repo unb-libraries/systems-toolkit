@@ -68,6 +68,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *     Do not clean up unused docker assets after running needed containers.
    * @option $limit
    *    The number of files to process.
+   * @option $skip
+   *    The number of files to skip evaluating.
    *
    * @throws \Exception
    *
@@ -78,16 +80,17 @@ class DziTilerCommand extends SystemsToolkitCommand {
     string $dzi_root,
     array $options = [
         'extension' => 'jpg',
+        'limit' => 50,
+        'no-cleanup' => FALSE,
         'no-init' => FALSE,
         'skip-existing' => FALSE,
+        'skip' => 0,
+        'step' => '200',
         'target-gid' => '102',
         'target-uid' => '100',
         'threads' => NULL,
-        'step' => '200',
-        'tile-size' => '256',
         'threads' => NULL,
-        'no-cleanup' => FALSE,
-        'limit' => 50,
+        'tile-size' => '256',
     ]
   )
   {
@@ -99,7 +102,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       // Query the website for missing files using guzzle.
       $client = new \GuzzleHttp\Client();
       $limit = $options['limit'];
-      $response = $client->request('GET', self::MISSING_DZI_URL . "/$limit");
+      $response = $client->request('GET', self::MISSING_DZI_URL . "/$limit/". $options['skip']);
 
       $missing_files = json_decode($response->getBody()->getContents(), TRUE);
       if (empty($missing_files)) {
