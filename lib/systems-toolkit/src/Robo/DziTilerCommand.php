@@ -356,7 +356,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R $target_dir/{$dzi_file_path_info['filename']}_files")
       ->exec("sudo cp $tmp_dir/{$dzi_file_path_info['filename']}.dzi $target_dir/")
       ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} $target_dir/{$dzi_file_path_info['filename']}.dzi")
-      ->exec("sudo rm -rf $tmp_dir");
+      ->exec("sudo rm -rf $this->tmpDir/dzi-$suffix");
   }
 
   /**
