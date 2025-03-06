@@ -341,7 +341,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
     ]
   ) : CommandInterface {
     $dzi_file_path_info = pathinfo($file);
-    $tmp_dir = "$this->tmpDir/dzi/{$dzi_file_path_info['filename']}";
+    $suffix = substr(md5(microtime()), 0, 7);
+    $tmp_dir = "$this->tmpDir/dzi-$suffix/{$dzi_file_path_info['filename']}";
     $target_dir = $dzi_root . "/$title_id/$issue_id";
 
     return $this->taskExecStack()

@@ -46,7 +46,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      * @option $limit
      *    The number of files to process.
      * @option $skip
-     *    The number of files to skip.
+     *   The number of files to skip.
      *
      * @throws \Exception
      *
@@ -322,7 +322,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'no-cleanup' => FALSE,
         ]
     ) : void {
-        $tmp_dir = $this->tmpDir . '/pdf';
         if (!empty($options['prefix'])) {
             $file_mask = $options['prefix'] . '*.' . $options['extension'];
         }
@@ -398,7 +397,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'no-cleanup' => FALSE,
         ]
     ) : void {
-        $tmp_dir = $this->tmpDir . '/pdf';
+        $suffix = substr(md5(microtime()), 0, 7);
+        $tmp_dir = $this->tmpDir . "/pdf-$suffix";
 
         foreach ($file_data as $file) {
             $this->recursiveFiles[] = $file['file_path'];
