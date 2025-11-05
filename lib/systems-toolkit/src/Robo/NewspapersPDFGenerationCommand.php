@@ -380,7 +380,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *
      * @throws \Exception
      *
-     * @command pdf:generate:tree
      */
     public function pdfFilesList(
         string $pdf_root,
