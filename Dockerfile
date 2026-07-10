@@ -11,11 +11,10 @@ RUN apk --no-cache \
 RUN composer install --no-interaction --no-progress --no-suggest
 ENTRYPOINT ["/app/vendor/bin/syskit"]
 
-LABEL org.label-schema.build-date=$BUILD_DATE \
-  org.label-schema.description="systems-toolkit is the systems-toolkit image at UNB Libraries." \
-  org.label-schema.name="systems-toolkit" \
-  org.label-schema.url="https://github.com/unb-libraries/systems-toolkit" \
-  org.label-schema.vcs-ref=$VCS_REF \
-  org.label-schema.vcs-url="https://github.com/unb-libraries/systems-toolkit" \
-  org.label-schema.version=$VERSION \
-  org.opencontainers.image.source="https://github.com/unb-libraries/systems-toolkit"
+LABEL org.opencontainers.image.title="systems-toolkit" \
+  org.opencontainers.image.description="systems-toolkit is the systems-toolkit image at UNB Libraries." \
+  org.opencontainers.image.url="https://github.com/unb-libraries/systems-toolkit" \
+  org.opencontainers.image.source="https://github.com/unb-libraries/systems-toolkit" \
+  org.opencontainers.image.version="$VERSION" \
+  org.opencontainers.image.revision="$VCS_REF" \
+  org.opencontainers.image.created="$BUILD_DATE"
