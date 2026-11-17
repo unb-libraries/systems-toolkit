@@ -49,6 +49,13 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   protected int $goodIssueCount = 0;
 
   /**
+   * The number of issues skipped because they were verified previously.
+   *
+   * @var int
+   */
+  protected int $skippedVerifiedIssueCount = 0;
+
+  /**
    * Current issue remote images that are suspected to be duplicates.
    *
    * @var string[]
@@ -227,6 +234,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    *   The file extension to match for issue pages.
    * @option $instance-uri
    *   The URI of the target instance.
+   * @option $force
+   *   Re-audit issues that already passed a previous audit (.nbnp_verified).
    *
    * @throws \Exception
    *
@@ -240,6 +249,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     array $options = [
       'instance-uri' => 'http://localhost:3095',
       'issue-page-extension' => 'jpg',
+      'force' => FALSE,
     ]
   ) : void {
     $this->options = $options;
@@ -307,6 +317,14 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->setIssueInit();
     $this->issuePath = $path;
     $this->issueMetadataFile = "$path/metadata.php";
+
+    // Issues that passed a previous audit are not re-checked unless forced.
+    if (empty($this->options['force']) && file_exists("$path/.nbnp_verified")) {
+      $this->progressBar->setMessage("Skipping previously verified $path...");
+      $this->skippedVerifiedIssueCount++;
+      $this->goodIssueCount++;
+      return;
+    }
 
     if (file_exists($this->issueMetadataFile)) {
       $this->setIssueConfig();
@@ -657,6 +675,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     if ($this->issueIsFullyValid()) {
       $this->io()->newLine();
       $this->say("{$this->auditIssueCount} issues audited and no discrepancies found!");
+      $this->saySkippedVerifiedIssues();
       return;
     }
 
@@ -667,6 +686,15 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
     $this->displayMissingRemotePages();
     $this->displayDuplicateRemotePages();
     $this->reportIssueFailures();
+  }
+
+  /**
+   * Reports how many issues were skipped as previously verified.
+   */
+  protected function saySkippedVerifiedIssues() : void {
+    if ($this->skippedVerifiedIssueCount) {
+      $this->say("{$this->skippedVerifiedIssueCount} of these passed a previous audit and were not re-checked (use --force to re-check them).");
+    }
   }
 
   /**
@@ -893,6 +921,7 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
    */
   protected function reportIssueFailures() : void {
     $this->io()->newLine();
+    $this->saySkippedVerifiedIssues();
     $this->say(
       sprintf(
         "%s total issues audited",

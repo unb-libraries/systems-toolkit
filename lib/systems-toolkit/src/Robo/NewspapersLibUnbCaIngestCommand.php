@@ -677,14 +677,16 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   private function getNbhpNotificationString(string $path) : string {
     $total_seconds = (int) floor(microtime(TRUE) - $this->commandStartTime);
     $total_time_string = gmdate("H:i:s", $total_seconds);
-    $seconds_each = (int) floor($total_seconds / $this->issuesProcessed);
+    // Average over issues actually attempted, not those skipped as imported.
+    $issues_attempted = count($this->resultsLedger['success']) + count($this->resultsLedger['fail']);
+    $seconds_each = (int) floor($total_seconds / max(1, $issues_attempted));
     $each_string = gmdate("H:i:s", $seconds_each);
     $step_string = $this->formatTimings($this->stepTimings);
     return <<<EOT
 [$path] Import Finished!
 Run Time: $total_time_string
-Issues : {$this->issuesProcessed}
-Average Per Issue : $each_string;
+Issues : {$this->issuesProcessed} ($issues_attempted imported or attempted)
+Average Per Imported Issue : $each_string;
 Time By Step : $step_string
 EOT;
   }
