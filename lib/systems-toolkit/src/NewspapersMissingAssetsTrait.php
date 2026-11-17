@@ -12,11 +12,20 @@ use Robo\Robo;
 trait NewspapersMissingAssetsTrait {
 
   /**
+   * The number of times a listing request is sent before giving up.
+   *
+   * The site stops scanning after 40s and answers 503 if it found nothing yet,
+   * saving how far it got, so each retry continues the scan.
+   */
+  protected int $newspapersMissingAssetAttempts = 10;
+
+  /**
    * Gets pages missing an asset from a newspapers.lib.unb.ca listing.
    *
    * The site lists these only to the account that ingests pages, as each
    * request can walk every page image on disk, so the request sends the
-   * syskit.drupal.rest credentials over basic auth.
+   * syskit.drupal.rest credentials over basic auth. Retries while the site
+   * answers 503 or 504, up to $newspapersMissingAssetAttempts requests.
    *
    * @param string $url
    *   The listing URL, without the limit and skip arguments.
@@ -39,17 +48,28 @@ trait NewspapersMissingAssetsTrait {
       throw new \Exception('Set syskit.drupal.rest.user and syskit.drupal.rest.password: newspapers.lib.unb.ca lists missing assets only to the account that ingests pages.');
     }
 
-    try {
-      $response = (new Client())->request('GET', "$url/$limit/$skip", [
-        'auth' => [$user, $password],
-      ]);
-    }
-    catch (BadResponseException $e) {
-      $status = $e->getResponse()->getStatusCode();
-      if (in_array($status, [401, 403])) {
-        throw new \Exception(sprintf("The request to %s failed with HTTP %s. Check syskit.drupal.rest.user and syskit.drupal.rest.password; the account needs the 'add serial page entities' permission.", $url, $status), $status, $e);
+    for ($attempt = 1; ; $attempt++) {
+      try {
+        $response = (new Client())->request('GET', "$url/$limit/$skip", [
+          'auth' => [$user, $password],
+        ]);
+        break;
       }
-      throw $e;
+      catch (BadResponseException $e) {
+        $status = $e->getResponse()->getStatusCode();
+        if (in_array($status, [401, 403])) {
+          throw new \Exception(sprintf("The request to %s failed with HTTP %s. Check syskit.drupal.rest.user and syskit.drupal.rest.password; the account needs the 'add serial page entities' permission.", $url, $status), $status, $e);
+        }
+        // 503: the scan ran out of time before finding a page. 504: the proxy
+        // gave up first. The site saves its scan progress when a scan stops,
+        // so a retry continues from there.
+        if (!in_array($status, [503, 504]) || $attempt >= $this->newspapersMissingAssetAttempts) {
+          throw $e;
+        }
+        $wait = (int) ($e->getResponse()->getHeaderLine('Retry-After') ?: 0);
+        $this->say(sprintf('The site is still scanning for missing assets (HTTP %s); retrying (%d of %d)...', $status, $attempt + 1, $this->newspapersMissingAssetAttempts));
+        sleep(max($wait, 0));
+      }
     }
     return json_decode((string) $response->getBody(), TRUE, 512, JSON_THROW_ON_ERROR);
   }
