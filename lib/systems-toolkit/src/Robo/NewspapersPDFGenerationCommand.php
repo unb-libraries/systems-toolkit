@@ -47,8 +47,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *     Do not clean up unused docker assets after running needed containers.
      * @option $limit
      *    The number of files to process.
-     * @option $skip
-     *   The number of files to skip.
      * @option $list-only
      *   List the pages missing PDFs without generating anything.
      *
@@ -63,7 +61,6 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'extension' => 'jpg',
             'no-init' => FALSE,
             'skip-existing' => FALSE,
-            'skip' => 0,
             'target-gid' => '102',
             'target-uid' => '100',
             'threads' => NULL,
@@ -74,7 +71,7 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
     )
     {
         // Query the website for missing files.
-        $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_PDF_URL, $options['limit'], $options['skip']);
+        $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_PDF_URL, $options['limit']);
         if ($options['list-only']) {
             $this->printNewspapersPagesMissingAsset($missing_files);
             return;

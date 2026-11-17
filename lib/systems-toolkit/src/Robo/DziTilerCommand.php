@@ -107,8 +107,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *     Do not clean up unused docker assets after running needed containers.
    * @option $limit
    *    The number of files to process.
-   * @option $skip
-   *    The number of files to skip evaluating.
    * @option $list-only
    *    List the pages missing DZI files without generating anything.
    *
@@ -125,7 +123,6 @@ class DziTilerCommand extends SystemsToolkitCommand {
         'no-cleanup' => FALSE,
         'no-init' => FALSE,
         'skip-existing' => FALSE,
-        'skip' => 0,
         'list-only' => FALSE,
         'step' => '200',
         'target-gid' => '102',
@@ -137,7 +134,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
   )
   {
       // Query the website for missing files.
-      $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_DZI_URL, $options['limit'], $options['skip']);
+      $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_DZI_URL, $options['limit']);
       if ($options['list-only']) {
         $this->printNewspapersPagesMissingAsset($missing_files);
         return;

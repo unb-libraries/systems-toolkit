@@ -27,12 +27,13 @@ trait NewspapersMissingAssetsTrait {
    * syskit.drupal.rest credentials over basic auth. Retries while the site
    * answers 503 or 504, up to $newspapersMissingAssetAttempts requests.
    *
+   * Always asks the site to skip no rows, so the site starts from its saved
+   * scan position. Reset that with newspapers.lib.unb.ca:reset-missing-asset-scan.
+   *
    * @param string $url
    *   The listing URL, without the limit and skip arguments.
    * @param int|string $limit
    *   The number of pages to return. The site returns at most 500.
-   * @param int|string $skip
-   *   The number of page images to skip evaluating.
    *
    * @throws \Exception
    * @throws \GuzzleHttp\Exception\GuzzleException
@@ -41,7 +42,7 @@ trait NewspapersMissingAssetsTrait {
    * @return array
    *   The pages, keyed by image file ID.
    */
-  protected function getNewspapersPagesMissingAsset(string $url, int|string $limit, int|string $skip) : array {
+  protected function getNewspapersPagesMissingAsset(string $url, int|string $limit) : array {
     $user = Robo::Config()->get('syskit.drupal.rest.user');
     $password = Robo::Config()->get('syskit.drupal.rest.password');
     if (empty($user) || empty($password)) {
@@ -50,7 +51,7 @@ trait NewspapersMissingAssetsTrait {
 
     for ($attempt = 1; ; $attempt++) {
       try {
-        $response = (new Client())->request('GET', "$url/$limit/$skip", [
+        $response = (new Client())->request('GET', "$url/$limit/0", [
           'auth' => [$user, $password],
         ]);
         break;
