@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit\Robo;
 
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
+use UnbLibraries\SystemsToolkit\NewspapersMissingAssetsTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\OcrCommand;
@@ -14,6 +15,7 @@ use UnbLibraries\SystemsToolkit\Robo\NewspapersLibUnbCaDeleteCommand;
 class NewspapersPDFGenerationCommand extends OcrCommand {
 
     use DockerCleanupTrait;
+    use NewspapersMissingAssetsTrait;
     use QueuedParallelExecTrait;
     use RecursiveFileTreeTrait;
 
@@ -68,11 +70,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
         ]
     )
     {
-        // Query the website for missing files using guzzle.
-        $client = new \GuzzleHttp\Client();
-        $limit = $options['limit'];
-        $response = $client->request('GET', self::MISSING_PDF_URL . "/$limit/" . $options['skip']);
-        $missing_files = json_decode($response->getBody()->getContents(), TRUE);
+        // Query the website for missing files.
+        $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_PDF_URL, $options['limit'], $options['skip']);
 
         $file_data = [];
         foreach ($missing_files as $missing_file) {

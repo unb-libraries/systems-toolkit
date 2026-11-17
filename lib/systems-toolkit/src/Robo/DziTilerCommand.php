@@ -6,6 +6,7 @@ use Robo\Contract\CommandInterface;
 use Robo\Robo;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
+use UnbLibraries\SystemsToolkit\NewspapersMissingAssetsTrait;
 use UnbLibraries\SystemsToolkit\QueuedParallelExecTrait;
 use UnbLibraries\SystemsToolkit\RecursiveFileTreeTrait;
 use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
@@ -16,6 +17,7 @@ use UnbLibraries\SystemsToolkit\Robo\SystemsToolkitCommand;
 class DziTilerCommand extends SystemsToolkitCommand {
 
   use DockerCleanupTrait;
+  use NewspapersMissingAssetsTrait;
   use QueuedParallelExecTrait;
   use RecursiveFileTreeTrait;
 
@@ -136,12 +138,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
       $options['no-pull'] = TRUE;
       $options['no-cleanup'] = TRUE;
 
-      // Query the website for missing files using guzzle.
-      $client = new \GuzzleHttp\Client();
-      $limit = $options['limit'];
-      $response = $client->request('GET', self::MISSING_DZI_URL . "/$limit/". $options['skip']);
-
-      $missing_files = json_decode($response->getBody()->getContents(), TRUE);
+      // Query the website for missing files.
+      $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_DZI_URL, $options['limit'], $options['skip']);
       if (empty($missing_files)) {
         exit("No missing files found.\n");
       }
