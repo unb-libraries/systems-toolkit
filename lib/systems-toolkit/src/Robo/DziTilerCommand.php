@@ -109,6 +109,8 @@ class DziTilerCommand extends SystemsToolkitCommand {
    *    The number of files to process.
    * @option $skip
    *    The number of files to skip evaluating.
+   * @option $list-only
+   *    List the pages missing DZI files without generating anything.
    *
    * @throws \Exception
    *
@@ -124,6 +126,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
         'no-init' => FALSE,
         'skip-existing' => FALSE,
         'skip' => 0,
+        'list-only' => FALSE,
         'step' => '200',
         'target-gid' => '102',
         'target-uid' => '100',
@@ -133,16 +136,19 @@ class DziTilerCommand extends SystemsToolkitCommand {
     ]
   )
   {
-      $this->setPullTilerImage();
-
-      $options['no-pull'] = TRUE;
-      $options['no-cleanup'] = TRUE;
-
       // Query the website for missing files.
       $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_DZI_URL, $options['limit'], $options['skip']);
+      if ($options['list-only']) {
+        $this->printNewspapersPagesMissingAsset($missing_files);
+        return;
+      }
       if (empty($missing_files)) {
         exit("No missing files found.\n");
       }
+
+      $this->setPullTilerImage();
+      $options['no-pull'] = TRUE;
+      $options['no-cleanup'] = TRUE;
 
       shell_exec("sudo rm -rf $this->tmpDir/dzi/*");
       foreach ($missing_files as $missing_file) {

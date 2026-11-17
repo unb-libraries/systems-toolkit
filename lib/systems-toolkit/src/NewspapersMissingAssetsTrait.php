@@ -74,4 +74,23 @@ trait NewspapersMissingAssetsTrait {
     return json_decode((string) $response->getBody(), TRUE, 512, JSON_THROW_ON_ERROR);
   }
 
+  /**
+   * Prints pages missing an asset without generating anything.
+   *
+   * @param array $pages
+   *   The pages, as returned by getNewspapersPagesMissingAsset().
+   */
+  protected function printNewspapersPagesMissingAsset(array $pages) : void {
+    if (empty($pages)) {
+      $this->say('No missing files found.');
+      return;
+    }
+    $rows = [];
+    foreach ($pages as $page) {
+      $rows[] = [$page['fid'], $page['title_id'], $page['issue_id'], $page['rel_image_path']];
+    }
+    $this->io()->table(['File ID', 'Title', 'Issue', 'Image'], $rows);
+    $this->say(sprintf('%d page(s) missing the asset.', count($pages)));
+  }
+
 }

@@ -49,6 +49,8 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
      *    The number of files to process.
      * @option $skip
      *   The number of files to skip.
+     * @option $list-only
+     *   List the pages missing PDFs without generating anything.
      *
      * @throws \Exception
      *
@@ -67,11 +69,16 @@ class NewspapersPDFGenerationCommand extends OcrCommand {
             'threads' => NULL,
             'no-cleanup' => FALSE,
             'limit' => 50,
+            'list-only' => FALSE,
         ]
     )
     {
         // Query the website for missing files.
         $missing_files = $this->getNewspapersPagesMissingAsset(self::MISSING_PDF_URL, $options['limit'], $options['skip']);
+        if ($options['list-only']) {
+            $this->printNewspapersPagesMissingAsset($missing_files);
+            return;
+        }
 
         $file_data = [];
         foreach ($missing_files as $missing_file) {
