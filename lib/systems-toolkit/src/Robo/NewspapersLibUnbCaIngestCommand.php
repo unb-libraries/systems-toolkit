@@ -70,6 +70,60 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   protected int $totalIssues = 0;
 
   /**
+   * Cumulative wall-clock seconds spent in each import step this session.
+   *
+   * @var float[]
+   */
+  protected array $stepTimings = [];
+
+  /**
+   * Wall-clock seconds spent in each import step for the current issue.
+   *
+   * @var float[]
+   */
+  protected array $curIssueTimings = [];
+
+  /**
+   * Runs a callable, recording its wall-clock duration under a step name.
+   *
+   * @param string $step
+   *   The step name to record the duration under.
+   * @param callable $callable
+   *   The work to time.
+   *
+   * @return mixed
+   *   The value returned by the callable.
+   */
+  protected function timeStep(string $step, callable $callable) : mixed {
+    $start = microtime(TRUE);
+    try {
+      return $callable();
+    }
+    finally {
+      $elapsed = microtime(TRUE) - $start;
+      $this->stepTimings[$step] = ($this->stepTimings[$step] ?? 0) + $elapsed;
+      $this->curIssueTimings[$step] = ($this->curIssueTimings[$step] ?? 0) + $elapsed;
+    }
+  }
+
+  /**
+   * Formats a set of step timings as a single human-readable line.
+   *
+   * @param float[] $timings
+   *   Seconds keyed by step name.
+   *
+   * @return string
+   *   The formatted timings, e.g. "pages: 41.2s, dzi: 12.0s".
+   */
+  protected function formatTimings(array $timings) : string {
+    $parts = [];
+    foreach ($timings as $step => $seconds) {
+      $parts[] = sprintf('%s: %.1fs', $step, $seconds);
+    }
+    return implode(', ', $parts);
+  }
+
+  /**
    * Generates and updates the OCR content for a digital serial page.
    *
    * @param string $id
@@ -286,7 +340,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $options['no-cleanup'] = TRUE;
 
     // Queue up every file in the tree and run Tesseract now.
-    $this->ocrTesseractTree(
+    $this->timeStep('ocr_prepass', fn() => $this->ocrTesseractTree(
       $file_path,
       [
         'output_type' => 'hocr',
@@ -300,7 +354,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
         'threads' => $options['threads'],
         'no-cleanup' => $options['no-cleanup'],
       ]
-    );
+    ));
 
     // We have run OCR on the tree, do not generate it at issue import time.
     $options['generate-ocr'] = FALSE;
@@ -319,15 +373,21 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
           $this->io()->newLine();
           $this->io()->title("Creating Issue {$this->issuesProcessed}/{$this->totalIssues} [$directory_to_process]");
           $this->curIssueId = 0;
+          $this->curIssueTimings = [];
+          $issue_start = microtime(TRUE);
           $this->createIssueFromDir(
             $title_id,
             $directory_to_process,
             $options
           );
+          $this->curIssueTimings['total'] = microtime(TRUE) - $issue_start;
+          $timing_string = $this->formatTimings($this->curIssueTimings);
+          $this->say("Issue #{$this->curIssueId} timings - $timing_string");
           $this->resultsLedger['success'][] = [
             'title' => $this->curTitleId,
             'issue' => $this->curIssueId,
             'path' => $this->curIssuePath,
+            'timings' => $timing_string,
           ];
           shell_exec('sudo touch ' . escapeshellarg($processed_flag_file));
         }
@@ -373,11 +433,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $total_time_string = gmdate("H:i:s", $total_seconds);
     $seconds_each = (int) floor($total_seconds / $this->issuesProcessed);
     $each_string = gmdate("H:i:s", $seconds_each);
+    $step_string = $this->formatTimings($this->stepTimings);
     return <<<EOT
 [$path] Import Finished!
 Run Time: $total_time_string
 Issues : {$this->issuesProcessed}
 Average Per Issue : $each_string;
+Time By Step : $step_string
 EOT;
   }
 
@@ -522,7 +584,7 @@ EOT;
       );
       unset($issue_config);
 
-      $issue_object = $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content);
+      $issue_object = $this->timeStep('create_issue', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_ISSUE_CREATE_PATH, $create_content));
       $issue_id = $issue_object->id[0]->value;
       $this->curIssueId = $issue_id;
       $this->say("Importing pages to Issue #$issue_id");
@@ -552,6 +614,7 @@ EOT;
       $this->setFilesToIterate();
       $this->getConfirmFiles('OCR', TRUE);
       $issue_ingested_pages = [];
+      $pages_start = microtime(TRUE);
 
       foreach ($this->recursiveFiles as $page_image) {
         if (!file_exists($page_image . '.nbnp_skip')) {
@@ -585,6 +648,9 @@ EOT;
           );
         }
       }
+      $pages_elapsed = microtime(TRUE) - $pages_start;
+      $this->stepTimings['pages'] = ($this->stepTimings['pages'] ?? 0) + $pages_elapsed;
+      $this->curIssueTimings['pages'] = ($this->curIssueTimings['pages'] ?? 0) + $pages_elapsed;
 
       if (!empty($options['webtree-path'])) {
         if ($options['no-cleanup']) {
@@ -593,8 +659,8 @@ EOT;
         else {
           $no_cleanup_string = '';
         }
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string");
-        $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-pdf {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pdf {$title_id} {$this->curIssueId} --skip-confirm");
+        $this->timeStep('dzi', fn() => $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string"));
+        $this->timeStep('pdf', fn() => $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-pdf {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pdf {$title_id} {$this->curIssueId} --skip-confirm"));
       }
 
       $this->recursiveFiles = [];
@@ -712,12 +778,12 @@ EOT;
     $page_no_padded = str_pad($page_no, 4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
     $this->say("Creating Page [$page_no_padded] From: $file_path");
-    $file_entity = $this->uploadDrupalRestFileToEntityField(
+    $file_entity = $this->timeStep('pages.upload', fn() => $this->uploadDrupalRestFileToEntityField(
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
-    );
+    ));
 
     // Allow the disk to write out the file.
-    sleep(1);
+    $this->timeStep('pages.sleep', fn() => sleep(1));
 
     // Create the digital page.
     $create_content = json_encode(
@@ -755,9 +821,9 @@ EOT;
       ]
     );
 
-    $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content);
+    $this->timeStep('pages.create', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content));
     if ($options['no-verify'] == FALSE) {
-      NewspapersLibUnbCaAuditCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options);
+      $this->timeStep('pages.verify', fn() => NewspapersLibUnbCaAuditCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options));
     }
   }
 
