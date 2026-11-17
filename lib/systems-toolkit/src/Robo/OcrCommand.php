@@ -269,6 +269,7 @@ class OcrCommand extends SystemsToolkitCommand {
       ->volume($ocr_file_path_info['dirname'], '/data')
       ->containerWorkdir('/data')
       ->arg('--rm')
+      ->option('--label', self::getSyskitContainerLabel() . '=1')
       ->exec("--oem {$options['oem']} --dpi 300 -l {$options['lang']} {$ocr_file_path_info['basename']} {$ocr_file_path_info['basename']} {$options['output_type']}");
   }
 

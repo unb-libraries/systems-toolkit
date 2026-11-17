@@ -216,7 +216,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
 
     $script = $this->repoRoot . '/lib/systems-toolkit/data/scripts/hocr2pdf.py';
     $command = sprintf(
-      'docker run --rm -v %s:/src:ro -v %s:/out -v %s:/hocr2pdf.py:ro --entrypoint python3 %s /hocr2pdf.py --dpi %d --workers %d %s 2>&1',
+      'docker run --rm ' . self::getSyskitContainerLabelArgs() . ' -v %s:/src:ro -v %s:/out -v %s:/hocr2pdf.py:ro --entrypoint python3 %s /hocr2pdf.py --dpi %d --workers %d %s 2>&1',
       escapeshellarg($source_root),
       escapeshellarg($tmp_dir),
       escapeshellarg($script),

@@ -449,9 +449,9 @@ class DziTilerCommand extends SystemsToolkitCommand {
         $file_info['filename'],
         (int) $options['tile-size']
       );
-      return "docker run -v $tmp_dir:/data --rm {$this->vipsImage} timeout $timeout sh -c " . escapeshellarg($script);
+      return "docker run -v $tmp_dir:/data --rm " . self::getSyskitContainerLabelArgs() . " {$this->vipsImage} timeout $timeout sh -c " . escapeshellarg($script);
     }
-    return "docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} timeout $timeout /app/magick-slicer.sh -- -e jpg -i /data/{$file_info['basename']} -o /data/{$file_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}";
+    return "docker run -v  $tmp_dir:/data --rm " . self::getSyskitContainerLabelArgs() . " {$this->imagemagickImage} timeout $timeout /app/magick-slicer.sh -- -e jpg -i /data/{$file_info['basename']} -o /data/{$file_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}";
   }
 
 }
