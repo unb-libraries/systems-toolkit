@@ -931,9 +931,6 @@ EOT;
       'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
     ];
 
-    // Allow the disk to write out the file.
-    $this->timeStep('pages.sleep', fn() => sleep(1));
-
     // Create the digital page.
     $create_content = json_encode(
       [
@@ -972,58 +969,59 @@ EOT;
 
     $this->timeStep('pages.create', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content));
     if ($options['no-verify'] == FALSE) {
-      $this->timeStep('pages.verify', fn() => NewspapersLibUnbCaAuditCommand::verifyPageFromIds($issue_id, $page_no, $file_path, $options));
+      $this->timeStep('pages.verify', fn() => $this->verifyStoredPage($file_entity, $issue_id, $page_no, $file_path, $options));
     }
   }
 
   /**
-   * Uploads a file for an entity field using the Drupal REST client.
+   * Verifies an uploaded page image matches the local source file.
    *
-   * @param string $entity_type_id
-   *   The entity type ID.
-   * @param string $entity_bundle
-   *   The entity bundle.
-   * @param string $field_name
-   *   The field name where the file will be attached.
-   * @param string $file_contents
-   *   The contents of the file to attach.
-   * @param string $file_name
-   *   The name to use for the file when attaching.
+   * When the webtree is mounted locally, the stored file is hashed in place
+   * rather than downloaded again over HTTP. Otherwise, falls back to the
+   * remote download check.
    *
-   * @throws \GuzzleHttp\Exception\GuzzleException
-   * @throws \JsonException
+   * @param object $file_entity
+   *   The file entity returned by the upload.
+   * @param string $issue_id
+   *   The parent issue ID.
+   * @param string $page_no
+   *   The page number.
+   * @param string $file_path
+   *   The local source file.
+   * @param string[] $options
+   *   The array of available CLI options.
    *
-   * @return object
-   *   The JSON object of the file returned from the server.
+   * @throws \Exception
    */
-  protected function uploadDrupalRestFileToEntityField(
-    string $entity_type_id,
-    string $entity_bundle,
-    string $field_name,
-    string $file_contents,
-    string $file_name
-  ) : object {
-    $this->setUpDrupalRestClientToken();
-    $post_uri = $this->drupalRestUri . "/file/upload/{$entity_type_id}/{$entity_bundle}/{$field_name}?_format=json";
-    $this->say($post_uri);
-    $this->drupalRestResponse = $this->guzzleClient->post(
-      $post_uri,
-      [
-        'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
-        'body' => $file_contents,
-        'headers' => [
-          'Content-Type' => 'application/octet-stream',
-          'Content-Disposition' => "file; filename=\"$file_name\"",
-          'X-CSRF-Token' => $this->drupalRestToken,
-        ],
-      ]
-    );
-    return json_decode(
-      (string) $this->drupalRestResponse->getBody(),
-      NULL,
-      512,
-      JSON_THROW_ON_ERROR
-    );
+  protected function verifyStoredPage(
+    object $file_entity,
+    string $issue_id,
+    string $page_no,
+    string $file_path,
+    array $options
+  ) : void {
+    $uri = $file_entity->uri[0]->value ?? '';
+    if (empty($options['webtree-path']) || !str_starts_with($uri, 'public://')) {
+      NewspapersLibUnbCaAuditCommand::verifyPageFromIds((int) $issue_id, $page_no, $file_path, $options);
+      return;
+    }
+
+    $stored_path = $options['webtree-path'] . '/files/' . substr($uri, strlen('public://'));
+    $md5_local = NewspapersLibUnbCaAuditCommand::md5Sum($file_path);
+    $md5_stored = '';
+    // The NFS mount may briefly lag the server; recheck a few times before
+    // treating a mismatch as a failure.
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+      if ($attempt > 0) {
+        clearstatcache(TRUE, $stored_path);
+        sleep(1);
+      }
+      $md5_stored = NewspapersLibUnbCaAuditCommand::md5Sum($stored_path);
+      if ($md5_stored === $md5_local) {
+        return;
+      }
+    }
+    throw new \Exception("File integrity mismatch : $file_path ($md5_local) | $stored_path ($md5_stored)");
   }
 
 }

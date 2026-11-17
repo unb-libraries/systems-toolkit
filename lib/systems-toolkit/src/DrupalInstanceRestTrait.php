@@ -156,10 +156,20 @@ trait DrupalInstanceRestTrait {
         JSON_THROW_ON_ERROR
       );
     }
-    catch (BadResponseException) {
+    catch (BadResponseException $e) {
+      $status = $e->getResponse()->getStatusCode();
+      // Credential/permission failures will not succeed on retry, and
+      // repeated attempts trigger Drupal's failed-login flood lockout.
+      if (in_array($status, [401, 403])) {
+        throw new \Exception(sprintf('The REST request to %s failed with HTTP %s (not retried).', $endpoint_uri, $status), $status, $e);
+      }
       $retry_counter++;
       if ($retry_on_error && $retry_counter < $max_retries) {
-        return $this->getGuzzleRequest($uri, $method, $args, $silent, $retry_on_error, $retry_counter);
+        // Back off 2, 4, 8, 16 seconds to ride out transient errors (e.g. 503).
+        $delay = 2 ** $retry_counter;
+        $this->say(sprintf('HTTP %s from %s, retrying in %ss (%s/%s)', $status, $endpoint_uri, $delay, $retry_counter, $max_retries - 1));
+        sleep($delay);
+        return $this->getGuzzleRequest($uri, $method, $args, $silent, $retry_on_error, $retry_counter, $max_retries);
       }
     }
     throw new \Exception(sprintf('The REST request to %s failed.', $endpoint_uri));
