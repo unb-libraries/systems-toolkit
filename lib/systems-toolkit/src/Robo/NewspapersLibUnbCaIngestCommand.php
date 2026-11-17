@@ -122,6 +122,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   protected array $curIssuePdfJobs = [];
 
   /**
+   * The publication years of the issues imported (or attempted) this run.
+   *
+   * @var string[]
+   */
+  protected array $importedIssueYears = [];
+
+  /**
    * The docker image used to build PDFs from existing hOCR.
    *
    * @var string
@@ -308,6 +315,23 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       }
       usleep(250000);
     }
+  }
+
+  /**
+   * Describes the publication years imported this run, for notifications.
+   *
+   * @return string
+   *   e.g. '1907', '1907-1908', or 'none' if no issues were imported.
+   */
+  protected function getImportedYearsString() : string {
+    $years = array_unique($this->importedIssueYears);
+    if (empty($years)) {
+      return 'none';
+    }
+    sort($years);
+    $first = reset($years);
+    $last = end($years);
+    return $first === $last ? $first : "$first-$last";
   }
 
   /**
@@ -660,7 +684,11 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->io()->block($output_summary);
     if (!$options['no-notify']) {
       $this->setSendSnsMessage($output_summary);
-      $this->setRunOtherCommand("newspapers.lib.unb.ca:import:notify $this->curTitleId $this->curIssuePath complete");
+      $this->setRunOtherCommand(sprintf(
+        'newspapers.lib.unb.ca:import:notify %s %s complete',
+        escapeshellarg($this->curTitleId),
+        escapeshellarg($this->getImportedYearsString())
+      ));
     }
     $this->writeImportLedger();
   }
@@ -777,6 +805,10 @@ EOT;
         512,
         JSON_THROW_ON_ERROR
       );
+      $issue_year = substr((string) $issue_config->date, 0, 4);
+      if (ctype_digit($issue_year)) {
+        $this->importedIssueYears[] = $issue_year;
+      }
 
       // Create the digital page.
       $create_content = json_encode(

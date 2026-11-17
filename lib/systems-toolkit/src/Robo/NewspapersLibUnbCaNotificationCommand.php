@@ -55,8 +55,10 @@ class NewspapersLibUnbCaNotificationCommand extends BasicKubeCommand {
     $message = sprintf(
       "newspapers.lib.unb.ca - %s\n[%s:%s] import (%s)",
       date(self::TIME_STRING_FORMAT),
-      number_format((float) $title_id),
-      number_format((float) $year),
+      // IDs and years are labels: number_format() turned 1907 into "1,907"
+      // and non-numeric values (e.g. a path) into "0".
+      $title_id,
+      $year,
       $result
     );
     $this->setSendSnsMessage($message);
