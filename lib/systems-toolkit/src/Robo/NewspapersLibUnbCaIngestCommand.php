@@ -159,6 +159,11 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
   public const DEFAULT_UPLOAD_CONCURRENCY = 4;
 
   /**
+   * Most failures to list in the import notification; the ledger has all.
+   */
+  public const NOTIFICATION_MAX_FAILURES = 10;
+
+  /**
    * Gets the hOCR to PDF docker image from config, with a default.
    *
    * @hook init
@@ -688,10 +693,15 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $this->io()->block($output_summary);
     if (!$options['no-notify']) {
       $this->setSendSnsMessage($output_summary);
+      $failure_count = count($this->resultsLedger['fail']) + count($this->resultsLedger['dzi_fail']);
+      $result = $failure_count > 0
+        ? sprintf('completed with %d %s', $failure_count, $failure_count === 1 ? 'failure' : 'failures')
+        : 'complete';
       $this->setRunOtherCommand(sprintf(
-        'newspapers.lib.unb.ca:import:notify %s %s complete',
+        'newspapers.lib.unb.ca:import:notify %s %s %s',
         escapeshellarg($this->curTitleId),
-        escapeshellarg($this->getImportedYearsString())
+        escapeshellarg($this->getImportedYearsString()),
+        escapeshellarg($result)
       ));
     }
     $this->writeImportLedger($options['ledger-dir'] ?? NULL);
@@ -714,13 +724,64 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     $seconds_each = (int) floor($total_seconds / max(1, $issues_attempted));
     $each_string = gmdate("H:i:s", $seconds_each);
     $step_string = $this->formatTimings($this->stepTimings);
-    return <<<EOT
+    $succeeded = count($this->resultsLedger['success']);
+    $failed = count($this->resultsLedger['fail']);
+    $skipped = count($this->resultsLedger['skipped']);
+    $dzi_failed = count($this->resultsLedger['dzi_fail']);
+    $summary = <<<EOT
 [$path] Import Finished!
 Run Time: $total_time_string
 Issues : {$this->issuesProcessed} ($issues_attempted imported or attempted)
+Succeeded : $succeeded
+Failed : $failed
+Skipped (already imported) : $skipped
+DZI Failed : $dzi_failed
 Average Per Imported Issue : $each_string;
 Time By Step : $step_string
 EOT;
+
+    $failures = [];
+    foreach ($this->resultsLedger['fail'] as $fail) {
+      $failures[] = sprintf(
+        '%s - %s',
+        $fail['path'],
+        $this->getShortFailureReason($fail['exception'])
+      );
+    }
+    foreach ($this->resultsLedger['dzi_fail'] as $fail) {
+      $failures[] = sprintf(
+        '%s - DZI generation failed for issue #%s (log: %s)',
+        $fail['path'],
+        $fail['issue'],
+        $fail['log']
+      );
+    }
+    if (!empty($failures)) {
+      $shown = array_slice($failures, 0, self::NOTIFICATION_MAX_FAILURES);
+      $summary .= "\nFailures :\n" . implode("\n", $shown);
+      $hidden = count($failures) - count($shown);
+      if ($hidden > 0) {
+        $summary .= "\n...and $hidden more (see the import ledger)";
+      }
+    }
+    return $summary;
+  }
+
+  /**
+   * Reduces an exception message to one short line for a notification.
+   *
+   * @param string $message
+   *   The exception message.
+   *
+   * @return string
+   *   The first line of the message, truncated.
+   */
+  private function getShortFailureReason(string $message) : string {
+    $line = trim(strtok($message, "\n") ?: '');
+    if ($line === '') {
+      return 'unknown error';
+    }
+    return mb_strlen($line) > 200 ? mb_substr($line, 0, 197) . '...' : $line;
   }
 
   /**
