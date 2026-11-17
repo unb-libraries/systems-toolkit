@@ -2,7 +2,10 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use GuzzleHttp\Promise\Each;
+use GuzzleHttp\Promise\PromiseInterface;
 use Robo\Robo;
+use Symfony\Component\Process\Process;
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
@@ -61,7 +64,31 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     'success' => [],
     'fail' => [],
     'skipped' => [],
+    'dzi_fail' => [],
   ];
+
+  /**
+   * Whether DZI generation runs in the background (tree imports).
+   *
+   * @var bool
+   */
+  protected bool $backgroundDzi = FALSE;
+
+  /**
+   * The maximum number of background DZI jobs to run at once.
+   *
+   * @var int
+   */
+  protected int $dziConcurrency = 2;
+
+  /**
+   * The running background DZI jobs.
+   *
+   * Each entry has the 'process', 'issue', 'path' and 'log' file.
+   *
+   * @var array[]
+   */
+  protected array $dziJobs = [];
 
   /**
    * The number of issues that are queued in the current session.
@@ -110,6 +137,19 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * The DPI that page hOCR is generated at (see OcrCommand).
    */
   public const HOCR_DPI = 300;
+
+  /**
+   * Default number of issues to generate DZI tiles for at once.
+   *
+   * Robo passes NULL for integer options that are not given on the command
+   * line, so defaults are applied in code.
+   */
+  public const DEFAULT_DZI_CONCURRENCY = 2;
+
+  /**
+   * Default number of pages of an issue to upload and create at once.
+   */
+  public const DEFAULT_UPLOAD_CONCURRENCY = 4;
 
   /**
    * Gets the hOCR to PDF docker image from config, with a default.
@@ -205,6 +245,68 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
     }
     finally {
       shell_exec('sudo rm -rf ' . escapeshellarg($tmp_dir));
+    }
+  }
+
+  /**
+   * Starts DZI generation for an issue as a background process.
+   *
+   * @param string $command_string
+   *   The syskit command (and arguments) to run.
+   * @param string $issue_path
+   *   The local issue path, for reporting.
+   */
+  protected function startDziJob(string $command_string, string $issue_path) : void {
+    $log = "$this->tmpDir/dzi-{$this->curIssueId}-" . substr(md5(microtime()), 0, 7) . '.log';
+    $bin = $_SERVER['argv'][0];
+    $process = Process::fromShellCommandline(
+      escapeshellarg($bin) . " --no-ansi $command_string > " . escapeshellarg($log) . ' 2>&1'
+    );
+    $process->setTimeout(NULL);
+    $process->start();
+    $this->say("Generating DZI tiles for Issue #{$this->curIssueId} in the background.");
+    $this->dziJobs[] = [
+      'process' => $process,
+      'issue' => $this->curIssueId,
+      'path' => $issue_path,
+      'log' => $log,
+    ];
+  }
+
+  /**
+   * Waits until no more than a given number of background DZI jobs run.
+   *
+   * Finished jobs are reaped; failures are reported and added to the ledger
+   * under 'dzi_fail' (re-run with newspapers.lib.unb.ca:generate-missing-dzi
+   * or newspapers.lib.unb.ca:issue:generate-dzi).
+   *
+   * @param int $max_running
+   *   The number of jobs that may still be running on return.
+   */
+  protected function waitForDziJobs(int $max_running) : void {
+    while (TRUE) {
+      foreach ($this->dziJobs as $idx => $job) {
+        if ($job['process']->isRunning()) {
+          continue;
+        }
+        if ($job['process']->isSuccessful()) {
+          @unlink($job['log']);
+        }
+        else {
+          $tail = implode("\n", array_slice(file($job['log'], FILE_IGNORE_NEW_LINES) ?: [], -15));
+          $this->say("DZI generation FAILED for Issue #{$job['issue']} (log: {$job['log']}):\n$tail");
+          $this->resultsLedger['dzi_fail'][] = [
+            'issue' => $job['issue'],
+            'path' => $job['path'],
+            'log' => $job['log'],
+          ];
+        }
+        unset($this->dziJobs[$idx]);
+      }
+      if (count($this->dziJobs) <= $max_running) {
+        return;
+      }
+      usleep(250000);
     }
   }
 
@@ -424,6 +526,13 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The number of threads the OCR process should use.
    * @option $dzi-threads
    *   The number of threads the OCR process should use.
+   * @option $dzi-concurrency
+   *   The number of issues to generate DZI tiles for at once, in the
+   *   background, while later issues are uploaded.
+   * @option $upload-concurrency
+   *   The number of pages of an issue to upload and create at once.
+   * @option $no-notify
+   *   Do not send the SNS import notifications (e.g. for test runs).
    * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    * @option $yes
@@ -446,11 +555,17 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'no-verify' => FALSE,
       'threads' => NULL,
       'dzi-threads' => NULL,
+      'dzi-concurrency' => 2,
+      'upload-concurrency' => 4,
+      'no-notify' => FALSE,
       'webtree-path' => NULL,
       'yes' => FALSE,
     ]
   ) : void {
     $this->options = $options;
+    // Tile each issue in the background while the next one uploads.
+    $this->backgroundDzi = TRUE;
+    $this->dziConcurrency = max(1, (int) ($options['dzi-concurrency'] ?? self::DEFAULT_DZI_CONCURRENCY));
     $regex = "/.*\/metadata.php$/i";
     $this->recursiveDirectoryTreeRoot = $file_path;
     $this->recursiveDirectoryFileRegex = $regex;
@@ -533,14 +648,20 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       }
     }
 
+    // Wait for any DZI tiling still running in the background.
+    $this->curIssueTimings = [];
+    $this->timeStep('dzi_wait', fn() => $this->waitForDziJobs(0));
+
     // Tidy-up.
     $this->applicationCleanup();
     $this->recursiveDirectories = [];
     $this->io()->title('Operation Complete!');
     $output_summary = $this->getNbhpNotificationString($file_path);
     $this->io()->block($output_summary);
-    $this->setSendSnsMessage($output_summary);
-    $this->setRunOtherCommand("newspapers.lib.unb.ca:import:notify $this->curTitleId $this->curIssuePath complete");
+    if (!$options['no-notify']) {
+      $this->setSendSnsMessage($output_summary);
+      $this->setRunOtherCommand("newspapers.lib.unb.ca:import:notify $this->curTitleId $this->curIssuePath complete");
+    }
     $this->writeImportLedger();
   }
 
@@ -607,6 +728,8 @@ EOT;
    *   The webtree file path, used to generate DZI tiles.
    * @option $no-cleanup
    *   Do not clean up unused docker assets after running needed containers.
+   * @option $upload-concurrency
+   *   The number of pages to upload and create at once.
    *
    * @throws \Exception
    *
@@ -628,6 +751,7 @@ EOT;
       'dzi-threads' => NULL,
       'webtree-path' => NULL,
       'no-cleanup' => FALSE,
+      'upload-concurrency' => 4,
     ]
   ) : void {
     $this->drupalRestUri = $options['instance-uri'];
@@ -740,6 +864,7 @@ EOT;
       $this->getConfirmFiles('OCR', TRUE);
       $issue_ingested_pages = [];
       $this->curIssuePdfJobs = [];
+      $pages_to_create = [];
       $pages_start = microtime(TRUE);
 
       foreach ($this->recursiveFiles as $page_image) {
@@ -760,20 +885,24 @@ EOT;
           }
           $page_no = $this->getUniqueIssuePageNo($issue_ingested_pages, $raw_page_no);
 
-          $this->createSerialPageFromFile(
-            $issue_id,
-            $page_no,
-            str_pad(
+          $pages_to_create[] = [
+            'issue_id' => $issue_id,
+            'page_no' => $page_no,
+            'page_sort' => str_pad(
               $raw_page_no,
               4,
               '0',
               STR_PAD_LEFT
             ),
-            $page_image,
-            $options
-          );
+            'file_path' => $page_image,
+          ];
         }
       }
+      $this->createSerialPagesConcurrently(
+        $pages_to_create,
+        $options,
+        (int) ($options['upload-concurrency'] ?? self::DEFAULT_UPLOAD_CONCURRENCY)
+      );
       $pages_elapsed = microtime(TRUE) - $pages_start;
       $this->stepTimings['pages'] = ($this->stepTimings['pages'] ?? 0) + $pages_elapsed;
       $this->curIssueTimings['pages'] = ($this->curIssueTimings['pages'] ?? 0) + $pages_elapsed;
@@ -785,7 +914,15 @@ EOT;
         else {
           $no_cleanup_string = '';
         }
-        $this->timeStep('dzi', fn() => $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string"));
+        $dzi_command = "newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string";
+        if ($this->backgroundDzi) {
+          // Keep at most dzi-concurrency tiling jobs running.
+          $this->timeStep('dzi_wait', fn() => $this->waitForDziJobs($this->dziConcurrency - 1));
+          $this->startDziJob($dzi_command, $path);
+        }
+        else {
+          $this->timeStep('dzi', fn() => $this->setRunOtherCommand($dzi_command));
+        }
         $this->timeStep('pdf', function () use ($title_id, $path, $options) {
           try {
             // Build the searchable PDFs from the hOCR we already have.
@@ -890,7 +1027,81 @@ EOT;
     ]
   ) : void {
     $this->drupalRestUri = $options['instance-uri'];
+    $this->getCreateSerialPagePromise($issue_id, $page_no, $page_sort, $file_path, $options)->wait();
+  }
 
+  /**
+   * Creates several digital serial pages, uploading some at once.
+   *
+   * @param array[] $pages
+   *   The pages, each with 'issue_id', 'page_no', 'page_sort' and 'file_path'.
+   * @param string[] $options
+   *   The array of available CLI options.
+   * @param int $concurrency
+   *   The number of pages to upload and create at once.
+   *
+   * @throws \Exception
+   *   If any page failed. Pages already in flight are allowed to finish.
+   */
+  protected function createSerialPagesConcurrently(
+    array $pages,
+    array $options,
+    int $concurrency
+  ) : void {
+    $this->drupalRestUri = $options['instance-uri'];
+    $concurrency = max(1, $concurrency);
+    $this->say(sprintf('Uploading %d pages, %d at a time.', count($pages), $concurrency));
+    $errors = [];
+    $promises = (function () use ($pages, $options) {
+      foreach ($pages as $page) {
+        yield $this->getCreateSerialPagePromise(
+          $page['issue_id'],
+          $page['page_no'],
+          $page['page_sort'],
+          $page['file_path'],
+          $options
+        );
+      }
+    })();
+    Each::ofLimit(
+      $promises,
+      max(1, $concurrency),
+      NULL,
+      function ($reason) use (&$errors) {
+        $errors[] = $reason instanceof \Throwable ? $reason->getMessage() : (string) $reason;
+      }
+    )->wait();
+    if (!empty($errors)) {
+      throw new \Exception(implode("\n", $errors));
+    }
+  }
+
+  /**
+   * Starts uploading, creating and verifying a digital serial page.
+   *
+   * @param string $issue_id
+   *   The parent issue ID.
+   * @param string $page_no
+   *   The page number.
+   * @param string $page_sort
+   *   The page sort.
+   * @param string $file_path
+   *   The path to the file.
+   * @param string[] $options
+   *   The array of available CLI options.
+   *
+   * @return \GuzzleHttp\Promise\PromiseInterface
+   *   Resolves once the page is created and verified.
+   *
+   * @throws \Exception
+   */
+  protected function getCreateSerialPagePromise(
+    string $issue_id,
+    string $page_no,
+    string $page_sort,
+    string $file_path,
+    array $options
+  ) : PromiseInterface {
     // Do OCR on file.
     if (!file_exists($file_path . ".hocr")) {
       $ocr_options = [
@@ -909,74 +1120,89 @@ EOT;
     $hocr_content = file_get_contents($file_path . ".hocr");
     $ocr_content = strip_tags($hocr_content);
 
-    // Upload file to field.
-    $handle = fopen($file_path, "rb");
-    $file_contents = fread($handle, filesize($file_path));
-    fclose($handle);
-
     $file_extension = pathinfo($file_path, PATHINFO_EXTENSION);
     $additional_pad_chars = strlen(substr(strrchr($page_no, "_"), 0));
     $page_no_padded = str_pad($page_no, 4 + $additional_pad_chars, '0', STR_PAD_LEFT);
     $filename_to_send = "{$issue_id}-{$page_no_padded}.{$file_extension}";
     $this->say("Creating Page [$page_no_padded] From: $file_path");
-    $file_entity = $this->timeStep('pages.upload', fn() => $this->uploadDrupalRestFileToEntityField(
-      'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
-    ));
 
-    // Create the digital page.
-    $create_content = json_encode(
+    // Upload file to field.
+    return $this->getDrupalRestRequestPromise(
+      'post',
+      '/file/upload/digital_serial_page/digital_serial_page/page_image?_format=json',
       [
-        'parent_issue' => [
-          [
-            'target_id' => $issue_id,
-          ],
-        ],
-        'page_no' => [
-          [
-            'value' => $page_no,
-          ],
-        ],
-        'page_sort' => [
-          [
-            'value' => $page_sort,
-          ],
-        ],
-        'page_ocr' => [
-          [
-            'value' => $ocr_content,
-          ],
-        ],
-        'page_hocr' => [
-          [
-            'value' => $hocr_content,
-          ],
-        ],
-        'page_image' => [
-          [
-            'target_id' => $file_entity->fid[0]->value,
-          ],
+        'body' => file_get_contents($file_path),
+        'headers' => [
+          'Content-Type' => 'application/octet-stream',
+          'Content-Disposition' => "file; filename=\"$filename_to_send\"",
         ],
       ]
-    );
+    )->then(function ($file_entity) use ($issue_id, $page_no, $page_sort, $ocr_content, $hocr_content) {
+      // Create the digital page.
+      $create_content = json_encode(
+        [
+          'parent_issue' => [
+            [
+              'target_id' => $issue_id,
+            ],
+          ],
+          'page_no' => [
+            [
+              'value' => $page_no,
+            ],
+          ],
+          'page_sort' => [
+            [
+              'value' => $page_sort,
+            ],
+          ],
+          'page_ocr' => [
+            [
+              'value' => $ocr_content,
+            ],
+          ],
+          'page_hocr' => [
+            [
+              'value' => $hocr_content,
+            ],
+          ],
+          'page_image' => [
+            [
+              'target_id' => $file_entity->fid[0]->value,
+            ],
+          ],
+        ],
+        JSON_THROW_ON_ERROR
+      );
+      return $this->getDrupalRestRequestPromise(
+        'post',
+        self::NEWSPAPERS_PAGE_CREATE_PATH . '?_format=json',
+        [
+          'body' => $create_content,
+          'headers' => [
+            'Content-Type' => 'application/json',
+          ],
+        ]
+      );
+    })->then(function ($page_entity) use ($issue_id, $page_no, $file_path, $filename_to_send, $options) {
+      // The upload lands in a temporary location; Drupal moves the file into
+      // serials/pages/{title}/{issue}/ when the page is created. Use the
+      // final location from the created page.
+      $stored_relative_path = $this->getStoredPageImagePath($page_entity);
 
-    $page_entity = $this->timeStep('pages.create', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content));
+      // Queue this page's PDF, named after the file Drupal actually stored.
+      $stored_filename = basename($stored_relative_path ?? $filename_to_send);
+      $this->curIssuePdfJobs[] = [
+        'image' => $file_path,
+        'hocr' => "$file_path.hocr",
+        'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
+      ];
 
-    // The upload lands in a temporary location; Drupal moves the file into
-    // serials/pages/{title}/{issue}/ when the page is created. Use the final
-    // location from the created page.
-    $stored_relative_path = $this->getStoredPageImagePath($page_entity);
-
-    // Queue this page's PDF, named after the file Drupal actually stored.
-    $stored_filename = basename($stored_relative_path ?? $filename_to_send);
-    $this->curIssuePdfJobs[] = [
-      'image' => $file_path,
-      'hocr' => "$file_path.hocr",
-      'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
-    ];
-
-    if ($options['no-verify'] == FALSE) {
-      $this->timeStep('pages.verify', fn() => $this->verifyStoredPage($stored_relative_path, $issue_id, $page_no, $file_path, $options));
-    }
+      if ($options['no-verify'] == FALSE) {
+        $this->verifyStoredPage($stored_relative_path, $issue_id, $page_no, $file_path, $options);
+      }
+      return $page_entity;
+    });
   }
 
   /**

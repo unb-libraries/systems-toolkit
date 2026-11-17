@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit;
 
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Response;
 use Robo\Robo;
 use UnbLibraries\SystemsToolkit\GuzzleClientTrait;
@@ -180,6 +181,66 @@ trait DrupalInstanceRestTrait {
    *
    * @throws \GuzzleHttp\Exception\GuzzleException
    */
+  /**
+   * Starts an authenticated REST request, returning a promise of the JSON.
+   *
+   * Retries like getGuzzleRequest(): exponential backoff on errors, but no
+   * retries on 401/403.
+   *
+   * @param string $method
+   *   The HTTP method.
+   * @param string $uri
+   *   The URI, relative to the instance URI, including any query string.
+   * @param array $args
+   *   Guzzle request options (body, headers).
+   * @param int $attempt
+   *   The retry attempt number.
+   * @param int $max_retries
+   *   The maximum number of attempts.
+   *
+   * @return \GuzzleHttp\Promise\PromiseInterface
+   *   A promise resolving to the decoded JSON response.
+   */
+  protected function getDrupalRestRequestPromise(
+    string $method,
+    string $uri,
+    array $args = [],
+    int $attempt = 0,
+    int $max_retries = 5
+  ) : PromiseInterface {
+    $this->checkSetUpDrupalRestClientToken();
+    $endpoint_uri = $this->drupalRestUri . $uri;
+    $request_args = array_merge_recursive(
+      [
+        'auth' => [$this->drupalRestUser, $this->drupalRestPassword],
+        'headers' => ['X-CSRF-Token' => $this->drupalRestToken],
+      ],
+      $args
+    );
+    if ($attempt > 0) {
+      // Back off 2, 4, 8, 16 seconds (Guzzle delay is in milliseconds).
+      $request_args['delay'] = (2 ** $attempt) * 1000;
+    }
+
+    return $this->guzzleClient->requestAsync($method, $endpoint_uri, $request_args)->then(
+      fn($response) => json_decode((string) $response->getBody(), NULL, 512, JSON_THROW_ON_ERROR),
+      function ($reason) use ($method, $uri, $args, $attempt, $max_retries, $endpoint_uri) {
+        if ($reason instanceof BadResponseException) {
+          $status = $reason->getResponse()->getStatusCode();
+          if (in_array($status, [401, 403])) {
+            throw new \Exception(sprintf('The REST request to %s failed with HTTP %s (not retried).', $endpoint_uri, $status), $status, $reason);
+          }
+          if ($attempt + 1 < $max_retries) {
+            $this->say(sprintf('HTTP %s from %s, retrying (%s/%s)', $status, $endpoint_uri, $attempt + 1, $max_retries - 1));
+            return $this->getDrupalRestRequestPromise($method, $uri, $args, $attempt + 1, $max_retries);
+          }
+        }
+        $message = $reason instanceof \Throwable ? $reason->getMessage() : (string) $reason;
+        throw new \Exception(sprintf('The REST request to %s failed. %s', $endpoint_uri, $message));
+      }
+    );
+  }
+
   protected function setUpDrupalRestClientToken(): void {
     $response = $this->guzzleClient->get($this->drupalRestUri . "/session/token");
     $this->drupalRestToken = (string) ($response->getBody());
