@@ -389,8 +389,8 @@ class NewspapersLibUnbCaAuditCommand extends OcrCommand {
   private function setPossibleEntityIds() : void {
     $this->issuePossibleEntityIds = [];
     $date = strtotime($this->issueConfig->date);
-    $day_string = date('d', $date);
-    $month_string = date('m', $date);
+    $day_string = date('j', $date);
+    $month_string = date('n', $date);
     $year_string = date('Y', $date);
 
     $rest_uri = sprintf(
