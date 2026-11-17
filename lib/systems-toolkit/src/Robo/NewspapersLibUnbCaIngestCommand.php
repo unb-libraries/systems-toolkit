@@ -2,6 +2,7 @@
 
 namespace UnbLibraries\SystemsToolkit\Robo;
 
+use Robo\Robo;
 use UnbLibraries\SystemsToolkit\DockerCleanupTrait;
 use UnbLibraries\SystemsToolkit\DrupalInstanceRestTrait;
 use UnbLibraries\SystemsToolkit\NbhpSnsMessageTrait;
@@ -82,6 +83,130 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    * @var float[]
    */
   protected array $curIssueTimings = [];
+
+  /**
+   * Pages of the current issue awaiting PDF generation.
+   *
+   * Each entry has the local 'image' and 'hocr' paths and the target 'pdf'
+   * filename.
+   *
+   * @var array[]
+   */
+  protected array $curIssuePdfJobs = [];
+
+  /**
+   * The docker image used to build PDFs from existing hOCR.
+   *
+   * @var string
+   */
+  protected string $hocrPdfImage;
+
+  /**
+   * The default docker image used to build PDFs from existing hOCR.
+   */
+  public const DEFAULT_HOCR_PDF_IMAGE = 'jbarlow83/ocrmypdf:v16.10.4';
+
+  /**
+   * The DPI that page hOCR is generated at (see OcrCommand).
+   */
+  public const HOCR_DPI = 300;
+
+  /**
+   * Gets the hOCR to PDF docker image from config, with a default.
+   *
+   * @hook init
+   */
+  public function setHocrPdfImage() : void {
+    $this->hocrPdfImage = Robo::Config()->get('syskit.imaging.hocrPdfImage')
+      ?: self::DEFAULT_HOCR_PDF_IMAGE;
+  }
+
+  /**
+   * Builds searchable PDFs for the current issue's pages from existing hOCR.
+   *
+   * Replaces a second Tesseract pass: the page JPG is embedded unchanged and
+   * an invisible text layer is rendered from the page's hOCR. All pages of
+   * the issue are built in a single container.
+   *
+   * @param string $title_id
+   *   The parent title ID.
+   * @param string $issue_path
+   *   The local issue directory containing the page images and hOCR.
+   * @param string $pdf_root
+   *   The webtree PDF root, e.g. {webtree}/files/serials/pdf.
+   * @param int $workers
+   *   The number of pages to build in parallel.
+   *
+   * @throws \Exception
+   */
+  protected function setIssuePdfsFromHocr(
+    string $title_id,
+    string $issue_path,
+    string $pdf_root,
+    int $workers
+  ) : void {
+    if (empty($this->curIssuePdfJobs)) {
+      return;
+    }
+
+    $source_root = rtrim(realpath($issue_path), '/');
+    $tmp_dir = "$this->tmpDir/pdf-hocr-" . substr(md5(microtime()), 0, 7);
+    if (!mkdir($tmp_dir, 0777, TRUE)) {
+      throw new \Exception("Unable to create $tmp_dir");
+    }
+
+    $script_args = [];
+    foreach ($this->curIssuePdfJobs as $job) {
+      foreach (['image', 'hocr'] as $key) {
+        $real = realpath($job[$key]);
+        if (!$real || !str_starts_with($real, "$source_root/")) {
+          throw new \Exception("Page file {$job[$key]} is missing or outside $source_root");
+        }
+        $script_args[] = '/src/' . substr($real, strlen($source_root) + 1);
+      }
+      $script_args[] = "/out/{$job['pdf']}";
+    }
+
+    $script = $this->repoRoot . '/lib/systems-toolkit/data/scripts/hocr2pdf.py';
+    $command = sprintf(
+      'docker run --rm -v %s:/src:ro -v %s:/out -v %s:/hocr2pdf.py:ro --entrypoint python3 %s /hocr2pdf.py --dpi %d --workers %d %s 2>&1',
+      escapeshellarg($source_root),
+      escapeshellarg($tmp_dir),
+      escapeshellarg($script),
+      escapeshellarg($this->hocrPdfImage),
+      self::HOCR_DPI,
+      max(1, min($workers, count($this->curIssuePdfJobs))),
+      implode(' ', array_map('escapeshellarg', $script_args))
+    );
+
+    try {
+      exec($command, $output, $return);
+      if ($return !== 0) {
+        throw new \Exception('hocr2pdf.py failed: ' . implode("\n", $output));
+      }
+
+      $target_dir = "$pdf_root/$title_id/{$this->curIssueId}";
+      if (!file_exists($target_dir)) {
+        mkdir($target_dir, 0755, TRUE);
+      }
+      foreach ($this->curIssuePdfJobs as $job) {
+        $built = "$tmp_dir/{$job['pdf']}";
+        if (!file_exists($built) || !filesize($built)) {
+          throw new \Exception("Expected PDF $built was not created");
+        }
+        $target = "$target_dir/{$job['pdf']}";
+        $this->taskExecStack()
+          ->stopOnFail()
+          ->exec('sudo mv ' . escapeshellarg($built) . ' ' . escapeshellarg($target))
+          ->exec('sudo chown 100:102 ' . escapeshellarg($target))
+          ->run();
+      }
+      $this->say(sprintf('Built %d PDFs from hOCR in %s', count($this->curIssuePdfJobs), $target_dir));
+    }
+    finally {
+      shell_exec('sudo rm -rf ' . escapeshellarg($tmp_dir));
+    }
+  }
 
   /**
    * Runs a callable, recording its wall-clock duration under a step name.
@@ -614,6 +739,7 @@ EOT;
       $this->setFilesToIterate();
       $this->getConfirmFiles('OCR', TRUE);
       $issue_ingested_pages = [];
+      $this->curIssuePdfJobs = [];
       $pages_start = microtime(TRUE);
 
       foreach ($this->recursiveFiles as $page_image) {
@@ -660,7 +786,22 @@ EOT;
           $no_cleanup_string = '';
         }
         $this->timeStep('dzi', fn() => $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-dzi {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/dzi {$title_id} {$this->curIssueId} --threads={$options['dzi-threads']} --no-pull $no_cleanup_string"));
-        $this->timeStep('pdf', fn() => $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-pdf {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pdf {$title_id} {$this->curIssueId} --skip-confirm"));
+        $this->timeStep('pdf', function () use ($title_id, $path, $options) {
+          try {
+            // Build the searchable PDFs from the hOCR we already have.
+            $this->setIssuePdfsFromHocr(
+              $title_id,
+              $path,
+              "{$options['webtree-path']}/files/serials/pdf",
+              (int) ($options['threads'] ?: 4)
+            );
+          }
+          catch (\Exception $e) {
+            // Fall back to the original (slower) OCR-based PDF generation.
+            $this->say("PDF generation from hOCR failed, falling back to OCR: {$e->getMessage()}");
+            $this->setRunOtherCommand("newspapers.lib.unb.ca:issue:generate-pdf {$options['webtree-path']}/files/serials/pages {$options['webtree-path']}/files/serials/pdf {$title_id} {$this->curIssueId} --skip-confirm");
+          }
+        });
       }
 
       $this->recursiveFiles = [];
@@ -781,6 +922,14 @@ EOT;
     $file_entity = $this->timeStep('pages.upload', fn() => $this->uploadDrupalRestFileToEntityField(
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     ));
+
+    // Queue this page's PDF, named after the file Drupal actually stored.
+    $stored_filename = basename($file_entity->uri[0]->value ?? $filename_to_send);
+    $this->curIssuePdfJobs[] = [
+      'image' => $file_path,
+      'hocr' => "$file_path.hocr",
+      'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
+    ];
 
     // Allow the disk to write out the file.
     $this->timeStep('pages.sleep', fn() => sleep(1));
