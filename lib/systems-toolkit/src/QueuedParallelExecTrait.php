@@ -3,6 +3,7 @@
 namespace UnbLibraries\SystemsToolkit;
 
 use Robo\Contract\CommandInterface;
+use Symfony\Component\Process\Process;
 
 /**
  * Trait for running a stack of Robo commands in parallel.
@@ -36,15 +37,21 @@ trait QueuedParallelExecTrait {
   /**
    * Runs the commands in the queue.
    *
+   * Uses a rolling pool: a new command starts as soon as any running one
+   * finishes, rather than waiting for a whole batch to complete.
+   *
    * @param string $operation_name
    *   The name of the operation to print.
+   *
+   * @return int
+   *   The number of commands that failed.
    */
   public function setRunProcessQueue(
     string $operation_name = 'operation'
-  ) : void {
+  ) : int {
     // Make sure the queue is populated.
     if (empty($this->queue)) {
-      return;
+      return 0;
     }
 
     // Set the threads if unset.
@@ -53,21 +60,49 @@ trait QueuedParallelExecTrait {
     }
 
     $items_to_run = count($this->queue);
-    $this->say("Running $operation_name on $items_to_run files in batches of {$this->threads} parallel threads.");
-    $item_counter = 0;
+    $this->say("Running $operation_name on $items_to_run files with {$this->threads} parallel threads.");
+    $running = [];
+    $finished = 0;
+    $failures = 0;
 
-    while (!empty($this->queue)) {
-      $parallel_stack = $this->taskParallelExec();
-      for ($i = 0; $i < $this->threads; $i++) {
-        if (!empty($this->queue)) {
-          $parallel_stack->process(array_shift($this->queue));
-          $item_counter++;
+    while (!empty($this->queue) || !empty($running)) {
+      // Fill free slots.
+      while (!empty($this->queue) && count($running) < $this->threads) {
+        $command_string = array_shift($this->queue)->getCommand();
+        $process = Process::fromShellCommandline($command_string, getcwd());
+        $process->setTimeout(NULL);
+        $process->start();
+        $running[] = $process;
+      }
+
+      // Reap finished processes.
+      foreach ($running as $idx => $process) {
+        if ($process->isRunning()) {
+          continue;
+        }
+        unset($running[$idx]);
+        $finished++;
+        if (!$process->isSuccessful()) {
+          $failures++;
+          $this->say(sprintf(
+            "%s FAILED (exit %s): %s\n%s",
+            $operation_name,
+            $process->getExitCode(),
+            $process->getCommandLine(),
+            trim($process->getErrorOutput() ?: $process->getOutput())
+          ));
+        }
+        if ($finished % $this->threads === 0 || $finished === $items_to_run) {
+          $this->say(sprintf('%d items processed, %d remain.', $finished, $items_to_run - $finished));
         }
       }
-      $parallel_stack->run();
-      $queue_size = count($this->queue);
-      $this->say("$item_counter items processed, $queue_size remain.");
+      usleep(100000);
     }
+
+    if ($failures) {
+      $this->say("$failures of $items_to_run $operation_name commands failed.");
+    }
+    return $failures;
   }
 
   /**
@@ -86,7 +121,8 @@ trait QueuedParallelExecTrait {
   private function setThreadsDefault() : void {
     $command = 'grep "^cpu\scores" /proc/cpuinfo | uniq | awk \'{print $4}\'';
     $cores_to_use = floatval(shell_exec($command)) * 0.8;
-    $this->threads = (int) floor($cores_to_use);
+    // Never zero, which would leave the queue unprocessed.
+    $this->threads = max(1, (int) floor($cores_to_use));
   }
 
 }

@@ -29,6 +29,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
   private string $imagemagickImage;
 
   /**
+   * Maximum seconds to spend tiling one page image.
+   *
+   * A page normally takes well under a minute; a corrupt or empty image can
+   * make the slicer loop forever, which previously hung the whole import.
+   */
+  public const TILE_TIMEOUT_SECONDS = 900;
+
+  /**
    * Gets the Tesseract docker image from config.
    *
    * @throws \Exception
@@ -232,9 +240,14 @@ class DziTilerCommand extends SystemsToolkitCommand {
     if (!empty($options['threads'])) {
       $this->setThreads($options['threads']);
     }
-    $this->setRunProcessQueue('Generate DZI files');
+    $failures = $this->setRunProcessQueue('Generate DZI files');
     if (!$options['no-cleanup']) {
       $this->applicationCleanup();
+    }
+    if ($failures) {
+      // Exit non-zero so callers (e.g. background tiling during imports)
+      // can report the issue for re-tiling.
+      throw new \Exception("DZI generation failed for $failures file(s) in $root.");
     }
   }
 
@@ -350,7 +363,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("sudo rm -rf $tmp_dir")
       ->exec("mkdir -p $tmp_dir")
       ->exec("cp $file $tmp_dir")
-      ->exec("docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} /app/magick-slicer.sh -- -e jpg -i /data/{$dzi_file_path_info['basename']} -o /data/{$dzi_file_path_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}")
+      ->exec("docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} timeout " . self::TILE_TIMEOUT_SECONDS . " /app/magick-slicer.sh -- -e jpg -i /data/{$dzi_file_path_info['basename']} -o /data/{$dzi_file_path_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}")
       ->exec("mkdir -p $target_dir")
       ->exec("sudo cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files $target_dir/")
       ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R $target_dir/{$dzi_file_path_info['filename']}_files")
