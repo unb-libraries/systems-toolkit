@@ -39,8 +39,3 @@ syskit:
   kubectl:
     bin: /snap/bin/kubectl
     config: /home/jsanford/.kube/config
-  updater:
-    composer-apps:
-      server.address.com:
-       - /app1/location/
-       - /app2/location/

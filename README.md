@@ -46,8 +46,6 @@ composer install --prefer-dist
   ocr:tesseract:file                        Generate OCR for a file.
   ocr:tesseract:tree                        Generate OCR for an entire tree.
   ocr:tesseract:tree:metrics                Generate metrics for OCR confidence and word count for a tree.
- updater
-  updater:composer-apps                     Updates composer-based apps on various servers.
 ```
 
 ### 3. Other Commands
