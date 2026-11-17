@@ -31,6 +31,8 @@ syskit:
     tesseractImage: ghcr.io/unb-libraries/tesseract:5.x-singlethread
     imagemagickImage: ghcr.io/unb-libraries/imagemagick:1.x
     hocrPdfImage: jbarlow83/ocrmypdf:v16.10.4
+    dziTiler: vips
+    vipsImage: syskit-local/vips:bookworm
   jira:
     hostName: https://jira.lib.unb.ca
     userName: XXXXXXXXXXXXX

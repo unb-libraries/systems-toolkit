@@ -37,6 +37,30 @@ class DziTilerCommand extends SystemsToolkitCommand {
   public const TILE_TIMEOUT_SECONDS = 900;
 
   /**
+   * The default tiler: 'vips' (vips dzsave) or 'imagemagick' (magick-slicer).
+   */
+  public const DEFAULT_DZI_TILER = 'vips';
+
+  /**
+   * The default tag for the locally built vips image.
+   */
+  public const DEFAULT_VIPS_IMAGE = 'syskit-local/vips:bookworm';
+
+  /**
+   * The tiler to use, 'vips' or 'imagemagick'.
+   *
+   * @var string
+   */
+  private string $dziTiler;
+
+  /**
+   * The docker image to use for vips commands.
+   *
+   * @var string
+   */
+  private string $vipsImage;
+
+  /**
    * Gets the Tesseract docker image from config.
    *
    * @throws \Exception
@@ -48,6 +72,11 @@ class DziTilerCommand extends SystemsToolkitCommand {
     if (empty($this->imagemagickImage)) {
       throw new \Exception(sprintf('The imagemagick docker image has not been set in the configuration file. (imagemagickImage)'));
     }
+    $this->dziTiler = Robo::Config()->get('syskit.imaging.dziTiler') ?: self::DEFAULT_DZI_TILER;
+    if (!in_array($this->dziTiler, ['vips', 'imagemagick'])) {
+      throw new \Exception("Unknown DZI tiler [$this->dziTiler] (syskit.imaging.dziTiler); use vips or imagemagick.");
+    }
+    $this->vipsImage = Robo::Config()->get('syskit.imaging.vipsImage') ?: self::DEFAULT_VIPS_IMAGE;
   }
 
   /**
@@ -363,7 +392,7 @@ class DziTilerCommand extends SystemsToolkitCommand {
       ->exec("sudo rm -rf $tmp_dir")
       ->exec("mkdir -p $tmp_dir")
       ->exec("cp $file $tmp_dir")
-      ->exec("docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} timeout " . self::TILE_TIMEOUT_SECONDS . " /app/magick-slicer.sh -- -e jpg -i /data/{$dzi_file_path_info['basename']} -o /data/{$dzi_file_path_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}")
+      ->exec($this->getTilerDockerCommand($tmp_dir, $dzi_file_path_info, $options))
       ->exec("mkdir -p $target_dir")
       ->exec("sudo cp -r $tmp_dir/{$dzi_file_path_info['filename']}_files $target_dir/")
       ->exec("sudo chown {$options['target-uid']}:{$options['target-gid']} -R $target_dir/{$dzi_file_path_info['filename']}_files")
@@ -378,7 +407,51 @@ class DziTilerCommand extends SystemsToolkitCommand {
    * @command dzi:pull-image
    */
   public function setPullTilerImage() : void {
+    if ($this->dziTiler === 'vips') {
+      // There is no published vips image; build it from the repo once.
+      exec('docker image inspect ' . escapeshellarg($this->vipsImage) . ' > /dev/null 2>&1', $output, $missing);
+      if ($missing) {
+        $context = $this->repoRoot . '/lib/systems-toolkit/data/docker/vips';
+        passthru('docker build -t ' . escapeshellarg($this->vipsImage) . ' ' . escapeshellarg($context), $return);
+        if ($return !== 0) {
+          throw new \Exception("Unable to build the vips image [$this->vipsImage].");
+        }
+      }
+      return;
+    }
     shell_exec("docker pull {$this->imagemagickImage}");
+  }
+
+  /**
+   * Builds the docker command that tiles one image in $tmp_dir.
+   *
+   * Both tilers write {filename}.dzi and {filename}_files/ into $tmp_dir with
+   * the same layout (jpg tiles, no overlap, levels down to 1x1), and stop
+   * after TILE_TIMEOUT_SECONDS.
+   *
+   * @param string $tmp_dir
+   *   The directory containing the image, mounted at /data.
+   * @param array $file_info
+   *   The pathinfo() of the image.
+   * @param string[] $options
+   *   The tiling options (step, tile-size).
+   *
+   * @return string
+   *   The command.
+   */
+  private function getTilerDockerCommand(string $tmp_dir, array $file_info, array $options) : string {
+    $timeout = self::TILE_TIMEOUT_SECONDS;
+    if ($this->dziTiler === 'vips') {
+      // Q=80 matches the ImageMagick tiles. Drop vips' extra metadata file.
+      $script = sprintf(
+        'vips dzsave /data/%1$s /data/%2$s --tile-size %3$d --overlap 0 --depth onepixel --suffix ".jpg[Q=80,strip]" && rm -f /data/%2$s_files/vips-properties.xml',
+        $file_info['basename'],
+        $file_info['filename'],
+        (int) $options['tile-size']
+      );
+      return "docker run -v $tmp_dir:/data --rm {$this->vipsImage} timeout $timeout sh -c " . escapeshellarg($script);
+    }
+    return "docker run -v  $tmp_dir:/data --rm {$this->imagemagickImage} timeout $timeout /app/magick-slicer.sh -- -e jpg -i /data/{$file_info['basename']} -o /data/{$file_info['filename']} --dzi -s {$options['step']} -w {$options['tile-size']} -h {$options['tile-size']}";
   }
 
 }
