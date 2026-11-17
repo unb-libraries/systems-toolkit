@@ -557,6 +557,9 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
    *   The number of pages of an issue to upload and create at once.
    * @option $no-notify
    *   Do not send the SNS import notifications (e.g. for test runs).
+   * @option $ledger-dir
+   *   The directory to write the nbnp_import_*.txt ledger to. Defaults to
+   *   the current directory.
    * @option $webtree-path
    *   The webtree file path, used to generate DZI tiles.
    * @option $yes
@@ -582,6 +585,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
       'dzi-concurrency' => 2,
       'upload-concurrency' => 4,
       'no-notify' => FALSE,
+      'ledger-dir' => NULL,
       'webtree-path' => NULL,
       'yes' => FALSE,
     ]
@@ -690,7 +694,7 @@ class NewspapersLibUnbCaIngestCommand extends OcrCommand {
         escapeshellarg($this->getImportedYearsString())
       ));
     }
-    $this->writeImportLedger();
+    $this->writeImportLedger($options['ledger-dir'] ?? NULL);
   }
 
   /**
@@ -722,10 +726,16 @@ EOT;
   /**
    * Writes out a summary of the import in a ledger file.
    */
-  private function writeImportLedger() : void {
+  private function writeImportLedger(?string $ledger_dir = NULL) : void {
+    $ledger_dir = rtrim($ledger_dir ?: getcwd(), '/');
+    if (!is_dir($ledger_dir) && !mkdir($ledger_dir, 0775, TRUE)) {
+      $this->say("Unable to create ledger directory $ledger_dir; writing the ledger to " . getcwd());
+      $ledger_dir = getcwd();
+    }
     $filename = 'nbnp_import_' . date('m-d-Y_hia') . '.txt';
-    $filepath = getcwd() . "/$filename";
+    $filepath = "$ledger_dir/$filename";
     file_put_contents($filepath, print_r($this->resultsLedger, TRUE));
+    $this->say("Import ledger written to $filepath");
   }
 
   /**
