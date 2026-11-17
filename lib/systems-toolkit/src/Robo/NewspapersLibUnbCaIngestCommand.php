@@ -923,14 +923,6 @@ EOT;
       'digital_serial_page', 'digital_serial_page', 'page_image', $file_contents, $filename_to_send
     ));
 
-    // Queue this page's PDF, named after the file Drupal actually stored.
-    $stored_filename = basename($file_entity->uri[0]->value ?? $filename_to_send);
-    $this->curIssuePdfJobs[] = [
-      'image' => $file_path,
-      'hocr' => "$file_path.hocr",
-      'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
-    ];
-
     // Create the digital page.
     $create_content = json_encode(
       [
@@ -967,10 +959,45 @@ EOT;
       ]
     );
 
-    $this->timeStep('pages.create', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content));
+    $page_entity = $this->timeStep('pages.create', fn() => $this->createDrupalRestEntity(self::NEWSPAPERS_PAGE_CREATE_PATH, $create_content));
+
+    // The upload lands in a temporary location; Drupal moves the file into
+    // serials/pages/{title}/{issue}/ when the page is created. Use the final
+    // location from the created page.
+    $stored_relative_path = $this->getStoredPageImagePath($page_entity);
+
+    // Queue this page's PDF, named after the file Drupal actually stored.
+    $stored_filename = basename($stored_relative_path ?? $filename_to_send);
+    $this->curIssuePdfJobs[] = [
+      'image' => $file_path,
+      'hocr' => "$file_path.hocr",
+      'pdf' => pathinfo($stored_filename, PATHINFO_FILENAME) . '.pdf',
+    ];
+
     if ($options['no-verify'] == FALSE) {
-      $this->timeStep('pages.verify', fn() => $this->verifyStoredPage($file_entity, $issue_id, $page_no, $file_path, $options));
+      $this->timeStep('pages.verify', fn() => $this->verifyStoredPage($stored_relative_path, $issue_id, $page_no, $file_path, $options));
     }
+  }
+
+  /**
+   * Gets a created page's image path, relative to the public files directory.
+   *
+   * @param object $page_entity
+   *   The page entity returned by the create request.
+   *
+   * @return string|null
+   *   The path, e.g. 'serials/pages/248/53195/53195-0009.jpg', or NULL if
+   *   the response does not include a public file URL.
+   */
+  protected function getStoredPageImagePath(object $page_entity) : ?string {
+    $url = $page_entity->page_image[0]->url ?? '';
+    $path = parse_url($url, PHP_URL_PATH) ?: '';
+    $marker = '/sites/default/files/';
+    $pos = strpos($path, $marker);
+    if ($pos === FALSE) {
+      return NULL;
+    }
+    return rawurldecode(substr($path, $pos + strlen($marker)));
   }
 
   /**
@@ -980,8 +1007,9 @@ EOT;
    * rather than downloaded again over HTTP. Otherwise, falls back to the
    * remote download check.
    *
-   * @param object $file_entity
-   *   The file entity returned by the upload.
+   * @param string|null $stored_relative_path
+   *   The stored image path relative to the public files directory, or NULL
+   *   if unknown.
    * @param string $issue_id
    *   The parent issue ID.
    * @param string $page_no
@@ -994,19 +1022,19 @@ EOT;
    * @throws \Exception
    */
   protected function verifyStoredPage(
-    object $file_entity,
+    ?string $stored_relative_path,
     string $issue_id,
     string $page_no,
     string $file_path,
     array $options
   ) : void {
-    $uri = $file_entity->uri[0]->value ?? '';
-    if (empty($options['webtree-path']) || !str_starts_with($uri, 'public://')) {
+    if (empty($options['webtree-path']) || empty($stored_relative_path)) {
+      $this->say('Stored page path unknown, verifying page over HTTP instead.');
       NewspapersLibUnbCaAuditCommand::verifyPageFromIds((int) $issue_id, $page_no, $file_path, $options);
       return;
     }
 
-    $stored_path = $options['webtree-path'] . '/files/' . substr($uri, strlen('public://'));
+    $stored_path = $options['webtree-path'] . '/files/' . $stored_relative_path;
     $md5_local = NewspapersLibUnbCaAuditCommand::md5Sum($file_path);
     $md5_stored = '';
     // The NFS mount may briefly lag the server; recheck a few times before
