@@ -48,10 +48,6 @@ composer install --prefer-dist
   k8s:metadata:audit-repos                        Audits the kubernetes-metadata repo against lean repos.
   k8s:shell                                       Opens a shell within a k8s service's currently running container.
  newspapers.lib.unb.ca
-  newspapers.lib.unb.ca:audit-tree                Verifies one or a tree of directories for import against a remote site.
-  newspapers.lib.unb.ca:create-issue              Imports a single digital serial issue from a file path.
-  newspapers.lib.unb.ca:create-issues-tree        Creates digital serial issues from a tree containing files.
-  newspapers.lib.unb.ca:create-page               Creates a digital serial page from a source file.
   newspapers.lib.unb.ca:delete-year               Deletes an entire year of a title's issues.
   newspapers.lib.unb.ca:delete:issue              Deletes a newspapers.lib.unb.ca digital issue and associated assets.
   newspapers.lib.unb.ca:delete:issue-markers      Deletes newspapers.lib.unb.ca imported markers from a tree.
@@ -59,7 +55,6 @@ composer install --prefer-dist
   newspapers.lib.unb.ca:generate-missing-pdf      Generates any missing PDFs.
   newspapers.lib.unb.ca:generate-page-ocr         Generates and updates the OCR content for a digital serial page.
   newspapers.lib.unb.ca:get-page                  Downloads the image of a digital serial page.
-  newspapers.lib.unb.ca:import:notify             Sends an import status message to the NBHP notification list.
   newspapers.lib.unb.ca:issue:generate-dzi        Generates DZI tiles for a specific NBNP issue.
   newspapers.lib.unb.ca:issue:generate-pdf        Generates PDFs for an issue.
   newspapers.lib.unb.ca:reset-missing-asset-scan  Makes newspapers.lib.unb.ca recheck every page image for an asset.
@@ -80,5 +75,8 @@ composer install --prefer-dist
   repository-list:drupal                          Lists all Drupal repositories.
 ```
 
-### 3. Other Commands
+### 3. Newspaper Import
+Newspaper issue import and audit (formerly `newspapers.lib.unb.ca:create-issues-tree`, `:create-issue`, `:create-page` and `:audit-tree`) now live in the nbnp-ingest tool in the [newspapers.lib.unb.ca](https://github.com/unb-libraries/newspapers.lib.unb.ca) repository (`tools/nbnp-ingest`).
+
+### 4. Other Commands
 Run ```vendor/bin/syskit``` to get a list of available commands.
